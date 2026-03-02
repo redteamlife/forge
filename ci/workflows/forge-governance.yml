@@ -1,0 +1,31 @@
+name: FORGE Governance
+
+on:
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  forge-governance:
+    name: FORGE Governance Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }}
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Validate commit message format
+        run: bash ci/scripts/validate-commit-format.sh
+
+      - name: Validate task state
+        run: bash ci/scripts/validate-task-state.sh
+
+      - name: Validate evidence artifacts
+        run: bash ci/scripts/validate-evidence-artifacts.sh

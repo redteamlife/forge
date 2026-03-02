@@ -1,0 +1,161 @@
+# FORGE CI Enforcement Layer
+
+This directory contains the pipeline enforcement artifacts for FORGE governance.
+They validate FORGE workflow outputs externally, independent of agent behavior.
+
+## Commit Format
+
+FORGE commits follow [Conventional Commits](https://www.conventionalcommits.org) with FORGE metadata as git trailers.
+
+### Subject line
+
+```text
+<type>[optional scope]: <description>
+```
+
+Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`, `revert`
+
+### Required trailers
+
+```text
+FORGE-mode: <Lightweight|Mid|Strict|Full Discipline>
+FORGE-task: <task-id>
+FORGE-gate: pass
+```
+
+Trailers must appear in the commit footer, separated from any body text by a blank line.
+
+### Full example
+
+```text
+feat(auth): add JWT token validation
+
+Implements token validation per ARCHITECTURE.md trust boundary constraints.
+
+FORGE-mode: Mid
+FORGE-task: AUTH-003
+FORGE-gate: pass
+```
+
+Using git trailers keeps the primary commit message compatible with Conventional Commits tooling (commitlint, semantic-release, conventional-changelog) while making FORGE metadata machine-readable via `git log --format=%(trailers)`.
+
+---
+
+## What the CI Layer Enforces
+
+| Check | Mechanism | Catches |
+| --- | --- | --- |
+| Commit message format | `commit-msg` hook + CI script | CC format violations, missing FORGE trailers |
+| Task state | CI script | Task in FORGE-task trailer not marked complete |
+| Evidence artifacts | CI script | PR missing updated EVALUATION.md or MEMORY.md |
+
+---
+
+## Directory Structure
+
+```text
+ci/
+├── hooks/
+│   └── commit-msg                      ← local git hook
+├── scripts/
+│   ├── validate-commit-format.sh       ← CI: subject line + trailer validation
+│   ├── validate-task-state.sh          ← CI: task marked complete in TASKS.yaml
+│   └── validate-evidence-artifacts.sh  ← CI: EVALUATION.md and MEMORY.md updated
+├── workflows/
+│   └── forge-governance.yml            ← GitHub Actions workflow template
+└── policy/
+    └── forge-org-policy.template.yaml  ← org-level policy template
+```
+
+---
+
+## Setup
+
+### 1. Install the local commit hook
+
+```bash
+cp ci/hooks/commit-msg .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
+```
+
+This validates commit format before git accepts the commit. No CI cost. Instant feedback.
+
+### 2. Copy the workflow into the project
+
+```bash
+mkdir -p .github/workflows
+cp ci/workflows/forge-governance.yml .github/workflows/forge-governance.yml
+```
+
+The workflow runs on every pull request and executes all three validation scripts in sequence.
+
+### 3. Set the workflow as a required status check
+
+In your repository settings:
+
+- Go to **Settings > Branches > Branch protection rules**
+- Add or edit the rule for `main`
+- Under **Require status checks to pass before merging**, add `FORGE Governance Checks`
+- Enable **Require branches to be up to date before merging**
+
+PRs cannot be merged until all three checks pass.
+
+### 4. Enable ci_enforcement in AI.md
+
+Add `ci_enforcement: enabled` to the `FORGE-config` block in `docs/forge/AI.md`:
+
+```text
+FORGE_mode: Mid
+execution_mode: manual
+ci_enforcement: enabled
+```
+
+The evidence artifact check reads this field. If absent or not `enabled`, that check is skipped.
+
+### 5. (Optional) Configure org-level policy
+
+Copy `ci/policy/forge-org-policy.template.yaml` to a central location your org controls.
+Add a fetch step to `forge-governance.yml` to download and validate the project's `AI.md` config against it.
+
+This enforces a minimum mode floor and auto-mode restrictions across all projects in the org.
+
+---
+
+## FORGE Docs and the Repository
+
+FORGE governance documents in `docs/forge/` can be managed in three ways depending on your team's needs:
+
+### Pattern 1 - Embedded (default)
+
+`docs/forge/` is committed alongside code. Simple. All governance artifacts are version-controlled with the project. Appropriate when the repository is private or when public visibility of governance process is acceptable.
+
+### Pattern 2 - Excluded
+
+Add `docs/forge/` to `.gitignore`. Governance docs exist locally and inform execution but are never committed. No audit trail in git history. Appropriate for solo developers or when governance artifacts must not be shared.
+
+```gitignore
+# .gitignore
+docs/forge/
+```
+
+### Pattern 3 - Companion private repository
+
+Code lives in the public repository. Governance docs live in a separate private repository. You clone both locally, work in the public repo with FORGE context available, and push only code publicly. Appropriate for open source projects or any situation requiring separation of internal process from the public artifact.
+
+There is no single correct pattern. Choose the one that matches your team's visibility and audit requirements.
+
+---
+
+## Script Requirements
+
+- `bash`
+- `git`
+- `python3` with `pyyaml` (used by `validate-task-state.sh`; installed automatically in the workflow)
+
+---
+
+## Scope Notes
+
+The CI scripts validate the *outputs* of the FORGE agent workflow. They do not replace the agent workflow steps. A commit can pass all CI checks and still represent poor work. The CI layer validates governance artifacts, not implementation quality.
+
+Evidence that CI checks passed is itself a valid audit record. The pipeline run log (timestamped, attributed to a specific actor) supplements the evaluation record in `EVALUATION.md`.

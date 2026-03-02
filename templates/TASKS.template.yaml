@@ -1,0 +1,7 @@
+tasks:
+  - id:
+    description:
+    status: incomplete
+    # acceptance_criteria:  # optional: encouraged in Strict, required in Full Discipline
+    #   -
+    # scope_boundary:       # optional: encouraged in Strict, required in Full Discipline
