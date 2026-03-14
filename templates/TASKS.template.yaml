@@ -2,6 +2,12 @@ tasks:
   - id:
     description:
     status: incomplete
+    # file_scope:            # encouraged in Mid+, required in Full Discipline; CI-enforced via validate-file-scope.sh
+    #   - src/               # list directories or files this task is allowed to modify
+    #   - docs/forge/TASKS.yaml
+    # depends_on:            # optional: task ids that must be complete before this task starts
+    #   -
+    # complexity: low        # optional: low|medium|high - informs which evaluation gates are required
     # acceptance_criteria:  # optional: encouraged in Strict, required in Full Discipline
     #   -
     # scope_boundary:       # optional: encouraged in Strict, required in Full Discipline

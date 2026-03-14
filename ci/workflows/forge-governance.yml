@@ -32,3 +32,6 @@ jobs:
 
       - name: Validate evidence artifacts
         run: bash ci/scripts/validate-evidence-artifacts.sh
+
+      - name: Validate file scope
+        run: bash ci/scripts/validate-file-scope.sh

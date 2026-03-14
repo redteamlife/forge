@@ -51,6 +51,8 @@ Parse `TASKS.yaml`. Eligible tasks must have a non-empty `id`, non-empty `descri
 
 `acceptance_criteria` and `scope_boundary` do not affect eligibility in Lightweight or Mid mode. In Strict mode they are encouraged. In Full Discipline mode they are required for eligibility.
 
+`file_scope` declares which directories or files a task is allowed to modify. It is optional but encouraged in Mid+ and required in Full Discipline. When declared, it is enforced by the CI pipeline via `validate-file-scope.sh`. The implementing agent must not modify files outside declared `file_scope`.
+
 Select tasks in file order unless project policy defines a deterministic alternative. If no eligible tasks exist, stop with `no_remaining_tasks`.
 
 ## 6. Execution Mode Behavior
@@ -79,6 +81,8 @@ This step applies at all modes whenever `MEMORY.md` exists.
 ### Step 7.2 - Implement Only the Selected Task
 
 Limit changes to what the active task requires. Do not include unrelated work. Do not begin a second task before all gates for the current task are satisfied.
+
+If the task declares `file_scope`, do not modify any files outside the listed paths. The CI pipeline will reject commits that violate declared scope.
 
 ### Step 7.3 - Update Task-Related Documentation
 
