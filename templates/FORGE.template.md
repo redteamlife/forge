@@ -74,7 +74,7 @@ Parse `TASKS.yaml`. Eligible tasks must have a non-empty `id`, non-empty `descri
 
 `acceptance_criteria` and `scope_boundary` do not affect eligibility in Lightweight or Mid mode. In Strict mode they are encouraged. In Full Discipline mode they are required for eligibility.
 
-`file_scope` declares which directories or files a task is allowed to modify. It is optional but encouraged in Mid+ and required in Full Discipline. When declared, it is enforced by the CI pipeline via `validate-file-scope.sh`. The implementing agent must not modify files outside declared `file_scope`.
+`file_scope` declares which directories or files a task is allowed to modify. It is optional but encouraged in Mid (manual execution). When `execution_mode: auto` is active at Mid, `file_scope` is strongly recommended and expected for all tasks — without explicit scope boundaries, unbounded auto iteration carries higher drift risk. It is required in Full Discipline. When declared, it is enforced by the CI pipeline via `validate-file-scope.sh`. The implementing agent must not modify files outside declared `file_scope`.
 
 Select tasks in file order unless project policy defines a deterministic alternative. If no eligible tasks exist, stop with `no_remaining_tasks`.
 
@@ -84,7 +84,7 @@ Select tasks in file order unless project policy defines a deterministic alterna
 
 **Batch:** Select up to `batch_size` eligible tasks. Execute sequentially. Apply full per-task workflow. Stop immediately on any hard stop.
 
-**Auto** _(Strict+)_**:** Enforce single-task bounded execution internally. Iterate without reinvocation only while all gates pass. Stop immediately on any failed gate, escalation, or policy conflict.
+**Auto:** Enforce single-task bounded execution internally. Iterate without reinvocation only while all gates pass. Stop immediately on any failed gate, escalation, or policy conflict. Hard stops remain unconditional regardless of mode level. Auto is available at any FORGE_mode; teams operating at Lightweight or Mid with auto accept that fewer gates are enforced and must match mode to their actual risk tolerance.
 
 ## 7. Single-Task Implementation Workflow
 

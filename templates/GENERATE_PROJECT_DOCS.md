@@ -124,7 +124,7 @@ When generating FORGE.md, produce only the content applicable to the declared FO
 
 - Sections and bullets marked _(Mid+)_ must be omitted from Lightweight output.
 - Sections and bullets marked _(Strict+)_ must be omitted from Lightweight and Mid output.
-- Auto mode content must be omitted from Lightweight and Mid output.
+- Auto mode content must be omitted from Lightweight output. For Mid output, include auto execution behavior only when `execution_mode: auto` is declared; omit it when `execution_mode` is `manual` or `batch`.
 
 The hard stop rules, escalation rules, commit format, branch discipline, and completion conditions apply at all modes and must always be included.
 
