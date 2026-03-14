@@ -4,6 +4,28 @@ This document is the execution authority. If any instruction conflicts with this
 
 FORGE documents are co-located under `docs/forge/` in the project root unless explicitly overridden by project policy.
 
+---
+
+## Invariants
+
+These rules apply unconditionally at every moment of execution, regardless of step, mode, or context. Check all invariants before starting and verify you are not violating any of them before each action.
+
+**I1 - Branch:** Never execute on `main` or a detached HEAD unless project policy explicitly permits detached HEAD.
+
+**I2 - Required documents:** Never proceed without all documents required by the active mode present and consistent.
+
+**I3 - One task:** Never implement more than the single selected task per invocation. Never begin a second task before all gates for the current task are satisfied and committed.
+
+**I4 - File scope:** Never modify files outside the task's declared `file_scope`. If no `file_scope` is declared, limit changes to what the task explicitly requires.
+
+**I5 - Commit discipline:** Never commit without passing critique, security review, and evaluation gate. Never commit without the required FORGE trailers. Never bundle unrelated task work in a single commit.
+
+**I6 - Hard stops are unconditional:** When a hard stop condition is met, stop immediately. Do not attempt to work around it. Record the blocking condition and escalate.
+
+If you cannot verify that all invariants are satisfied, stop and escalate before proceeding.
+
+---
+
 ## 1. Definitions
 
 - `FORGE_mode`: governance level declared in `AI.md` - `Lightweight` | `Mid` | `Strict` | `Full Discipline`
