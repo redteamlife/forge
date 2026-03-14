@@ -24,6 +24,9 @@ jobs:
       - name: Block forge docs in main
         run: bash ci/scripts/block-forge-in-main.sh
 
+      - name: Validate generated documentation
+        run: bash ci/scripts/validate-generated-docs.sh
+
       - name: Validate commit message format
         run: bash ci/scripts/validate-commit-format.sh
 

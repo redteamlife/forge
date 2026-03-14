@@ -54,6 +54,19 @@ The AI will read the templates and write a set of governance documents into `doc
 | `REVIEW_GUIDE.md` | Review criteria for code and security |
 | `ROADMAP.md` | Delivery phases and scope boundaries |
 | `ARCHITECTURE_EXPLORATION.md` | Pre-decision trade-off analysis |
+| `SECURITY_CHECKLISTS.md` | Task-type-specific security review checklists |
+
+---
+
+## Step 2b: Validate the generated documents (optional but recommended)
+
+If you have the CI scripts available, run the documentation validator before starting your first session:
+
+```bash
+bash /path/to/forge/ci/scripts/validate-generated-docs.sh
+```
+
+This checks that all required files exist, no template placeholders were left unfilled, required sections are non-empty, and `TASKS.yaml` has valid task structure. It is also run automatically on every PR when CI enforcement is enabled.
 
 ---
 
