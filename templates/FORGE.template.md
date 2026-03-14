@@ -90,9 +90,9 @@ Select tasks in file order unless project policy defines a deterministic alterna
 
 ### Step 7.0 - Memory Query
 
-If `MEMORY.md` is present, read it now. Search for patterns, failures, or lessons relevant to the active task's component, domain, or change type. Note how any relevant entries inform approach or constraints. Skip if `MEMORY.md` is absent and not required by the active mode.
+If `MEMORY.md` is present, read it now. Start with the **Recent Patterns** and **Recent Failures** sections at the top, which contain the highest-signal recent entries. If the active task's component or domain matches entries in those sections, read the corresponding full entries in Pattern Tracking or Failure Tracking for detail. Note how any relevant entries inform approach or constraints.
 
-This step applies at all modes whenever `MEMORY.md` exists.
+Skip if `MEMORY.md` is absent and not required by the active mode. This step applies at all modes whenever `MEMORY.md` exists.
 
 ### Step 7.1 - Pre-Implementation Alignment Check
 
@@ -152,13 +152,13 @@ If gate fails: keep task `incomplete`, record failure reason, stop or continue p
 
 ## 11. Memory Update
 
-Update `MEMORY.md` after each task attempt.
+Update `MEMORY.md` after each task attempt following the maintenance instructions at the bottom of `MEMORY.md`.
 
-**On success:** record useful patterns, risks avoided, review or testing lessons.
+**On success:** add a brief summary to Recent Patterns and a full entry to Pattern Tracking. Record useful patterns, risks avoided, review or testing lessons.
 
-**On failure or escalation:** record failure mode, guardrail or documentation gap, recommended refinement.
+**On failure or escalation:** add a brief summary to Recent Failures and a full entry to Failure Tracking. Record the failure mode, any guardrail or documentation gap, and a recommended refinement.
 
-Updates must be concise, factual, and attributable to the task.
+Updates must be concise, factual, and attributable to the task. Include the `component` and `task` tags in the Recent sections to make future retrieval efficient.
 
 ## 12. Commit-Per-Task Enforcement
 
