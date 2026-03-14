@@ -1,31 +1,52 @@
 # Getting Started with FORGE
 
-FORGE gives your AI coding assistant a structured contract to work from - defining which task to work on, what the boundaries are, when to stop, and how to commit. Instead of open-ended conversations, your AI follows a documented workflow you control.
+FORGE gives your AI coding assistant a structured contract to work from - a task list, a rules file, and a required commit format. The AI reads the documents, does one task, commits, and stops. You stay in control of every increment.
 
-## What You Need
-
-- **An AI coding assistant** that can read files in your project directory. FORGE is designed for tools like [Claude Code](https://claude.ai/code) but works with any AI assistant that has file access (Codex, Cursor, GitHub Copilot Workspace, etc.).
-- **A project directory.** Can be an existing project or a new one. Git is required for commit discipline, but you can set it up during the process.
-- **This repository cloned locally**, or just the `templates/` and `ci/` directories copied somewhere accessible.
+**No CI pipeline, no hooks, no GitHub Actions required to get started.** The minimum setup is three files.
 
 ---
 
-## Step 1: Copy `templates/` into your project
+## Before You Begin
 
-Copy the `templates/` folder from this repository into the root of your project:
+**What you need:**
+
+- An AI assistant that can read files in your project (Claude Code, Codex, Cursor, GitHub Copilot Workspace, a local LLM, or similar)
+- A project directory with git initialized (`git init` if starting fresh)
+- This repository cloned locally, or just the `templates/` folder copied somewhere
+
+**That's it.** No special tooling, no pipeline setup.
+
+---
+
+## Choose Your Starting Mode
+
+Pick a mode before generating docs so you know what to expect. If you're unsure, start at Lightweight.
+
+| Mode | What you get | When to use it |
+| --- | --- | --- |
+| **Lightweight** | 3 required files. Task tracking, commit discipline, hard stops. | Starting out, personal projects, low-risk work |
+| **Mid** | 8 files. Adds architecture constraints, security checklists, evaluation gates. | Most development work |
+| **Strict** | 11 files. Adds formal reviews, exploration docs, roadmap. | Team projects, audit requirements |
+| **Full Discipline** | 12 files + org policy. Full deterministic workflow. | Regulated environments, enterprise |
+
+> **Recommendation:** Start at Lightweight. You can switch modes at any time by updating `docs/forge/AI.md` and adding the documents for the new mode.
+
+---
+
+## Step 1: Copy the templates into your project
 
 ```bash
 cp -r /path/to/forge/templates /path/to/your-project/templates
 ```
 
-Your project should now look something like:
+Your project should now look like:
 
 ```text
 your-project/
 ├── templates/
+│   ├── GENERATE_PROJECT_DOCS.md
 │   ├── AI.template.md
 │   ├── FORGE.template.md
-│   ├── GENERATE_PROJECT_DOCS.md
 │   └── ... (other templates)
 └── (your existing code)
 ```
@@ -34,72 +55,64 @@ your-project/
 
 ## Step 2: Generate your FORGE documents
 
-Open your project in your AI coding assistant. Give the AI this prompt - replacing the last line with your actual project description:
+Open your project in your AI assistant. Give it this prompt, replacing the last line with your actual project:
 
-> Read `templates/GENERATE_PROJECT_DOCS.md`, then generate FORGE documentation for the following project:
+> Read `templates/GENERATE_PROJECT_DOCS.md`, then generate FORGE documentation in Lightweight mode for the following project:
 >
-> [describe your project in 2–4 sentences]
+> [describe your project in 2-4 sentences]
 
-The AI will read the templates and write a set of governance documents into `docs/forge/` in your project:
+The AI will write your governance documents into `docs/forge/`.
 
-| File | Purpose |
+### What gets generated
+
+**Lightweight mode - the only three files that matter to start:**
+
+| File | What it does |
 | --- | --- |
-| `AI.md` | Your execution configuration - mode, execution style, constraints |
-| `FORGE.md` | The execution engine the AI follows on every session |
-| `TASKS.yaml` | The list of tasks the AI will work through |
+| `docs/forge/AI.md` | Your configuration - mode, execution style, project constraints |
+| `docs/forge/FORGE.md` | The rules file - the AI reads this before every session |
+| `docs/forge/TASKS.yaml` | Your task list - the AI works through this one task at a time |
+
+**Mid mode and above also generate:**
+
+| File | What it does |
+| --- | --- |
 | `ARCHITECTURE.md` | System design constraints the AI must respect |
 | `EVALUATION.md` | Definition of done and gate requirements |
 | `MEMORY.md` | Patterns and lessons captured across sessions |
-| `TEST_STRATEGY.md` | Testing expectations per mode |
-| `REVIEW_GUIDE.md` | Review criteria for code and security |
+| `TEST_STRATEGY.md` | Testing expectations |
+| `SECURITY_CHECKLISTS.md` | Task-type-specific security review checklists |
+| `REVIEW_GUIDE.md` | Code and security review criteria |
 | `ROADMAP.md` | Delivery phases and scope boundaries |
 | `ARCHITECTURE_EXPLORATION.md` | Pre-decision trade-off analysis |
-| `SECURITY_CHECKLISTS.md` | Task-type-specific security review checklists |
+
+You can delete the `templates/` folder after generation if you want a cleaner project structure. You won't need it again unless you add new docs.
 
 ---
 
-## Step 2b: Validate the generated documents (optional but recommended)
+## Step 3: Review the generated documents
 
-If you have the CI scripts available, run the documentation validator before starting your first session:
+### Check AI.md
 
-```bash
-bash /path/to/forge/ci/scripts/validate-generated-docs.sh
-```
-
-This checks that all required files exist, no template placeholders were left unfilled, required sections are non-empty, and `TASKS.yaml` has valid task structure. It is also run automatically on every PR when CI enforcement is enabled.
-
----
-
-## Step 3: Review and tune the generated documents
-
-### Check your mode
-
-Open `docs/forge/AI.md` and look at the `FORGE-config` block at the top:
+Open `docs/forge/AI.md`. At the top you'll see the config block:
 
 ```text
+forge_version: 0.1.0
 FORGE_mode: Lightweight
 execution_mode: manual
 ```
 
-**If you are just starting out, use `Lightweight` mode.** It requires only three documents and has minimal overhead. You can always move up as your project matures.
+Make sure `FORGE_mode` matches the mode you asked for. If the AI generated Mid but you wanted Lightweight, just change the value and delete the extra files.
 
-| Mode | Use when |
-| --- | --- |
-| Lightweight | Learning FORGE, personal projects, low-risk changes |
-| Mid | Most development work. Adds architecture alignment and security review |
-| Strict | Security-sensitive systems, team projects with audit requirements |
-| Full Discipline | Regulated environments, enterprise contexts |
+`execution_mode: manual` means the AI does one task per session and stops. That's the right default to start.
 
-### Check your tasks
+### Check and edit TASKS.yaml
 
-Open `docs/forge/TASKS.yaml`. This is where your project work lives. Each task is one unit of work the AI will implement in a single session.
+Open `docs/forge/TASKS.yaml`. This is where your work lives. The AI generated a first pass based on your project description - review it and adjust.
 
-Good tasks are:
-- **Specific** - "Add input validation to the login endpoint" not "improve security"
-- **Bounded** - one thing, completable without touching unrelated code
-- **Ordered** - sequenced so earlier tasks don't block later ones
+**Good tasks are specific and bounded.** One thing, completable without touching unrelated parts of the codebase.
 
-Example of a well-written `TASKS.yaml`:
+Example of a well-written task list:
 
 ```yaml
 tasks:
@@ -108,99 +121,106 @@ tasks:
     status: incomplete
 
   - id: add-user-registration
-    description: Implement the POST /auth/register endpoint with email and password, hashing the password before storage
+    description: Implement the POST /auth/register endpoint with email and password validation, hashing the password before storage
     status: incomplete
 
   - id: add-user-login
     description: Implement the POST /auth/login endpoint returning a JWT token on success
     status: incomplete
 
-  - id: add-input-validation
-    description: Add server-side input validation to all auth endpoints - reject malformed emails, enforce password minimum length
-    status: incomplete
-
   - id: write-auth-tests
-    description: Write unit tests for the registration and login logic covering success, duplicate email, and invalid credential cases
+    description: Write unit tests for registration and login covering success, duplicate email, and invalid credential cases
     status: incomplete
 ```
 
-You can edit, add, or reorder tasks at any time. Tasks with `status: incomplete` are eligible for the AI to pick up.
+Tasks with `status: incomplete` are eligible for the AI to pick up. You can add, edit, reorder, or delete tasks at any time.
 
 ---
 
-## Step 4: Start a governed session
+## Step 4: Start a session
 
-Give your AI coding assistant this prompt:
+Tell your AI assistant:
 
 > Read `docs/forge/FORGE.md` and begin working.
 
-That's it. The AI will:
+The AI will:
 
-1. Read your governance documents
-2. Check `MEMORY.md` for relevant lessons from previous sessions
-3. Pick the first incomplete task from `TASKS.yaml`
-4. Check the task against your architecture constraints
-5. Implement only that task - nothing more
-6. Run a self-critique and security review
-7. Update `TASKS.yaml` to mark the task complete
-8. Commit with a structured message and stop
-
----
-
-## The Daily Loop
-
-In `manual` mode (the default), the AI completes one task per session and stops. This keeps you in control of each increment.
-
-```
-1. Open your project in your AI assistant
-2. Say: Read docs/forge/FORGE.md and begin working.
-3. AI picks next task → implements → critiques → commits → stops
-4. Review the commit
-5. Repeat
-```
-
-**Execution modes:**
-
-| Mode | Behavior |
-| --- | --- |
-| `manual` | One task per session. You reinvoke each time. |
-| `batch` | Up to `batch_size` tasks per session, then stops. |
-| `auto` | Runs until all tasks are complete or a hard stop occurs. |
-
-To change modes, update `execution_mode` in `docs/forge/AI.md`.
+1. Read `FORGE.md` (the rules)
+2. Read `AI.md` (the configuration)
+3. Read `MEMORY.md` if present (lessons from past sessions)
+4. Pick the first incomplete task from `TASKS.yaml`
+5. Implement only that task
+6. Review its own work and check for security concerns
+7. Mark the task complete in `TASKS.yaml`
+8. Commit with a structured message
+9. Stop
 
 ---
 
-## When the AI Stops Without Finishing
+## What a Session Produces
 
-FORGE uses **hard stops** - the AI halts and reports a blocking condition rather than guessing or drifting. Common reasons:
-
-- A task description is ambiguous
-- A required document is missing or inconsistent
-- The task conflicts with documented architecture
-- A security concern was identified
-
-When this happens, the AI tells you exactly what blocked it. Resolve the issue - usually by clarifying a document or rewriting a task - then start a new session.
-
-Hard stops are not failures. They are the governance model working correctly.
-
----
-
-## Commit Format
-
-FORGE commits follow [Conventional Commits](https://www.conventionalcommits.org) with FORGE metadata as git trailers:
+After a successful session you'll have a commit that looks like this:
 
 ```text
 feat(auth): add JWT token validation
 
-Implements token validation per ARCHITECTURE.md trust boundary constraints.
+Implements token validation per trust boundary constraints.
+Tokens are validated on every protected route before handler execution.
 
 FORGE-mode: Lightweight
 FORGE-task: add-user-login
 FORGE-gate: pass
 ```
 
-The AI generates this format automatically. You do not need to write it manually.
+The `FORGE-mode`, `FORGE-task`, and `FORGE-gate` lines are git trailers - metadata attached to the commit. They make every task traceable: you can look at any commit and know exactly which task it corresponds to, what mode was active, and whether all gates passed.
+
+The AI generates this format automatically. You do not write it manually.
+
+---
+
+## The Daily Loop
+
+In `manual` mode, the AI completes one task per session and stops. This keeps you in control.
+
+```text
+1. Open your project in your AI assistant
+2. Say: Read docs/forge/FORGE.md and begin working.
+3. AI picks the next task, implements it, and commits
+4. Review the commit
+5. Repeat for the next task
+```
+
+When all tasks are done, add new tasks to `TASKS.yaml` and continue.
+
+---
+
+## When the AI Stops Without Finishing
+
+FORGE uses **hard stops** - the AI halts and tells you exactly what blocked it rather than guessing or continuing past a problem. This is the governance model working correctly.
+
+**Common reasons for a hard stop and how to fix them:**
+
+| What the AI reports | What to do |
+| --- | --- |
+| Task description is ambiguous | Rewrite the task in `TASKS.yaml` to be more specific |
+| Task scope conflicts with architecture | Update `ARCHITECTURE.md` or clarify the task boundary |
+| A required document is missing | Generate the missing document or switch to a lower mode |
+| Security concern identified | Review the concern, update the task or architecture doc, restart |
+| No eligible tasks remain | Add new tasks to `TASKS.yaml` |
+
+After fixing the issue, start a new session with the same prompt. The AI will pick up from the next eligible task.
+
+---
+
+## Switching Modes
+
+To move from Lightweight to Mid (or any higher mode):
+
+1. Open `docs/forge/AI.md` and change `FORGE_mode: Lightweight` to `FORGE_mode: Mid`
+2. Tell your AI: *Read `templates/GENERATE_PROJECT_DOCS.md` and generate the Mid-mode documents that are currently missing from `docs/forge/`*
+3. Review the new documents - especially `ARCHITECTURE.md`, which defines the constraints the AI will enforce
+
+The AI will only generate the files that are missing. Existing files are left alone.
 
 ---
 
@@ -208,7 +228,41 @@ The AI generates this format automatically. You do not need to write it manually
 
 Once you're comfortable with the basic loop:
 
-- Read [Modes](philosophy/modes.md) to understand when to level up your governance
-- Read [Maturity Model](philosophy/maturity-model.md) to understand the full progression
-- Read [Execution Model](philosophy/execution-model.md) for the reasoning behind FORGE's design decisions
-- When you're ready for pipeline enforcement (CI checks, commit hooks, branch protection), see [ci/README.md](ci/README.md)
+- [Modes](philosophy/modes.md) - what each mode adds and when to level up
+- [Maturity Model](philosophy/maturity-model.md) - the full progression from ad hoc prompting to full discipline
+- [Execution Model](philosophy/execution-model.md) - the reasoning behind how FORGE works
+
+---
+
+## Optional: CI Pipeline Enforcement
+
+The `ci/` directory in this repository contains scripts and a GitHub Actions workflow that validate FORGE outputs on every pull request - commit format, task completion, evidence artifacts, file scope, and doc completeness. These run independently of the AI and block merges on validation failure.
+
+This is entirely optional. FORGE works without it. It becomes most useful when:
+
+- You're working in a team and want machine-enforced consistency
+- You're at Mid mode or above where missed review steps have real consequences
+- You want commit format enforced before code reaches a shared branch
+
+**To set up CI enforcement:**
+
+1. Copy `ci/` into your project root
+
+2. Install the commit hook:
+
+   ```bash
+   cp ci/hooks/commit-msg .git/hooks/commit-msg
+   chmod +x .git/hooks/commit-msg
+   ```
+
+3. Copy the workflow to your GitHub Actions directory:
+
+   ```bash
+   mkdir -p .github/workflows
+   cp ci/workflows/forge-governance.yml .github/workflows/
+   ```
+
+4. Set `ci_enforcement: enabled` in `docs/forge/AI.md`
+5. Add `FORGE Governance Checks` as a required status check in your repository's branch protection settings
+
+Full setup details are in [ci/README.md](ci/README.md).
