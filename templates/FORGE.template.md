@@ -37,7 +37,7 @@ Validate document **presence** before task selection. Defer reading document **c
 
 **All modes:** `AI.md`, `FORGE.md`, `TASKS.yaml`
 
-**Mid and above:** `ARCHITECTURE.md`, `TEST_STRATEGY.md`, `EVALUATION.md`, `MEMORY.md`
+**Mid and above:** `ARCHITECTURE.md`, `TEST_STRATEGY.md`, `EVALUATION.md`, `MEMORY.md`, `SECURITY_CHECKLISTS.md`
 
 **Strict and above:** `ARCHITECTURE_EXPLORATION.md`, `REVIEW_GUIDE.md`, `ROADMAP.md`
 
@@ -102,15 +102,19 @@ Resolve blocking issues within task bounds or escalate. Do not proceed with know
 
 ## 9. Security Review Pass
 
-Perform a security-focused review, scaled to mode and risk.
+Perform a security-focused review using `SECURITY_CHECKLISTS.md`. Select the checklist matching the task's `task_type` field and apply it alongside the General checklist. If no `task_type` is declared, apply the General checklist only.
 
-- Trust boundary impact assessed
-- Sensitive data handling unchanged or explicitly reviewed
-- New permissions, access paths, or privileged behaviors reviewed
-- Input/output and integration risks reviewed
-- Unsafe assumptions recorded and escalated
+Every checklist item must receive an explicit outcome (`pass`, `n/a`, or an escalation note). Free-form narrative does not satisfy the security review. Record completed checklist results in `EVALUATION.md`.
 
-If unresolved security concerns exist, hard stop and escalate.
+Core areas the checklists cover:
+
+- Trust boundary impact
+- Sensitive data handling
+- New permissions, access paths, or privileged behaviors
+- Input validation and output filtering
+- Integration and dependency risks
+
+If any checklist item raises an unresolved concern, hard stop and escalate before proceeding to the evaluation gate.
 
 ## 10. Evaluation Gate
 

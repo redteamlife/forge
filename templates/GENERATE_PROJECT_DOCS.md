@@ -74,6 +74,7 @@ You must generate all template files:
 - TEST_STRATEGY.md
 - EVALUATION.md
 - MEMORY.md
+- SECURITY_CHECKLISTS.md
 
 If FORGE mode is Lightweight, architectural documents may remain minimal but must still exist.
 
@@ -108,6 +109,9 @@ TASKS.yaml must:
 - Follow strict YAML formatting
 - Use status: incomplete for all initial tasks
 - Include `acceptance_criteria` and `scope_boundary` per task when FORGE_mode is Strict or Full Discipline
+- Include `task_type` per task when FORGE_mode is Mid or above (selects the appropriate security checklist)
+- Include `file_scope` per task when FORGE_mode is Mid or above; required for Full Discipline
+- Include `complexity` per task when task risk warrants it
 
 No placeholder tasks.
 

@@ -2,6 +2,7 @@ tasks:
   - id:
     description:
     status: incomplete
+    # task_type: feature     # optional: feature|fix|refactor|security|docs|config - selects security checklist from SECURITY_CHECKLISTS.md
     # file_scope:            # encouraged in Mid+, required in Full Discipline; CI-enforced via validate-file-scope.sh
     #   - src/               # list directories or files this task is allowed to modify
     #   - docs/forge/TASKS.yaml
