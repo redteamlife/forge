@@ -21,6 +21,9 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      - name: Block forge docs in main
+        run: bash ci/scripts/block-forge-in-main.sh
+
       - name: Validate commit message format
         run: bash ci/scripts/validate-commit-format.sh
 
