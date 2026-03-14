@@ -37,6 +37,7 @@ If you cannot verify that all invariants are satisfied, stop and escalate before
 
 Parse the `FORGE-config` block in `AI.md`. Extract and validate:
 
+- `forge_version` - records which version of the FORGE framework this project uses; informational, no hard validation required
 - `FORGE_mode` - must be one of the four valid values
 - `execution_mode` - must be `manual`, `batch`, or `auto`
 - `batch_size` - must be a positive integer if `execution_mode: batch`

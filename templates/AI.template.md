@@ -1,6 +1,7 @@
 # AI Execution Configuration
 
 ```FORGE-config
+forge_version: 0.1.0
 FORGE_mode: Mid
 execution_mode: manual
 batch_size: 2

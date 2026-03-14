@@ -85,6 +85,7 @@ If FORGE mode is Lightweight, architectural documents may remain minimal but mus
 In AI.md, you must include a valid configuration block:
 
 ```FORGE-config
+forge_version: 0.1.0
 FORGE_mode: <Lightweight | Mid | Strict | Full Discipline>
 execution_mode: <manual | batch | auto>
 batch_size: <integer if execution_mode = batch>
