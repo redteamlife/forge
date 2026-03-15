@@ -81,6 +81,24 @@ The `templates/` folder can be removed after docs are generated.
 
 ---
 
+## Tool Development and Release
+
+FORGE includes a workflow for developing and releasing tools with a private/public repository separation. Internal planning docs and architecture stay in a private dev repo; only release artifacts reach the public repo.
+
+- **Open source tools** — source code is published to a public repository
+- **Closed source tools** — compiled binaries are published as GitHub Release assets via the `gh` CLI
+
+Scaffold a new tool project with
+ `scripts/forge-tool-init.sh` (Linux/macOS)
+ or
+ `scripts/forge-tool-init.ps1` (Windows).
+
+Publish releases with `scripts/forge-publish.sh` / `scripts/forge-publish.ps1`.
+
+See [GETTING_STARTED.md](GETTING_STARTED.md) for the full walkthrough.
+
+---
+
 ## CI Pipeline Enforcement (Optional)
 
 The `ci/` directory contains scripts and a GitHub Actions workflow that validate FORGE outputs independently of the AI - commit format, task state, evidence artifacts, file scope, and doc completeness. These run on every PR and block merges on validation failure.
@@ -97,6 +115,7 @@ To set it up, copy `ci/` into your project root and follow [ci/README.md](ci/REA
 templates/   document templates and the generation prompt
 philosophy/  design rationale for the execution model, modes, and maturity model
 ci/          pipeline scripts, git hooks, GitHub Actions workflow, org policy template
+scripts/     tool development and release scripts (forge-tool-init, forge-publish)
 ```
 
 ---

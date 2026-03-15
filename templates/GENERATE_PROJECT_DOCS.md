@@ -78,6 +78,10 @@ You must generate all template files:
 
 If FORGE mode is Lightweight, architectural documents may remain minimal but must still exist.
 
+### Optional: TOOL_WORKFLOW.md
+
+If a `forge.yaml` file is present in the project root, this project is using the FORGE tool development workflow. In that case, also generate `TOOL_WORKFLOW.md` from `TOOL_WORKFLOW.template.md`. Replace the `[DEV_REPO]` and `[PUBLIC_REPO]` placeholders with the values from `forge.yaml` under `repos.dev` and `repos.public`. If `forge.yaml` is not present, omit this file.
+
 ---
 
 ## FORGE Configuration Block

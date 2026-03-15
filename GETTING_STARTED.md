@@ -266,3 +266,40 @@ This is entirely optional. FORGE works without it. It becomes most useful when:
 5. Add `FORGE Governance Checks` as a required status check in your repository's branch protection settings
 
 Full setup details are in [ci/README.md](ci/README.md).
+
+---
+
+## Building and Releasing Tools with FORGE
+
+If you are using FORGE to develop a releasable tool — a CLI, web tool, or script — the tool development workflow gives you a structured way to keep internal planning and governance docs private while publishing clean artifacts publicly.
+
+The workflow supports two visibility models:
+
+- **Open source** — source code is published to a separate public repository
+- **Closed source** — compiled binaries are published as GitHub Release assets; source never leaves the private dev repo
+
+**To scaffold a new tool project:**
+
+```bash
+# Linux / macOS
+./scripts/forge-tool-init.sh ToolName
+
+# Windows (PowerShell)
+.\scripts\forge-tool-init.ps1 -ToolName ToolName
+```
+
+The script creates a `ToolName-dev/` directory with the full FORGE document set, a `forge.yaml` configuration file, and a `release/` staging area. It optionally creates both GitHub repositories and configures remotes.
+
+**To publish a release:**
+
+```bash
+# Linux / macOS
+./scripts/forge-publish.sh
+
+# Windows (PowerShell)
+.\scripts\forge-publish.ps1
+```
+
+For closed-source tools, pass a `--tag` / `-Tag` argument (e.g. `--tag v1.0.0`). Binaries are uploaded as GitHub Release assets via the `gh` CLI — nothing is committed to the public repo.
+
+The full workflow reference is in `docs/forge/TOOL_WORKFLOW.md` inside each scaffolded project, and the `forge.yaml` configuration schema is in `templates/forge.yaml.template`.
