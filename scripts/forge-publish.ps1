@@ -42,6 +42,12 @@ function Require-Command([string]$cmd) {
   }
 }
 
+function Test-ReleaseDirIgnored([string]$GitIgnorePath, [string]$IgnoreEntry) {
+  if (-not (Test-Path $GitIgnorePath)) { return $false }
+  $ignoreLines = Get-Content $GitIgnorePath
+  return ($ignoreLines -contains $IgnoreEntry -or $ignoreLines -contains "/$IgnoreEntry")
+}
+
 # ---------------------------------------------------------------------------
 # Minimal forge.yaml parser
 # Reads key: value pairs and list items without requiring external modules.
@@ -121,6 +127,10 @@ Write-Host "  public repo: $PublicRepo"
 # ---------------------------------------------------------------------------
 
 Require-Command "git"
+$RepoRoot = git rev-parse --show-toplevel 2>$null
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+  $RepoRoot = (Get-Location).Path
+}
 
 if ($Visibility -eq "open-source") {
 
@@ -146,8 +156,13 @@ if ($Visibility -eq "open-source") {
   }
 
   $remoteUrl = git remote get-url public
+  $gitIgnore = Join-Path $RepoRoot ".gitignore"
+  $ignoreEntry = "$($ReleaseDir.TrimEnd('/','\'))/"
 
   if ($DryRun) {
+    if (-not (Test-ReleaseDirIgnored $gitIgnore $ignoreEntry)) {
+      Write-Host "[dry-run] WARNING: '$ignoreEntry' is not in .gitignore. A non-dry-run publish will add it automatically."
+    }
     Dry "Remove-Item -Recurse -Force $ReleaseDir; New-Item -ItemType Directory $ReleaseDir"
     Dry "Copy-Item -Recurse $SrcDir\* $ReleaseDir"
     Dry "tmpDir = New-TemporaryFile + mkdir; Copy-Item -Recurse $ReleaseDir\* tmpDir"
@@ -166,6 +181,11 @@ if ($Visibility -eq "open-source") {
   if ($gitStatusOutput) {
     $dirty = $true
     git stash | Out-Null
+  }
+
+  if (-not (Test-ReleaseDirIgnored $gitIgnore $ignoreEntry)) {
+    Write-Host "WARNING: '$ignoreEntry' is not in .gitignore. Adding it now to prevent release artifacts from being committed."
+    Add-Content -Path $gitIgnore -Value $ignoreEntry
   }
 
   # Populate release staging dir using platform-safe paths

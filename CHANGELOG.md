@@ -4,7 +4,12 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased] - 2026-03-15
 
-This section captures the changes currently on `dev` relative to `main`.
+### Changed
+
+- `forge-publish.sh` and `forge-publish.ps1` now warn on missing `release_dir` ignores during dry runs and automatically add the ignore entry during real open-source publishes.
+- Documented FORGE version examples now use `0.1.1`.
+
+## [0.1.0] - 2026-03-15
 
 ### Added
 
@@ -24,8 +29,3 @@ This section captures the changes currently on `dev` relative to `main`.
 - Clarified FORGE template behavior around Mid mode and automatic generation rules.
 - Added an invariants block to the FORGE execution template.
 - Restructured the memory template for easier retrieval and reuse across sessions.
-
-### Notes
-
-- No existing changelog or release-notes file was present before this addition.
-- If these changes are merged to `main` as a release, rename this section to the release version and date.
