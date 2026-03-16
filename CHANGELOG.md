@@ -9,6 +9,10 @@ All notable changes to this repository will be documented in this file.
 - `forge-publish.sh` and `forge-publish.ps1` now warn on missing `release_dir` ignores during dry runs and automatically add the ignore entry during real open-source publishes.
 - Documented FORGE version examples now use `0.1.1`.
 
+### Added
+
+- Added an open-source collaboration proposal covering `publish_strategy`, public PR intake, and history-preserving public publishing for community-driven tool projects.
+
 ## [0.1.0] - 2026-03-15
 
 ### Added

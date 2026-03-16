@@ -133,3 +133,4 @@ Four principles:
 - [Execution Model](philosophy/execution-model.md) - why the workflow is designed the way it is
 - [Modes](philosophy/modes.md) - documentation requirements across the four modes
 - [Maturity Model](philosophy/maturity-model.md) - six-level progression from ad hoc prompting to full disciplined orchestration
+- [Open Source Collaboration Proposal](philosophy/open-source-collaboration.md) - proposed workflow for accepting public contributions while keeping private governance
