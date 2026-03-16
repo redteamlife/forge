@@ -105,6 +105,7 @@ Print-Step "Reading forge.yaml"
 
 $Project    = Get-YamlValue  $ForgeYaml "project"
 $Visibility = Get-YamlValue  $ForgeYaml "visibility"
+$PublishStrategy = Get-YamlValue $ForgeYaml "publish_strategy"
 $SrcDir     = Get-YamlValue  $ForgeYaml "src_dir"
 $ReleaseDir = Get-YamlValue  $ForgeYaml "release_dir"
 $PublicRepo = Get-YamlNested $ForgeYaml "repos" "public"
@@ -118,6 +119,10 @@ foreach ($field in @{project=$Project; visibility=$Visibility; src_dir=$SrcDir; 
 
 Write-Host "  project    : $Project"
 Write-Host "  visibility : $Visibility"
+if ($Visibility -eq "open-source") {
+  if ([string]::IsNullOrWhiteSpace($PublishStrategy)) { $PublishStrategy = "snapshot-force-push" }
+  Write-Host "  strategy   : $PublishStrategy"
+}
 Write-Host "  src_dir    : $SrcDir"
 Write-Host "  release_dir: $ReleaseDir"
 Write-Host "  public repo: $PublicRepo"
@@ -158,6 +163,11 @@ if ($Visibility -eq "open-source") {
   $remoteUrl = git remote get-url public
   $gitIgnore = Join-Path $RepoRoot ".gitignore"
   $ignoreEntry = "$($ReleaseDir.TrimEnd('/','\'))/"
+  if ([string]::IsNullOrWhiteSpace($PublishStrategy)) { $PublishStrategy = "snapshot-force-push" }
+  if ($PublishStrategy -notin @("snapshot-force-push", "preserve-history")) {
+    Write-Error "Unknown publish_strategy '$PublishStrategy'. Must be 'snapshot-force-push' or 'preserve-history'."
+    exit 1
+  }
 
   if ($DryRun) {
     if (-not (Test-ReleaseDirIgnored $gitIgnore $ignoreEntry)) {
@@ -165,10 +175,19 @@ if ($Visibility -eq "open-source") {
     }
     Dry "Remove-Item -Recurse -Force $ReleaseDir; New-Item -ItemType Directory $ReleaseDir"
     Dry "Copy-Item -Recurse $SrcDir\* $ReleaseDir"
-    Dry "tmpDir = New-TemporaryFile + mkdir; Copy-Item -Recurse $ReleaseDir\* tmpDir"
-    Dry "cd tmpDir; git init; git add .; git commit -m 'release: publish $Project'"
-    Dry "git remote add public $remoteUrl"
-    Dry "git push public main --force"
+    Dry "tmpDir = New-TemporaryFile + mkdir"
+    if ($PublishStrategy -eq "snapshot-force-push") {
+      Dry "Copy-Item -Recurse $ReleaseDir\* tmpDir"
+      Dry "cd tmpDir; git init; git add .; git commit -m 'release: publish $Project'"
+      Dry "git remote add public $remoteUrl"
+      Dry "git push public main --force"
+    } else {
+      Dry "cd tmpDir; git init; git remote add public $remoteUrl"
+      Dry "git fetch public main; git checkout -B main FETCH_HEAD"
+      Dry "clear tmpDir working tree and copy $ReleaseDir into it"
+      Dry "git add -A; git commit -m 'release: publish $Project'"
+      Dry "git push public main"
+    }
     Dry "Remove-Item -Recurse -Force tmpDir"
     Write-Host ""
     Write-Host "[dry-run] Open source publish complete — no changes made."
@@ -192,6 +211,7 @@ if ($Visibility -eq "open-source") {
   if (Test-Path $ReleaseDir) { Remove-Item -Recurse -Force $ReleaseDir }
   New-Item -ItemType Directory -Path $ReleaseDir -Force | Out-Null
   Get-ChildItem -Path $SrcDir | Copy-Item -Destination $ReleaseDir -Recurse -Force
+  $releaseDirAbs = (Resolve-Path $ReleaseDir).Path
 
   # Resolve FORGE mode from AI.md for commit trailer
   $forgeMode = "Mid"
@@ -201,24 +221,49 @@ if ($Visibility -eq "open-source") {
     if ($modeLine) { $forgeMode = ($modeLine.Line -split ":\s*")[1].Trim() }
   }
 
-  # Build a fresh isolated repo from only the release content and push it.
-  # This guarantees nothing from the dev repo leaks into the public repo.
   $tmpRelease = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+  $published = $false
+  $hadPublishableChanges = $false
   New-Item -ItemType Directory -Path $tmpRelease -Force | Out-Null
 
   try {
-    Get-ChildItem -Path $ReleaseDir | Copy-Item -Destination $tmpRelease -Recurse -Force
-
     Push-Location $tmpRelease
     try {
       git init | Out-Null
-      git symbolic-ref HEAD refs/heads/main
-      git add .
-      git commit -m "release: publish $Project`n`nFORGE-mode: $forgeMode`nFORGE-task: RELEASE`nFORGE-gate: pass"
       git remote add public $remoteUrl
 
-      Print-Step "Pushing to public/$PublicRepo main"
-      git push public main --force
+      if ($PublishStrategy -eq "snapshot-force-push") {
+        git symbolic-ref HEAD refs/heads/main
+        Get-ChildItem -Path $releaseDirAbs | Copy-Item -Destination $tmpRelease -Recurse -Force
+      } else {
+        $null = git ls-remote --exit-code public refs/heads/main 2>$null
+        if ($LASTEXITCODE -eq 0) {
+          git fetch public main | Out-Null
+          git checkout -B main FETCH_HEAD | Out-Null
+        } else {
+          git symbolic-ref HEAD refs/heads/main
+        }
+
+        Get-ChildItem -Force -Path $tmpRelease | Where-Object { $_.Name -ne ".git" } | Remove-Item -Recurse -Force
+        Get-ChildItem -Path $releaseDirAbs | Copy-Item -Destination $tmpRelease -Recurse -Force
+      }
+
+      git add -A
+      git diff --cached --quiet
+      if ($LASTEXITCODE -eq 0) {
+        $hadPublishableChanges = $false
+      } else {
+        $hadPublishableChanges = $true
+        git commit -m "release: publish $Project`n`nFORGE-mode: $forgeMode`nFORGE-task: RELEASE`nFORGE-gate: pass"
+
+        Print-Step "Pushing to public/$PublicRepo main"
+        if ($PublishStrategy -eq "snapshot-force-push") {
+          git push public main --force
+        } else {
+          git push public main
+        }
+        $published = $true
+      }
     } finally {
       Pop-Location
     }
@@ -231,7 +276,11 @@ if ($Visibility -eq "open-source") {
   }
 
   Write-Host ""
-  Write-Host "Published $Project to public repo: $PublicRepo"
+  if ($published) {
+    Write-Host "Published $Project to public repo: $PublicRepo"
+  } elseif (-not $hadPublishableChanges) {
+    Write-Host "No publishable changes detected for $PublicRepo."
+  }
 
 } elseif ($Visibility -eq "closed-source") {
 

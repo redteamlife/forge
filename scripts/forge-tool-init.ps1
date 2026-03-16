@@ -171,6 +171,7 @@ project: $ToolName
 type: $ToolType
 
 visibility: open-source
+publish_strategy: preserve-history
 
 src_dir: src
 release_dir: release
@@ -212,9 +213,9 @@ Write-Host "  Created: forge.yaml"
 # Copy publish scripts
 # ---------------------------------------------------------------------------
 
-Print-Step "Copying release scripts"
+Print-Step "Copying tool workflow scripts"
 
-foreach ($script in @("forge-publish.sh", "forge-publish.ps1")) {
+foreach ($script in @("forge-publish.sh", "forge-publish.ps1", "forge-sync-public.sh", "forge-sync-public.ps1")) {
   $src = Join-Path $ForgeScriptDir $script
   if (Test-Path $src) {
     Copy-Item $src (Join-Path $TargetDir "scripts" | Join-Path -ChildPath $script)
@@ -236,6 +237,8 @@ $readme = @"
 This project uses [FORGE](https://github.com/redteamlife/forge) for AI-assisted development governance.
 
 All development occurs in this repository. Releases are published to ``$PublicRepo`` via ``./scripts/forge-publish.sh`` or ``.\scripts\forge-publish.ps1``.
+
+For open-source tools, accepted public pull requests can be imported back into this repo with ``./scripts/forge-sync-public.sh`` or ``.\scripts\forge-sync-public.ps1``.
 "@
 
 Set-Content -Path (Join-Path $TargetDir "README.md") -Value $readme -Encoding UTF8

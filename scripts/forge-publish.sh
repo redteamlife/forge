@@ -87,6 +87,7 @@ print_step "Reading forge.yaml"
 
 PROJECT="$(yaml_get "$FORGE_YAML" project)"
 VISIBILITY="$(yaml_get "$FORGE_YAML" visibility)"
+PUBLISH_STRATEGY="$(yaml_get "$FORGE_YAML" publish_strategy)"
 SRC_DIR="$(yaml_get "$FORGE_YAML" src_dir)"
 RELEASE_DIR="$(yaml_get "$FORGE_YAML" release_dir)"
 PUBLIC_REPO="$(yaml_nested "$FORGE_YAML" repos public)"
@@ -98,6 +99,9 @@ fi
 
 echo "  project    : $PROJECT"
 echo "  visibility : $VISIBILITY"
+if [[ "$VISIBILITY" == "open-source" ]]; then
+  echo "  strategy   : ${PUBLISH_STRATEGY:-snapshot-force-push}"
+fi
 echo "  src_dir    : $SRC_DIR"
 echo "  release_dir: $RELEASE_DIR"
 echo "  public repo: $PUBLIC_REPO"
@@ -134,6 +138,12 @@ if [[ "$VISIBILITY" == "open-source" ]]; then
   REMOTE_URL="$(git remote get-url public)"
   GITIGNORE="$REPO_ROOT/.gitignore"
   RELEASE_IGNORE_ENTRY="${RELEASE_DIR%/}/"
+  PUBLISH_STRATEGY="${PUBLISH_STRATEGY:-snapshot-force-push}"
+
+  if [[ "$PUBLISH_STRATEGY" != "snapshot-force-push" && "$PUBLISH_STRATEGY" != "preserve-history" ]]; then
+    echo "ERROR: Unknown publish_strategy '$PUBLISH_STRATEGY'. Must be 'snapshot-force-push' or 'preserve-history'." >&2
+    exit 1
+  fi
 
   if [[ "$DRY_RUN" == true ]]; then
     if ! release_dir_ignore_present "$GITIGNORE" "$RELEASE_IGNORE_ENTRY"; then
@@ -142,10 +152,18 @@ if [[ "$VISIBILITY" == "open-source" ]]; then
     dry "rm -rf $RELEASE_DIR && mkdir -p $RELEASE_DIR"
     dry "cp -r $SRC_DIR/. $RELEASE_DIR/"
     dry "TMPDIR=\$(mktemp -d)"
-    dry "cp -r $RELEASE_DIR/. \$TMPDIR/"
-    dry "cd \$TMPDIR && git init && git add . && git commit -m 'release: publish $PROJECT'"
-    dry "git remote add public $REMOTE_URL"
-    dry "git push public HEAD:main --force"
+    if [[ "$PUBLISH_STRATEGY" == "snapshot-force-push" ]]; then
+      dry "cp -r $RELEASE_DIR/. \$TMPDIR/"
+      dry "cd \$TMPDIR && git init && git add . && git commit -m 'release: publish $PROJECT'"
+      dry "git remote add public $REMOTE_URL"
+      dry "git push public HEAD:main --force"
+    else
+      dry "cd \$TMPDIR && git init && git remote add public $REMOTE_URL"
+      dry "git fetch public main && git checkout -B main FETCH_HEAD"
+      dry "rm -rf \$TMPDIR/* and copy $RELEASE_DIR into the working tree"
+      dry "git add -A && git commit -m 'release: publish $PROJECT'"
+      dry "git push public main"
+    fi
     dry "rm -rf \$TMPDIR"
     echo ""
     echo "[dry-run] Open source publish complete — no changes made."
@@ -174,29 +192,55 @@ if [[ "$VISIBILITY" == "open-source" ]]; then
   rm -rf "$RELEASE_DIR"
   mkdir -p "$RELEASE_DIR"
   cp -r "$SRC_DIR/." "$RELEASE_DIR/"
+  RELEASE_DIR_ABS="$REPO_ROOT/${RELEASE_DIR%/}"
 
-  # Build a fresh isolated repo from only the release content and push it.
-  # This guarantees nothing from the dev repo leaks into the public repo.
   TMPDIR_RELEASE="$(mktemp -d)"
   trap 'rm -rf "$TMPDIR_RELEASE"' EXIT
-
-  cp -r "$RELEASE_DIR/." "$TMPDIR_RELEASE/"
 
   FORGE_MODE="$(grep -E '^FORGE_mode:' "$(pwd)/docs/forge/AI.md" 2>/dev/null | head -1 | awk '{print $2}' || echo 'Mid')"
 
   pushd "$TMPDIR_RELEASE" > /dev/null
   git init
-  git symbolic-ref HEAD refs/heads/main
-  git add .
+  git remote add public "$REMOTE_URL"
+
+  if [[ "$PUBLISH_STRATEGY" == "snapshot-force-push" ]]; then
+    cp -r "$RELEASE_DIR_ABS/." "$TMPDIR_RELEASE/"
+    git symbolic-ref HEAD refs/heads/main
+  else
+    if git ls-remote --exit-code public refs/heads/main >/dev/null 2>&1; then
+      git fetch public main
+      git checkout -B main FETCH_HEAD
+    else
+      git symbolic-ref HEAD refs/heads/main
+    fi
+
+    find "$TMPDIR_RELEASE" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+    cp -r "$RELEASE_DIR_ABS/." "$TMPDIR_RELEASE/"
+  fi
+
+  git add -A
+  if git diff --cached --quiet; then
+    popd > /dev/null
+    if [[ "$DIRTY" == true ]]; then
+      git stash pop || true
+    fi
+    echo ""
+    echo "No publishable changes detected for $PUBLIC_REPO."
+    exit 0
+  fi
+
   git commit -m "release: publish $PROJECT
 
 FORGE-mode: $FORGE_MODE
 FORGE-task: RELEASE
 FORGE-gate: pass"
-  git remote add public "$REMOTE_URL"
 
   print_step "Pushing to public/$PUBLIC_REPO main"
-  git push public main --force
+  if [[ "$PUBLISH_STRATEGY" == "snapshot-force-push" ]]; then
+    git push public main --force
+  else
+    git push public main
+  fi
   popd > /dev/null
 
   # Restore stashed dev work

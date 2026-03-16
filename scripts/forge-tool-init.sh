@@ -151,6 +151,7 @@ project: $TOOL_NAME
 type: $TOOL_TYPE
 
 visibility: open-source
+publish_strategy: preserve-history
 
 src_dir: src
 release_dir: release
@@ -191,9 +192,9 @@ echo "  Created: forge.yaml"
 # Copy publish scripts
 # ---------------------------------------------------------------------------
 
-print_step "Copying release scripts"
+print_step "Copying tool workflow scripts"
 
-for script in forge-publish.sh forge-publish.ps1; do
+for script in forge-publish.sh forge-publish.ps1 forge-sync-public.sh forge-sync-public.ps1; do
   if [[ -f "$FORGE_ROOT/scripts/$script" ]]; then
     cp "$FORGE_ROOT/scripts/$script" "$TARGET_DIR/scripts/$script"
     echo "  Copied: scripts/$script"
@@ -214,6 +215,8 @@ cat > "$TARGET_DIR/README.md" <<EOF
 This project uses [FORGE](https://github.com/redteamlife/forge) for AI-assisted development governance.
 
 All development occurs in this repository. Releases are published to \`$PUBLIC_REPO\` via \`./scripts/forge-publish.sh\`.
+
+For open-source tools, accepted public pull requests can be imported back into this repo with \`./scripts/forge-sync-public.sh\`.
 EOF
 
 # ---------------------------------------------------------------------------
