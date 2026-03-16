@@ -69,6 +69,7 @@ Start at Lightweight. Move up when you need more.
 ## Getting Started
 
 See [GETTING_STARTED.md](GETTING_STARTED.md) for a full walkthrough.
+See [CHANGELOG.md](CHANGELOG.md) for a summary of changes across releases and unreleased branch work.
 
 **Quick version:**
 
