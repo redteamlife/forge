@@ -95,6 +95,7 @@ Scaffold a new tool project with
  `scripts/forge-tool-init.ps1` (Windows).
 
 Publish releases with `scripts/forge-publish.sh` / `scripts/forge-publish.ps1`.
+Import accepted public PRs back into private dev with `scripts/forge-sync-public.sh` / `scripts/forge-sync-public.ps1`.
 
 See [GETTING_STARTED.md](GETTING_STARTED.md) for the full walkthrough.
 

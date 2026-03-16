@@ -10,6 +10,12 @@
 #   closed-source — compiled binaries are uploaded as GitHub Release assets;
 #                   source code never leaves the private dev repo
 #
+# Open-source tools may also choose how publishing behaves:
+#
+#   snapshot-force-push — replaces public main from release_dir
+#   preserve-history    — publishes on top of public history and supports
+#                         normal outside pull requests
+#
 # Select the template below that matches your tool's visibility model and
 # remove the other.
 
@@ -22,6 +28,7 @@ project: ToolName           # Name of the tool (no spaces)
 type: web-tool              # One of: web-tool | cli-tool | script
 
 visibility: open-source
+publish_strategy: preserve-history
 
 src_dir: src                # Source artifacts to copy into release/
 release_dir: release        # Staging directory populated by forge-publish

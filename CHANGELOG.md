@@ -8,10 +8,13 @@ All notable changes to this repository will be documented in this file.
 
 - `forge-publish.sh` and `forge-publish.ps1` now warn on missing `release_dir` ignores during dry runs and automatically add the ignore entry during real open-source publishes.
 - Documented FORGE version examples now use `0.1.1`.
+- Open-source tool scaffolding and workflow docs now support `publish_strategy`, defaulting new collaborative projects to `preserve-history`.
+- Open-source publish scripts now support both `snapshot-force-push` and `preserve-history`.
 
 ### Added
 
 - Added an open-source collaboration proposal covering `publish_strategy`, public PR intake, and history-preserving public publishing for community-driven tool projects.
+- Added `forge-sync-public.sh` and `forge-sync-public.ps1` for importing merged public PRs back into the private dev repo as intake work.
 
 ## [0.1.0] - 2026-03-15
 

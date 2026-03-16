@@ -278,6 +278,11 @@ The workflow supports two visibility models:
 - **Open source** — source code is published to a separate public repository
 - **Closed source** — compiled binaries are published as GitHub Release assets; source never leaves the private dev repo
 
+For open-source tools, FORGE now supports two publish strategies:
+
+- **`preserve-history`** — recommended default; keeps public repo history intact so outside PRs can be merged normally
+- **`snapshot-force-push`** — maintainer-only release mirror mode; replaces public `main` from the private release snapshot
+
 **To scaffold a new tool project:**
 
 ```bash
@@ -288,7 +293,7 @@ The workflow supports two visibility models:
 .\scripts\forge-tool-init.ps1 -ToolName ToolName
 ```
 
-The script creates a `ToolName-dev/` directory with the full FORGE document set, a `forge.yaml` configuration file, and a `release/` staging area. It optionally creates both GitHub repositories and configures remotes.
+The script creates a `ToolName-dev/` directory with the full FORGE document set, a `forge.yaml` configuration file, a `release/` staging area, and helper scripts for both publishing and pulling accepted public PRs back into private development. It optionally creates both GitHub repositories and configures remotes.
 
 **To publish a release:**
 
@@ -301,5 +306,17 @@ The script creates a `ToolName-dev/` directory with the full FORGE document set,
 ```
 
 For closed-source tools, pass a `--tag` / `-Tag` argument (e.g. `--tag v1.0.0`). Binaries are uploaded as GitHub Release assets via the `gh` CLI — nothing is committed to the public repo.
+
+For open-source tools using the default `preserve-history` strategy, accepted public PRs can be imported into the private dev repo with:
+
+```bash
+./scripts/forge-sync-public.sh --pr 123
+```
+
+Or on Windows:
+
+```powershell
+.\scripts\forge-sync-public.ps1 -Pr 123
+```
 
 The full workflow reference is in `docs/forge/TOOL_WORKFLOW.md` inside each scaffolded project, and the `forge.yaml` configuration schema is in `templates/forge.yaml.template`.
