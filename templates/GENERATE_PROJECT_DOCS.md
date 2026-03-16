@@ -89,7 +89,7 @@ If a `forge.yaml` file is present in the project root, this project is using the
 In AI.md, you must include a valid configuration block:
 
 ```FORGE-config
-forge_version: 0.1.0
+forge_version: 0.1.1
 FORGE_mode: <Lightweight | Mid | Strict | Full Discipline>
 execution_mode: <manual | batch | auto>
 batch_size: <integer if execution_mode = batch>

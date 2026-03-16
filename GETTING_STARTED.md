@@ -97,7 +97,7 @@ You can delete the `templates/` folder after generation if you want a cleaner pr
 Open `docs/forge/AI.md`. At the top you'll see the config block:
 
 ```text
-forge_version: 0.1.0
+forge_version: 0.1.1
 FORGE_mode: Lightweight
 execution_mode: manual
 ```
