@@ -21,6 +21,12 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      - name: Block forge docs in main
+        run: bash ci/scripts/block-forge-in-main.sh
+
+      - name: Validate generated documentation
+        run: bash ci/scripts/validate-generated-docs.sh
+
       - name: Validate commit message format
         run: bash ci/scripts/validate-commit-format.sh
 
@@ -29,3 +35,6 @@ jobs:
 
       - name: Validate evidence artifacts
         run: bash ci/scripts/validate-evidence-artifacts.sh
+
+      - name: Validate file scope
+        run: bash ci/scripts/validate-file-scope.sh

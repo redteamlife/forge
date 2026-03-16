@@ -1,0 +1,57 @@
+# forge.yaml — Tool project configuration for FORGE tool development workflow.
+#
+# This file is read by forge-tool-init.sh / forge-tool-init.ps1 and
+# forge-publish.sh / forge-publish.ps1. It is NOT read by the AI agent at
+# runtime. AI governance configuration lives in docs/forge/AI.md (FORGE-config).
+#
+# Two visibility models are supported:
+#
+#   open-source   — source code is published to the public repo
+#   closed-source — compiled binaries are uploaded as GitHub Release assets;
+#                   source code never leaves the private dev repo
+#
+# Select the template below that matches your tool's visibility model and
+# remove the other.
+
+# ---------------------------------------------------------------------------
+# OPEN SOURCE TOOL
+# ---------------------------------------------------------------------------
+
+project: ToolName           # Name of the tool (no spaces)
+
+type: web-tool              # One of: web-tool | cli-tool | script
+
+visibility: open-source
+
+src_dir: src                # Source artifacts to copy into release/
+release_dir: release        # Staging directory populated by forge-publish
+
+docs_dir: docs/forge        # Location of FORGE governance documents
+
+repos:
+  dev: ToolName-dev         # Private development repository name
+  public: ToolName          # Public release repository name
+
+
+# ---------------------------------------------------------------------------
+# CLOSED SOURCE TOOL  (replace the block above with this one)
+# ---------------------------------------------------------------------------
+
+# project: ToolName
+#
+# type: cli-tool            # One of: web-tool | cli-tool | script
+#
+# visibility: closed-source
+#
+# src_dir: src
+# release_dir: release
+# docs_dir: docs/forge
+#
+# build_output:             # Paths to compiled binaries, relative to project root.
+#   - bin/toolname-linux    # forge-publish uploads each as a GitHub Release asset.
+#   - bin/toolname-macos
+#   - bin/toolname-win.exe
+#
+# repos:
+#   dev: ToolName-dev
+#   public: ToolName

@@ -4,6 +4,28 @@ This document is the execution authority. If any instruction conflicts with this
 
 FORGE documents are co-located under `docs/forge/` in the project root unless explicitly overridden by project policy.
 
+---
+
+## Invariants
+
+These rules apply unconditionally at every moment of execution, regardless of step, mode, or context. Check all invariants before starting and verify you are not violating any of them before each action.
+
+**I1 - Branch:** Never execute on `main` or a detached HEAD unless project policy explicitly permits detached HEAD.
+
+**I2 - Required documents:** Never proceed without all documents required by the active mode present and consistent.
+
+**I3 - One task:** Never implement more than the single selected task per invocation. Never begin a second task before all gates for the current task are satisfied and committed.
+
+**I4 - File scope:** Never modify files outside the task's declared `file_scope`. If no `file_scope` is declared, limit changes to what the task explicitly requires.
+
+**I5 - Commit discipline:** Never commit without passing critique, security review, and evaluation gate. Never commit without the required FORGE trailers. Never bundle unrelated task work in a single commit.
+
+**I6 - Hard stops are unconditional:** When a hard stop condition is met, stop immediately. Do not attempt to work around it. Record the blocking condition and escalate.
+
+If you cannot verify that all invariants are satisfied, stop and escalate before proceeding.
+
+---
+
 ## 1. Definitions
 
 - `FORGE_mode`: governance level declared in `AI.md` - `Lightweight` | `Mid` | `Strict` | `Full Discipline`
@@ -15,6 +37,7 @@ FORGE documents are co-located under `docs/forge/` in the project root unless ex
 
 Parse the `FORGE-config` block in `AI.md`. Extract and validate:
 
+- `forge_version` - records which version of the FORGE framework this project uses; informational, no hard validation required
 - `FORGE_mode` - must be one of the four valid values
 - `execution_mode` - must be `manual`, `batch`, or `auto`
 - `batch_size` - must be a positive integer if `execution_mode: batch`
@@ -37,7 +60,7 @@ Validate document **presence** before task selection. Defer reading document **c
 
 **All modes:** `AI.md`, `FORGE.md`, `TASKS.yaml`
 
-**Mid and above:** `ARCHITECTURE.md`, `TEST_STRATEGY.md`, `EVALUATION.md`, `MEMORY.md`
+**Mid and above:** `ARCHITECTURE.md`, `TEST_STRATEGY.md`, `EVALUATION.md`, `MEMORY.md`, `SECURITY_CHECKLISTS.md`
 
 **Strict and above:** `ARCHITECTURE_EXPLORATION.md`, `REVIEW_GUIDE.md`, `ROADMAP.md`
 
@@ -51,6 +74,8 @@ Parse `TASKS.yaml`. Eligible tasks must have a non-empty `id`, non-empty `descri
 
 `acceptance_criteria` and `scope_boundary` do not affect eligibility in Lightweight or Mid mode. In Strict mode they are encouraged. In Full Discipline mode they are required for eligibility.
 
+`file_scope` declares which directories or files a task is allowed to modify. It is optional but encouraged in Mid (manual execution). When `execution_mode: auto` is active at Mid, `file_scope` is strongly recommended and expected for all tasks — without explicit scope boundaries, unbounded auto iteration carries higher drift risk. It is required in Full Discipline. When declared, it is enforced by the CI pipeline via `validate-file-scope.sh`. The implementing agent must not modify files outside declared `file_scope`.
+
 Select tasks in file order unless project policy defines a deterministic alternative. If no eligible tasks exist, stop with `no_remaining_tasks`.
 
 ## 6. Execution Mode Behavior
@@ -59,15 +84,15 @@ Select tasks in file order unless project policy defines a deterministic alterna
 
 **Batch:** Select up to `batch_size` eligible tasks. Execute sequentially. Apply full per-task workflow. Stop immediately on any hard stop.
 
-**Auto** _(Strict+)_**:** Enforce single-task bounded execution internally. Iterate without reinvocation only while all gates pass. Stop immediately on any failed gate, escalation, or policy conflict.
+**Auto:** Enforce single-task bounded execution internally. Iterate without reinvocation only while all gates pass. Stop immediately on any failed gate, escalation, or policy conflict. Hard stops remain unconditional regardless of mode level. Auto is available at any FORGE_mode; teams operating at Lightweight or Mid with auto accept that fewer gates are enforced and must match mode to their actual risk tolerance.
 
 ## 7. Single-Task Implementation Workflow
 
 ### Step 7.0 - Memory Query
 
-If `MEMORY.md` is present, read it now. Search for patterns, failures, or lessons relevant to the active task's component, domain, or change type. Note how any relevant entries inform approach or constraints. Skip if `MEMORY.md` is absent and not required by the active mode.
+If `MEMORY.md` is present, read it now. Start with the **Recent Patterns** and **Recent Failures** sections at the top, which contain the highest-signal recent entries. If the active task's component or domain matches entries in those sections, read the corresponding full entries in Pattern Tracking or Failure Tracking for detail. Note how any relevant entries inform approach or constraints.
 
-This step applies at all modes whenever `MEMORY.md` exists.
+Skip if `MEMORY.md` is absent and not required by the active mode. This step applies at all modes whenever `MEMORY.md` exists.
 
 ### Step 7.1 - Pre-Implementation Alignment Check
 
@@ -79,6 +104,8 @@ This step applies at all modes whenever `MEMORY.md` exists.
 ### Step 7.2 - Implement Only the Selected Task
 
 Limit changes to what the active task requires. Do not include unrelated work. Do not begin a second task before all gates for the current task are satisfied.
+
+If the task declares `file_scope`, do not modify any files outside the listed paths. The CI pipeline will reject commits that violate declared scope.
 
 ### Step 7.3 - Update Task-Related Documentation
 
@@ -98,15 +125,19 @@ Resolve blocking issues within task bounds or escalate. Do not proceed with know
 
 ## 9. Security Review Pass
 
-Perform a security-focused review, scaled to mode and risk.
+Perform a security-focused review using `SECURITY_CHECKLISTS.md`. Select the checklist matching the task's `task_type` field and apply it alongside the General checklist. If no `task_type` is declared, apply the General checklist only.
 
-- Trust boundary impact assessed
-- Sensitive data handling unchanged or explicitly reviewed
-- New permissions, access paths, or privileged behaviors reviewed
-- Input/output and integration risks reviewed
-- Unsafe assumptions recorded and escalated
+Every checklist item must receive an explicit outcome (`pass`, `n/a`, or an escalation note). Free-form narrative does not satisfy the security review. Record completed checklist results in `EVALUATION.md`.
 
-If unresolved security concerns exist, hard stop and escalate.
+Core areas the checklists cover:
+
+- Trust boundary impact
+- Sensitive data handling
+- New permissions, access paths, or privileged behaviors
+- Input validation and output filtering
+- Integration and dependency risks
+
+If any checklist item raises an unresolved concern, hard stop and escalate before proceeding to the evaluation gate.
 
 ## 10. Evaluation Gate
 
@@ -121,13 +152,13 @@ If gate fails: keep task `incomplete`, record failure reason, stop or continue p
 
 ## 11. Memory Update
 
-Update `MEMORY.md` after each task attempt.
+Update `MEMORY.md` after each task attempt following the maintenance instructions at the bottom of `MEMORY.md`.
 
-**On success:** record useful patterns, risks avoided, review or testing lessons.
+**On success:** add a brief summary to Recent Patterns and a full entry to Pattern Tracking. Record useful patterns, risks avoided, review or testing lessons.
 
-**On failure or escalation:** record failure mode, guardrail or documentation gap, recommended refinement.
+**On failure or escalation:** add a brief summary to Recent Failures and a full entry to Failure Tracking. Record the failure mode, any guardrail or documentation gap, and a recommended refinement.
 
-Updates must be concise, factual, and attributable to the task.
+Updates must be concise, factual, and attributable to the task. Include the `component` and `task` tags in the Recent sections to make future retrieval efficient.
 
 ## 12. Commit-Per-Task Enforcement
 
