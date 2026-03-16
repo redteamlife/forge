@@ -44,6 +44,13 @@ require_cmd() {
   fi
 }
 
+release_dir_ignore_present() {
+  local gitignore="$1" ignore_entry="$2"
+  [[ -f "$gitignore" ]] && {
+    grep -qxF "$ignore_entry" "$gitignore" || grep -qxF "/$ignore_entry" "$gitignore"
+  }
+}
+
 # ---------------------------------------------------------------------------
 # Minimal forge.yaml parser
 # Extracts top-level scalar values and list items.
@@ -100,6 +107,7 @@ echo "  public repo: $PUBLIC_REPO"
 # ---------------------------------------------------------------------------
 
 require_cmd git
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 if [[ "$VISIBILITY" == "open-source" ]]; then
 
@@ -124,8 +132,13 @@ if [[ "$VISIBILITY" == "open-source" ]]; then
   fi
 
   REMOTE_URL="$(git remote get-url public)"
+  GITIGNORE="$REPO_ROOT/.gitignore"
+  RELEASE_IGNORE_ENTRY="${RELEASE_DIR%/}/"
 
   if [[ "$DRY_RUN" == true ]]; then
+    if ! release_dir_ignore_present "$GITIGNORE" "$RELEASE_IGNORE_ENTRY"; then
+      echo "[dry-run] WARNING: '$RELEASE_IGNORE_ENTRY' is not in .gitignore. A non-dry-run publish will add it automatically."
+    fi
     dry "rm -rf $RELEASE_DIR && mkdir -p $RELEASE_DIR"
     dry "cp -r $SRC_DIR/. $RELEASE_DIR/"
     dry "TMPDIR=\$(mktemp -d)"
@@ -144,6 +157,17 @@ if [[ "$VISIBILITY" == "open-source" ]]; then
   if ! git diff --quiet || ! git diff --staged --quiet; then
     DIRTY=true
     git stash
+  fi
+
+  if ! release_dir_ignore_present "$GITIGNORE" "$RELEASE_IGNORE_ENTRY"; then
+    echo "WARNING: '$RELEASE_IGNORE_ENTRY' is not in .gitignore. Adding it now to prevent release artifacts from being committed."
+    if [[ -f "$GITIGNORE" && -s "$GITIGNORE" ]]; then
+      LAST_CHAR="$(tail -c 1 "$GITIGNORE" 2>/dev/null || true)"
+      if [[ "$LAST_CHAR" != "" && "$LAST_CHAR" != $'\n' ]]; then
+        printf '\n' >> "$GITIGNORE"
+      fi
+    fi
+    printf '%s\n' "$RELEASE_IGNORE_ENTRY" >> "$GITIGNORE"
   fi
 
   # Populate release staging dir
