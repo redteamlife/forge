@@ -10,6 +10,8 @@ All notable changes to this repository will be documented in this file.
 - Documented FORGE version examples now use `0.1.1`.
 - Open-source tool scaffolding and workflow docs now support `publish_strategy`, defaulting new collaborative projects to `preserve-history`.
 - Open-source publish scripts now support both `snapshot-force-push` and `preserve-history`.
+- `forge-sync-public` now records `public_sync.last_imported_public_commit` and imports files through explicit `sync_map` rules instead of blunt path rewriting.
+- `preserve-history` publish now blocks if public `main` contains merged non-release commits that were not first imported into private dev.
 
 ### Added
 
