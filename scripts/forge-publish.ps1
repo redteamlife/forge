@@ -164,9 +164,39 @@ if ($Visibility -eq "open-source") {
   $gitIgnore = Join-Path $RepoRoot ".gitignore"
   $ignoreEntry = "$($ReleaseDir.TrimEnd('/','\'))/"
   if ([string]::IsNullOrWhiteSpace($PublishStrategy)) { $PublishStrategy = "snapshot-force-push" }
+  $publicSyncRequired = Get-YamlNested $ForgeYaml "public_sync" "required"
+  $lastImportedPublicCommit = (Get-YamlNested $ForgeYaml "public_sync" "last_imported_public_commit").Trim('"')
   if ($PublishStrategy -notin @("snapshot-force-push", "preserve-history")) {
     Write-Error "Unknown publish_strategy '$PublishStrategy'. Must be 'snapshot-force-push' or 'preserve-history'."
     exit 1
+  }
+
+  $null = git ls-remote --exit-code public refs/heads/main 2>$null
+  if ($PublishStrategy -eq "preserve-history" -and $LASTEXITCODE -eq 0) {
+    git fetch public main:refs/remotes/public/main | Out-Null
+    $publicHead = git rev-parse public/main
+    if ($publicSyncRequired -eq "true" -and $lastImportedPublicCommit -ne $publicHead) {
+      $rangeSpec = "public/main"
+      if (-not [string]::IsNullOrWhiteSpace($lastImportedPublicCommit)) {
+        $null = git cat-file -e "$lastImportedPublicCommit^{commit}" 2>$null
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "last_imported_public_commit '$lastImportedPublicCommit' is not present in public/main history."
+          exit 1
+        }
+        git merge-base --is-ancestor $lastImportedPublicCommit public/main
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "last_imported_public_commit '$lastImportedPublicCommit' is not present in public/main history."
+          exit 1
+        }
+        $rangeSpec = "$lastImportedPublicCommit..public/main"
+      }
+
+      $nonReleaseSubjects = git log --format=%s $rangeSpec | Where-Object { $_ -ne "release: publish $Project" }
+      if ($nonReleaseSubjects) {
+        Write-Error "public/main contains merged public changes that have not been imported into private dev.`nRun forge-sync-public before publishing again."
+        exit 1
+      }
+    }
   }
 
   if ($DryRun) {

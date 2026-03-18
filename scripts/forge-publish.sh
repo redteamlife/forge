@@ -139,10 +139,35 @@ if [[ "$VISIBILITY" == "open-source" ]]; then
   GITIGNORE="$REPO_ROOT/.gitignore"
   RELEASE_IGNORE_ENTRY="${RELEASE_DIR%/}/"
   PUBLISH_STRATEGY="${PUBLISH_STRATEGY:-snapshot-force-push}"
+  PUBLIC_SYNC_REQUIRED="$(yaml_nested "$FORGE_YAML" public_sync required)"
+  LAST_IMPORTED_PUBLIC_COMMIT="$(yaml_nested "$FORGE_YAML" public_sync last_imported_public_commit | tr -d '"')"
 
   if [[ "$PUBLISH_STRATEGY" != "snapshot-force-push" && "$PUBLISH_STRATEGY" != "preserve-history" ]]; then
     echo "ERROR: Unknown publish_strategy '$PUBLISH_STRATEGY'. Must be 'snapshot-force-push' or 'preserve-history'." >&2
     exit 1
+  fi
+
+  if [[ "$PUBLISH_STRATEGY" == "preserve-history" ]] && git ls-remote --exit-code public refs/heads/main >/dev/null 2>&1; then
+    git fetch public main:refs/remotes/public/main >/dev/null 2>&1
+    PUBLIC_HEAD="$(git rev-parse public/main)"
+    if [[ "${PUBLIC_SYNC_REQUIRED:-false}" == "true" && "$LAST_IMPORTED_PUBLIC_COMMIT" != "$PUBLIC_HEAD" ]]; then
+      RANGE_SPEC="public/main"
+      if [[ -n "$LAST_IMPORTED_PUBLIC_COMMIT" ]]; then
+        if ! git cat-file -e "${LAST_IMPORTED_PUBLIC_COMMIT}^{commit}" 2>/dev/null || ! git merge-base --is-ancestor "$LAST_IMPORTED_PUBLIC_COMMIT" public/main; then
+          echo "ERROR: last_imported_public_commit '$LAST_IMPORTED_PUBLIC_COMMIT' is not present in public/main history." >&2
+          echo "       Run forge-sync-public to re-establish sync state before publishing." >&2
+          exit 1
+        fi
+        RANGE_SPEC="$LAST_IMPORTED_PUBLIC_COMMIT..public/main"
+      fi
+
+      NON_RELEASE_COUNT="$(git log --format=%s "$RANGE_SPEC" | grep -Fvx "release: publish $PROJECT" | wc -l | tr -d ' ')"
+      if [[ "$NON_RELEASE_COUNT" != "0" ]]; then
+        echo "ERROR: public/main contains merged public changes that have not been imported into private dev." >&2
+        echo "       Run forge-sync-public before publishing again." >&2
+        exit 1
+      fi
+    fi
   fi
 
   if [[ "$DRY_RUN" == true ]]; then
