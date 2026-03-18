@@ -42,6 +42,37 @@ yaml_nested() {
   awk "/^${parent}:/{found=1; next} found && /^  ${key}:/{print \$2; exit} found && !/^  /{found=0}" "$file"
 }
 
+yaml_block_lines() {
+  local file="$1" parent="$2"
+  awk "/^${parent}:/{found=1; next} found && /^  /{print; next} found && !/^  /{found=0}" "$file"
+}
+
+trim_value() {
+  printf '%s' "$1" | sed -E "s/^[[:space:]]+//; s/[[:space:]]+$//; s/^['\"]//; s/['\"]$//"
+}
+
+set_last_imported_commit() {
+  local file="$1" sha="$2"
+  if grep -q '^  last_imported_public_commit:' "$file"; then
+    sed -i -E "s#^  last_imported_public_commit:.*#  last_imported_public_commit: \"$sha\"#" "$file"
+    return
+  fi
+  if grep -q '^public_sync:' "$file"; then
+    awk -v sha="$sha" '
+      /^public_sync:/ { print; print "  last_imported_public_commit: \"" sha "\""; next }
+      { print }
+    ' "$file" > "${file}.tmp"
+    mv "${file}.tmp" "$file"
+    return
+  fi
+  cat >> "$file" <<EOF
+
+public_sync:
+  required: true
+  last_imported_public_commit: "$sha"
+EOF
+}
+
 append_task_stub() {
   local tasks_file="$1" task_id="$2" description="$3"
   if [[ ! -f "$tasks_file" ]]; then
@@ -67,6 +98,16 @@ fi
 VISIBILITY="$(yaml_get "$FORGE_YAML" visibility)"
 SRC_DIR="$(yaml_get "$FORGE_YAML" src_dir)"
 PUBLIC_REPO="$(yaml_nested "$FORGE_YAML" repos public)"
+declare -A SYNC_MAP=()
+
+while IFS= read -r line; do
+  line="${line#  }"
+  key="$(trim_value "${line%%:*}")"
+  value="$(trim_value "${line#*:}")"
+  if [[ -n "$key" && -n "$value" ]]; then
+    SYNC_MAP["$key"]="$value"
+  fi
+done < <(yaml_block_lines "$FORGE_YAML" sync_map)
 
 if [[ "$VISIBILITY" != "open-source" ]]; then
   echo "ERROR: forge-sync-public is only valid for open-source tools." >&2
@@ -115,8 +156,31 @@ echo "Fetching public remote..."
 git fetch public
 
 PARENT_COUNT="$(git show --no-patch --format=%P "$MERGE_COMMIT" | awk '{print NF}')"
-PATCH_FILE="$(mktemp)"
-trap 'rm -f "$PATCH_FILE"' EXIT
+
+resolve_private_path() {
+  local public_path="$1"
+  local mapped="${SYNC_MAP[$public_path]:-}"
+  if [[ -n "$mapped" ]]; then
+    if [[ "$mapped" == */ ]]; then
+      printf '%s%s\n' "$mapped" "${public_path##*/}"
+    else
+      printf '%s\n' "$mapped"
+    fi
+    return 0
+  fi
+
+  local root_map="${SYNC_MAP[.]:-}"
+  if [[ -n "$root_map" ]]; then
+    if [[ "$root_map" == */ ]]; then
+      printf '%s%s\n' "$root_map" "$public_path"
+    else
+      printf '%s/%s\n' "$root_map" "$public_path"
+    fi
+    return 0
+  fi
+
+  return 1
+}
 
 if [[ "$DRY_RUN" == true ]]; then
   echo "[dry-run] Would import $MERGE_COMMIT from $PUBLIC_REPO_FULL into $(git branch --show-current)"
@@ -125,16 +189,79 @@ if [[ "$DRY_RUN" == true ]]; then
   exit 0
 fi
 
+BASE_COMMIT="${MERGE_COMMIT}^"
 if [[ "$PARENT_COUNT" -gt 1 ]]; then
-  git diff "${MERGE_COMMIT}^1" "$MERGE_COMMIT" > "$PATCH_FILE"
-else
-  git diff "${MERGE_COMMIT}^" "$MERGE_COMMIT" > "$PATCH_FILE"
+  BASE_COMMIT="${MERGE_COMMIT}^1"
 fi
 
-sed -E -i "s# a/# a/${SRC_DIR%/}/#g; s# b/# b/${SRC_DIR%/}/#g" "$PATCH_FILE"
-git apply --index "$PATCH_FILE"
+mapfile -t CHANGED_LINES < <(git diff --name-status "$BASE_COMMIT" "$MERGE_COMMIT")
+UNMAPPED=()
+
+for line in "${CHANGED_LINES[@]}"; do
+  IFS=$'\t' read -r status path_one path_two <<< "$line"
+  code="${status%%[0-9]*}"
+  case "$code" in
+    R)
+      resolve_private_path "$path_one" >/dev/null || UNMAPPED+=("$path_one")
+      resolve_private_path "$path_two" >/dev/null || UNMAPPED+=("$path_two")
+      ;;
+    *)
+      resolve_private_path "$path_one" >/dev/null || UNMAPPED+=("$path_one")
+      ;;
+  esac
+done
+
+if [[ ${#UNMAPPED[@]} -gt 0 ]]; then
+  printf 'ERROR: Unmapped public paths in merge %s:\n' "$MERGE_COMMIT" >&2
+  printf '  - %s\n' "${UNMAPPED[@]}" >&2
+  exit 1
+fi
+
+for line in "${CHANGED_LINES[@]}"; do
+  IFS=$'\t' read -r status path_one path_two <<< "$line"
+  code="${status%%[0-9]*}"
+  case "$code" in
+    A|M|T)
+      private_path="$(resolve_private_path "$path_one")"
+      mkdir -p "$(dirname "$private_path")"
+      git show "$MERGE_COMMIT:$path_one" > "$private_path"
+      git add "$private_path"
+      ;;
+    D)
+      private_path="$(resolve_private_path "$path_one")"
+      if git ls-files --error-unmatch "$private_path" >/dev/null 2>&1; then
+        git rm -f "$private_path" >/dev/null 2>&1
+      else
+        rm -f "$private_path"
+      fi
+      ;;
+    R)
+      old_private_path="$(resolve_private_path "$path_one")"
+      new_private_path="$(resolve_private_path "$path_two")"
+      if [[ "$old_private_path" != "$new_private_path" ]]; then
+        if git ls-files --error-unmatch "$old_private_path" >/dev/null 2>&1; then
+          git rm -f "$old_private_path" >/dev/null 2>&1
+        else
+          rm -f "$old_private_path"
+        fi
+      fi
+      mkdir -p "$(dirname "$new_private_path")"
+      git show "$MERGE_COMMIT:$path_two" > "$new_private_path"
+      git add "$new_private_path"
+      ;;
+    *)
+      echo "ERROR: Unsupported git diff status '$status' for $line" >&2
+      exit 1
+      ;;
+  esac
+done
 
 append_task_stub "$(pwd)/docs/forge/TASKS.yaml" "$TASK_ID" "$TASK_DESC"
+set_last_imported_commit "$FORGE_YAML" "$MERGE_COMMIT"
+git add "$FORGE_YAML"
+if [[ -f "$(pwd)/docs/forge/TASKS.yaml" ]]; then
+  git add "$(pwd)/docs/forge/TASKS.yaml"
+fi
 
 echo ""
 echo "Imported public change into the working tree without committing."

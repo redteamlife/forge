@@ -43,6 +43,57 @@ function Get-YamlNested([string]$FilePath, [string]$Parent, [string]$Key) {
   return ""
 }
 
+function Get-YamlBlockMap([string]$FilePath, [string]$Parent) {
+  $map = @{}
+  $lines = Get-Content $FilePath
+  $inBlock = $false
+  foreach ($line in $lines) {
+    if ($line -match "^${Parent}:") { $inBlock = $true; continue }
+    if ($inBlock -and $line -match "^  ([^:]+):\s*(.+)$") {
+      $map[$Matches[1].Trim().Trim('"').Trim("'")] = $Matches[2].Trim().Trim('"').Trim("'")
+      continue
+    }
+    if ($inBlock -and $line -notmatch "^\s") { break }
+  }
+  return $map
+}
+
+function Set-LastImportedCommit([string]$ForgeYamlPath, [string]$Sha) {
+  $lines = Get-Content $ForgeYamlPath
+  $updated = $false
+  for ($i = 0; $i -lt $lines.Count; $i++) {
+    if ($lines[$i] -match '^  last_imported_public_commit:') {
+      $lines[$i] = "  last_imported_public_commit: `"$Sha`""
+      $updated = $true
+    }
+  }
+  if (-not $updated) {
+    $lines += ""
+    $lines += "public_sync:"
+    $lines += "  required: true"
+    $lines += "  last_imported_public_commit: `"$Sha`""
+  }
+  Set-Content -Path $ForgeYamlPath -Value $lines -Encoding utf8
+}
+
+function Resolve-PrivatePath([hashtable]$SyncMap, [string]$PublicPath) {
+  if ($SyncMap.ContainsKey($PublicPath)) {
+    $mapped = $SyncMap[$PublicPath]
+    if ($mapped.EndsWith("/")) {
+      return $mapped + [System.IO.Path]::GetFileName($PublicPath)
+    }
+    return $mapped
+  }
+  if ($SyncMap.ContainsKey(".")) {
+    $rootMap = $SyncMap["."]
+    if ($rootMap.EndsWith("/")) {
+      return $rootMap + $PublicPath
+    }
+    return "$rootMap/$PublicPath"
+  }
+  return $null
+}
+
 function Add-TaskStub([string]$TasksFile, [string]$TaskId, [string]$Description) {
   if (-not (Test-Path $TasksFile)) {
     Write-Host "NOTE: $TasksFile not found. Skipping task stub creation."
@@ -76,6 +127,7 @@ if (-not (Test-Path $forgeYaml)) {
 $visibility = Get-YamlValue $forgeYaml "visibility"
 $srcDir = Get-YamlValue $forgeYaml "src_dir"
 $publicRepo = Get-YamlNested $forgeYaml "repos" "public"
+$syncMap = Get-YamlBlockMap $forgeYaml "sync_map"
 if ($visibility -ne "open-source") {
   Write-Error "forge-sync-public is only valid for open-source tools."
   exit 1
@@ -126,7 +178,6 @@ git fetch public | Out-Null
 
 $parents = git show --no-patch --format=%P $MergeCommit
 $parentCount = ($parents -split '\s+' | Where-Object { $_ }).Count
-$patchFile = [System.IO.Path]::GetTempFileName()
 
 if ($DryRun) {
   Write-Host "[dry-run] Would import $MergeCommit from $publicRepoFull into $(git branch --show-current)"
@@ -135,24 +186,81 @@ if ($DryRun) {
   exit 0
 }
 
-try {
-  if ($parentCount -gt 1) {
-    git diff "$MergeCommit^1" $MergeCommit | Out-File -FilePath $patchFile -Encoding utf8
+$baseCommit = "$MergeCommit^"
+if ($parentCount -gt 1) {
+  $baseCommit = "$MergeCommit^1"
+}
+
+$changedLines = git diff --name-status $baseCommit $MergeCommit
+$unmapped = @()
+foreach ($line in $changedLines) {
+  $parts = $line -split "`t"
+  $status = $parts[0]
+  $code = $status -replace '\d', ''
+  if ($code -eq "R") {
+    if (-not (Resolve-PrivatePath $syncMap $parts[1])) { $unmapped += $parts[1] }
+    if (-not (Resolve-PrivatePath $syncMap $parts[2])) { $unmapped += $parts[2] }
   } else {
-    git diff "$MergeCommit^" $MergeCommit | Out-File -FilePath $patchFile -Encoding utf8
+    if (-not (Resolve-PrivatePath $syncMap $parts[1])) { $unmapped += $parts[1] }
   }
+}
+if ($unmapped.Count -gt 0) {
+  Write-Error ("Unmapped public paths in merge {0}: {1}" -f $MergeCommit, ($unmapped -join ", "))
+  exit 1
+}
 
-  $patch = Get-Content $patchFile -Raw
-  $patch = $patch -replace ' a/', " a/$($srcDir.TrimEnd('/','\'))/"
-  $patch = $patch -replace ' b/', " b/$($srcDir.TrimEnd('/','\'))/"
-  Set-Content -Path $patchFile -Value $patch -Encoding utf8
-
-  git apply --index $patchFile
-} finally {
-  Remove-Item -Force $patchFile -ErrorAction SilentlyContinue
+foreach ($line in $changedLines) {
+  $parts = $line -split "`t"
+  $status = $parts[0]
+  $code = $status -replace '\d', ''
+  switch ($code) {
+    "A" {
+      $privatePath = Resolve-PrivatePath $syncMap $parts[1]
+      New-Item -ItemType Directory -Path (Split-Path -Parent $privatePath) -Force | Out-Null
+      git show "$MergeCommit:$($parts[1])" | Set-Content -Path $privatePath -Encoding utf8
+      git add $privatePath
+    }
+    "M" {
+      $privatePath = Resolve-PrivatePath $syncMap $parts[1]
+      New-Item -ItemType Directory -Path (Split-Path -Parent $privatePath) -Force | Out-Null
+      git show "$MergeCommit:$($parts[1])" | Set-Content -Path $privatePath -Encoding utf8
+      git add $privatePath
+    }
+    "T" {
+      $privatePath = Resolve-PrivatePath $syncMap $parts[1]
+      New-Item -ItemType Directory -Path (Split-Path -Parent $privatePath) -Force | Out-Null
+      git show "$MergeCommit:$($parts[1])" | Set-Content -Path $privatePath -Encoding utf8
+      git add $privatePath
+    }
+    "D" {
+      $privatePath = Resolve-PrivatePath $syncMap $parts[1]
+      git rm -f $privatePath 2>$null | Out-Null
+      Remove-Item -Force $privatePath -ErrorAction SilentlyContinue
+    }
+    "R" {
+      $oldPrivatePath = Resolve-PrivatePath $syncMap $parts[1]
+      $newPrivatePath = Resolve-PrivatePath $syncMap $parts[2]
+      if ($oldPrivatePath -ne $newPrivatePath) {
+        git rm -f $oldPrivatePath 2>$null | Out-Null
+        Remove-Item -Force $oldPrivatePath -ErrorAction SilentlyContinue
+      }
+      New-Item -ItemType Directory -Path (Split-Path -Parent $newPrivatePath) -Force | Out-Null
+      git show "$MergeCommit:$($parts[2])" | Set-Content -Path $newPrivatePath -Encoding utf8
+      git add $newPrivatePath
+    }
+    default {
+      Write-Error "Unsupported git diff status '$status'."
+      exit 1
+    }
+  }
 }
 
 Add-TaskStub (Join-Path (Get-Location) "docs/forge/TASKS.yaml") $taskId $taskDesc
+Set-LastImportedCommit $forgeYaml $MergeCommit
+git add $forgeYaml
+if (Test-Path (Join-Path (Get-Location) "docs/forge/TASKS.yaml")) {
+  git add (Join-Path (Get-Location) "docs/forge/TASKS.yaml")
+}
 
 Write-Host ""
 Write-Host "Imported public change into the working tree without committing."
