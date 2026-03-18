@@ -104,9 +104,10 @@ require_cmd git
 print_step "Creating directory structure in $TARGET_DIR"
 
 mkdir -p "$TARGET_DIR/src"
-mkdir -p "$TARGET_DIR/docs/forge"
+mkdir -p "$TARGET_DIR/docs"
 mkdir -p "$TARGET_DIR/release"
 mkdir -p "$TARGET_DIR/scripts"
+mkdir -p "$TARGET_DIR/templates"
 
 if [[ "$VISIBILITY" == "closed-source" ]]; then
   mkdir -p "$TARGET_DIR/bin"
@@ -116,25 +117,15 @@ fi
 # Copy FORGE templates
 # ---------------------------------------------------------------------------
 
-print_step "Copying FORGE templates into docs/forge/"
+print_step "Copying FORGE templates into templates/"
 
 if [[ ! -d "$FORGE_TEMPLATES_DIR" ]]; then
   echo "ERROR: FORGE templates directory not found at $FORGE_TEMPLATES_DIR" >&2
   exit 1
 fi
 
-for template in "$FORGE_TEMPLATES_DIR"/*.template.md "$FORGE_TEMPLATES_DIR"/*.template.yaml; do
-  [[ -e "$template" ]] || continue
-  filename="$(basename "$template")"
-  dest="${filename//.template/}"
-  cp "$template" "$TARGET_DIR/docs/forge/$dest"
-  echo "  Copied: $dest"
-done
-
-if [[ -f "$FORGE_TEMPLATES_DIR/TOOL_WORKFLOW.template.md" ]]; then
-  cp "$FORGE_TEMPLATES_DIR/TOOL_WORKFLOW.template.md" "$TARGET_DIR/docs/forge/TOOL_WORKFLOW.md"
-  echo "  Copied: TOOL_WORKFLOW.md"
-fi
+cp -r "$FORGE_TEMPLATES_DIR/." "$TARGET_DIR/templates/"
+echo "  Copied: templates/"
 
 # ---------------------------------------------------------------------------
 # Generate forge.yaml
@@ -224,6 +215,10 @@ This project uses [FORGE](https://github.com/redteamlife/forge) for AI-assisted 
 All development occurs in this repository. Releases are published to \`$PUBLIC_REPO\` via \`./scripts/forge-publish.sh\`.
 
 For open-source tools, accepted public pull requests can be imported back into this repo with \`./scripts/forge-sync-public.sh\`.
+
+## Next Step
+
+Run your AI assistant against \`templates/GENERATE_PROJECT_DOCS.md\` to generate the real FORGE governance docs into \`docs/forge/\`.
 EOF
 
 # ---------------------------------------------------------------------------
@@ -306,11 +301,10 @@ echo ""
 echo "Next steps:"
 echo "  1. cd $DEV_REPO"
 echo "  2. Generate FORGE project docs — point your AI at:"
-echo "     $FORGE_TEMPLATES_DIR/GENERATE_PROJECT_DOCS.md"
-echo "     and tell it to generate docs for your project."
-echo "  3. Review and update docs/forge/AI.md with your project scope"
-echo "  4. Add tasks to docs/forge/TASKS.yaml"
-echo "  5. Start a FORGE session"
+echo "     templates/GENERATE_PROJECT_DOCS.md"
+echo "     and tell it to generate docs for your project into docs/forge/."
+echo "  3. Review the generated docs/forge/AI.md and docs/forge/TASKS.yaml"
+echo "  4. Start a FORGE session"
 echo ""
 if [[ "$VISIBILITY" == "closed-source" ]]; then
   echo "  When ready to release:"

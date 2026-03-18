@@ -111,9 +111,10 @@ Print-Step "Creating directory structure in $TargetDir"
 
 $dirs = @(
   (Join-Path $TargetDir "src"),
-  (Join-Path $TargetDir "docs" | Join-Path -ChildPath "forge"),
+  (Join-Path $TargetDir "docs"),
   (Join-Path $TargetDir "release"),
-  (Join-Path $TargetDir "scripts")
+  (Join-Path $TargetDir "scripts"),
+  (Join-Path $TargetDir "templates")
 )
 if ($Visibility -eq "closed-source") {
   $dirs += (Join-Path $TargetDir "bin")
@@ -127,34 +128,15 @@ foreach ($d in $dirs) {
 # Copy FORGE templates
 # ---------------------------------------------------------------------------
 
-Print-Step "Copying FORGE templates into docs/forge/"
+Print-Step "Copying FORGE templates into templates/"
 
 if (-not (Test-Path $ForgeTemplates)) {
   Write-Error "FORGE templates directory not found at $ForgeTemplates"
   exit 1
 }
 
-$destForge = Join-Path $TargetDir "docs" | Join-Path -ChildPath "forge"
-
-Get-ChildItem -Path $ForgeTemplates -Filter "*.template.md" |
-  ForEach-Object {
-    $destName = $_.Name -replace "\.template", ""
-    Copy-Item $_.FullName (Join-Path $destForge $destName)
-    Write-Host "  Copied: $destName"
-  }
-
-Get-ChildItem -Path $ForgeTemplates -Filter "*.template.yaml" |
-  ForEach-Object {
-    $destName = $_.Name -replace "\.template", ""
-    Copy-Item $_.FullName (Join-Path $destForge $destName)
-    Write-Host "  Copied: $destName"
-  }
-
-$toolWorkflow = Join-Path $ForgeTemplates "TOOL_WORKFLOW.template.md"
-if (Test-Path $toolWorkflow) {
-  Copy-Item $toolWorkflow (Join-Path $destForge "TOOL_WORKFLOW.md")
-  Write-Host "  Copied: TOOL_WORKFLOW.md"
-}
+Copy-Item (Join-Path $ForgeTemplates "*") (Join-Path $TargetDir "templates") -Recurse -Force
+Write-Host "  Copied: templates/"
 
 # ---------------------------------------------------------------------------
 # Generate forge.yaml
@@ -246,6 +228,10 @@ This project uses [FORGE](https://github.com/redteamlife/forge) for AI-assisted 
 All development occurs in this repository. Releases are published to ``$PublicRepo`` via ``./scripts/forge-publish.sh`` or ``.\scripts\forge-publish.ps1``.
 
 For open-source tools, accepted public pull requests can be imported back into this repo with ``./scripts/forge-sync-public.sh`` or ``.\scripts\forge-sync-public.ps1``.
+
+## Next Step
+
+Run your AI assistant against ``templates/GENERATE_PROJECT_DOCS.md`` to generate the real FORGE governance docs into ``docs/forge/``.
 "@
 
 Set-Content -Path (Join-Path $TargetDir "README.md") -Value $readme -Encoding UTF8
@@ -346,11 +332,10 @@ Write-Host ""
 Write-Host "Next steps:"
 Write-Host "  1. cd $DevRepo"
 Write-Host "  2. Generate FORGE project docs — point your AI at:"
-Write-Host "     $genDocsPath"
-Write-Host "     and tell it to generate docs for your project."
-Write-Host "  3. Review and update docs/forge/AI.md with your project scope"
-Write-Host "  4. Add tasks to docs/forge/TASKS.yaml"
-Write-Host "  5. Start a FORGE session"
+Write-Host "     templates/GENERATE_PROJECT_DOCS.md"
+Write-Host "     and tell it to generate docs for your project into docs/forge/."
+Write-Host "  3. Review the generated docs/forge/AI.md and docs/forge/TASKS.yaml"
+Write-Host "  4. Start a FORGE session"
 Write-Host ""
 if ($Visibility -eq "closed-source") {
   Write-Host "  When ready to release:"
