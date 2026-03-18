@@ -24,6 +24,9 @@ The project root contains a `forge.yaml` file that configures the release toolin
 - `project` — tool name
 - `visibility` — `open-source` or `closed-source`
 - `publish_strategy` — `preserve-history` or `snapshot-force-push` (open-source only)
+- `public_sync.required` — blocks publish when merged public changes have not been imported into private dev
+- `public_sync.last_imported_public_commit` — last merged public commit intentionally imported into private dev
+- `sync_map` — maps public repo paths back into private repo paths during public PR intake
 - `src_dir` — source directory (open-source: copied to release)
 - `release_dir` — staging directory populated before publishing
 - `build_output` — compiled binary paths (closed-source only)
@@ -145,9 +148,9 @@ External contributors submit pull requests to the public repo. After review and 
    .\scripts\forge-sync-public.ps1 -Pr 123
    ```
 
-3. The sync script fetches `public`, verifies that the PR is merged, resolves the merge commit, and cherry-picks the accepted public change into the current private dev branch.
+3. The sync script fetches `public`, verifies that the PR is merged, resolves the merge commit, maps changed public paths through `sync_map`, and applies the imported change into the current private dev branch.
 
-4. The script also appends an intake task stub to `docs/forge/TASKS.yaml` when that file exists, so the imported work is visible inside normal FORGE governance.
+4. The script also appends an intake task stub to `docs/forge/TASKS.yaml` when that file exists and updates `public_sync.last_imported_public_commit` in `forge.yaml`.
 
 5. Review, test, and complete the intake task like any other governed change. If the imported change affects architecture or security posture, update the corresponding docs before the next publish.
 

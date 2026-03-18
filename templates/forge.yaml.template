@@ -35,6 +35,15 @@ release_dir: release        # Staging directory populated by forge-publish
 
 docs_dir: docs/forge        # Location of FORGE governance documents
 
+public_sync:
+  required: true
+  last_imported_public_commit: ""   # Updated by forge-sync-public after importing a merged public PR
+
+sync_map:
+  .: src/                   # Map public repo root files into the private source tree by default
+  # README.md: README.md    # Add explicit mappings for files that should stay at repo root
+  # LICENSE: LICENSE
+
 repos:
   dev: ToolName-dev         # Private development repository name
   public: ToolName          # Public release repository name

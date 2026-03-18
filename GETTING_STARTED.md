@@ -283,6 +283,12 @@ For open-source tools, FORGE now supports two publish strategies:
 - **`preserve-history`** — recommended default; keeps public repo history intact so outside PRs can be merged normally
 - **`snapshot-force-push`** — maintainer-only release mirror mode; replaces public `main` from the private release snapshot
 
+Open-source scaffolds also include:
+
+- `public_sync.required` — blocks publish if accepted public changes have not been imported
+- `public_sync.last_imported_public_commit` — updated when you pull merged public work into private dev
+- `sync_map` — defines how public paths map back into private repo paths during intake
+
 **To scaffold a new tool project:**
 
 ```bash

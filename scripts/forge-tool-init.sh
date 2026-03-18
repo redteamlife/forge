@@ -158,6 +158,13 @@ release_dir: release
 
 docs_dir: docs/forge
 
+public_sync:
+  required: true
+  last_imported_public_commit: ""
+
+sync_map:
+  .: src/
+
 repos:
   dev: $DEV_REPO
   public: $PUBLIC_REPO
