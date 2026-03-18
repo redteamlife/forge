@@ -299,7 +299,7 @@ Open-source scaffolds also include:
 .\scripts\forge-tool-init.ps1 -ToolName ToolName
 ```
 
-The script creates a `ToolName-dev/` directory with the full FORGE document set, a `forge.yaml` configuration file, a `release/` staging area, and helper scripts for both publishing and pulling accepted public PRs back into private development. It optionally creates both GitHub repositories and configures remotes.
+The script creates a `ToolName-dev/` directory with a `templates/` folder, a `forge.yaml` configuration file, a `release/` staging area, and helper scripts for both publishing and pulling accepted public PRs back into private development. It does not pre-generate `docs/forge/`; you generate those from `templates/GENERATE_PROJECT_DOCS.md` after scaffolding. It optionally creates both GitHub repositories and configures remotes.
 
 **To publish a release:**
 
@@ -325,4 +325,4 @@ Or on Windows:
 .\scripts\forge-sync-public.ps1 -Pr 123
 ```
 
-The full workflow reference is in `docs/forge/TOOL_WORKFLOW.md` inside each scaffolded project, and the `forge.yaml` configuration schema is in `templates/forge.yaml.template`.
+The full workflow reference is generated into `docs/forge/TOOL_WORKFLOW.md` after you run `templates/GENERATE_PROJECT_DOCS.md`, and the tool configuration schema lives in `templates/forge.yaml.template`.
