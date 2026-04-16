@@ -6,9 +6,9 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 
 | Mode | Required Documents | Appropriate Use |
 | --- | --- | --- |
-| Lightweight | `AI.md`, `FORGE.md`, `TASKS.yaml` | Low-risk changes, early setup, small refactors |
-| Mid | + `ARCHITECTURE.md`, `TEST_STRATEGY.md`, `EVALUATION.md`, `MEMORY.md` | Most product engineering, moderate-risk features |
-| Strict | + `ARCHITECTURE_EXPLORATION.md`, `REVIEW_GUIDE.md`, `ROADMAP.md` | Security-sensitive systems, audit requirements |
+| Lightweight | `AI.md`, `TASKS.yaml` | Low-risk changes, early setup, small refactors |
+| Mid | + `ARCHITECTURE.md`, `EVALUATION.md`, `MEMORY.md`, `SECURITY_CHECKLISTS.md` | Most product engineering, moderate-risk features |
+| Strict | + stronger review, architecture, and planning artifacts as the project needs them | Security-sensitive systems, audit requirements |
 | Full Discipline | All Strict documents + org governance artifacts | Regulated environments, high-impact production systems |
 
 ## Lightweight
@@ -16,7 +16,6 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 ### Required Documentation
 
 - `AI.md`
-- `FORGE.md`
 - `TASKS.yaml`
 
 ### Enforcement Profile
@@ -37,12 +36,11 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 ### Required Documentation
 
 - `AI.md`
-- `FORGE.md`
 - `TASKS.yaml`
 - `ARCHITECTURE.md`
-- `TEST_STRATEGY.md`
 - `EVALUATION.md`
 - `MEMORY.md`
+- `SECURITY_CHECKLISTS.md`
 
 ### Enforcement Profile
 
@@ -62,12 +60,10 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 ### Required Documentation
 
 - `AI.md`
-- `FORGE.md`
-- `TASKS.yaml`
 - `ARCHITECTURE_EXPLORATION.md`
 - `ARCHITECTURE.md`
 - `REVIEW_GUIDE.md`
-- `TEST_STRATEGY.md`
+- `TASKS.yaml`
 - `EVALUATION.md`
 - `MEMORY.md`
 - `ROADMAP.md`
@@ -118,7 +114,7 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 
 - `Lightweight`: Primarily manual, tightly bounded.
 - `Mid`: Manual or bounded batch.
-- `Strict`: Manual, batch, or limited auto with stronger gates.
+- `Strict`: Manual, batch, or limited auto with stronger gates and per-task checkpoints preserved.
 - `Full Discipline`: Fully governed execution with explicit policy controls.
 
 ### Review and Evaluation

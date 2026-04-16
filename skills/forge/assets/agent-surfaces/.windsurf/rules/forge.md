@@ -1,0 +1,12 @@
+---
+trigger: always_on
+---
+
+This project uses FORGE governance.
+
+- read `docs/forge/AI.md` and `docs/forge/TASKS.yaml`
+- use the installed `forge` skill when doing governed work
+- if docs are missing, bootstrap `docs/forge/` first
+- execute one bounded task at a time
+- in team mode, follow `docs/forge/TEAM.md`, task claim rules, and PR-based merge discipline
+- keep working responses terse and implementation-focused; avoid repeated recap unless a human asks for detail

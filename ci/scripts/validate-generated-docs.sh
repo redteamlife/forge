@@ -77,15 +77,16 @@ EOF
 
 REQUIRED_FILES=(
   "$FORGE_DIR/AI.md"
-  "$FORGE_DIR/FORGE.md"
   "$FORGE_DIR/TASKS.yaml"
 )
 
 AI_MD="$FORGE_DIR/AI.md"
 FORGE_MODE=""
+COLLABORATION_MODE=""
 
 if [ -f "$AI_MD" ]; then
   FORGE_MODE=$(grep 'FORGE_mode:' "$AI_MD" | sed 's/.*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
+  COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
 fi
 
 # Mid and above require additional files
@@ -108,6 +109,16 @@ if [ "$FORGE_MODE" = "Strict" ] || [ "$FORGE_MODE" = "Full Discipline" ]; then
   )
 fi
 
+# Team collaboration requires explicit coordination docs.
+if [ "$COLLABORATION_MODE" = "team" ]; then
+  REQUIRED_FILES+=(
+    "$FORGE_DIR/TEAM.md"
+    "$FORGE_DIR/SECURITY_CHECKLISTS.md"
+    "$FORGE_DIR/EVALUATION.md"
+    "$FORGE_DIR/MEMORY.md"
+  )
+fi
+
 FILES_OK=1
 for f in "${REQUIRED_FILES[@]}"; do
   check_file_exists "$f" || FILES_OK=0
@@ -116,7 +127,7 @@ done
 # If files are missing, report and exit - no point checking content
 if [ "$FILES_OK" -eq 0 ]; then
   echo ""
-  echo "FORGE: Required documentation files are missing. Generate them with GENERATE_PROJECT_DOCS.md before proceeding."
+  echo "FORGE: Required documentation files are missing. Bootstrap or refresh docs/forge with the forge skill before proceeding."
   exit 1
 fi
 
@@ -141,6 +152,13 @@ fi
 
 if [ -f "$FORGE_DIR/EVALUATION.md" ]; then
   check_section_nonempty "$FORGE_DIR/EVALUATION.md" "Definition of Done"
+fi
+
+if [ -f "$FORGE_DIR/TEAM.md" ]; then
+  check_section_nonempty "$FORGE_DIR/TEAM.md" "Branch Policy"
+  check_section_nonempty "$FORGE_DIR/TEAM.md" "Task Claiming"
+  check_section_nonempty "$FORGE_DIR/TEAM.md" "File Scope"
+  check_section_nonempty "$FORGE_DIR/TEAM.md" "Review And Merge"
 fi
 
 # -----------------------------------------------------------------------
@@ -172,8 +190,8 @@ for task in tasks:
     if not desc or str(desc).strip() == "":
         print(f"FORGE: Task '{tid}' is missing a 'description'.")
         failed = True
-    if status not in ("incomplete", "complete"):
-        print(f"FORGE: Task '{tid}' has invalid status '{status}'. Must be 'incomplete' or 'complete'.")
+    if status not in ("incomplete", "claimed", "in_progress", "implemented", "integrated", "blocked", "complete"):
+        print(f"FORGE: Task '{tid}' has invalid status '{status}'. Must be one of incomplete, claimed, in_progress, implemented, integrated, blocked, complete.")
         failed = True
 
 if failed:
@@ -197,6 +215,22 @@ if grep -q 'FORGE-config' "$AI_MD"; then
   if ! grep -q 'execution_mode:' "$AI_MD"; then
     echo "FORGE: FORGE-config block in AI.md is missing execution_mode."
     FAILED=1
+  fi
+  for field in coordination_branch integration_branch release_branch; do
+    if grep -q "${field}:" "$AI_MD"; then
+      FIELD_VALUE=$(grep "${field}:" "$AI_MD" | sed "s/.*${field}: *//" | sed 's/[[:space:]]*$//')
+      if [ -z "$FIELD_VALUE" ]; then
+        echo "FORGE: ${field} must not be empty when present."
+        FAILED=1
+      fi
+    fi
+  done
+  if grep -q 'collaboration_mode:' "$AI_MD"; then
+    COLLAB_MODE_VALUE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
+    if [ "$COLLAB_MODE_VALUE" != "solo" ] && [ "$COLLAB_MODE_VALUE" != "team" ]; then
+      echo "FORGE: collaboration_mode must be 'solo' or 'team' when present."
+      FAILED=1
+    fi
   fi
 else
   echo "FORGE: AI.md is missing a FORGE-config block."

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# forge-tool-init.sh — Scaffold a new FORGE-governed tool development repository.
+# forge-tool-init.sh — Scaffold a new FORGE skill-based tool development repository.
 #
 # Usage:
 #   ./scripts/forge-tool-init.sh [ToolName]
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 FORGE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FORGE_TEMPLATES_DIR="$FORGE_ROOT/templates"
+FORGE_SKILL_TEMPLATES_DIR="$FORGE_ROOT/skills/forge/assets/templates"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -105,27 +105,31 @@ print_step "Creating directory structure in $TARGET_DIR"
 
 mkdir -p "$TARGET_DIR/src"
 mkdir -p "$TARGET_DIR/docs"
+mkdir -p "$TARGET_DIR/docs/forge"
 mkdir -p "$TARGET_DIR/release"
 mkdir -p "$TARGET_DIR/scripts"
-mkdir -p "$TARGET_DIR/templates"
 
 if [[ "$VISIBILITY" == "closed-source" ]]; then
   mkdir -p "$TARGET_DIR/bin"
 fi
 
 # ---------------------------------------------------------------------------
-# Copy FORGE templates
+# Seed minimal FORGE docs
 # ---------------------------------------------------------------------------
 
-print_step "Copying FORGE templates into templates/"
+print_step "Seeding minimal docs/forge files"
 
-if [[ ! -d "$FORGE_TEMPLATES_DIR" ]]; then
-  echo "ERROR: FORGE templates directory not found at $FORGE_TEMPLATES_DIR" >&2
+if [[ ! -d "$FORGE_SKILL_TEMPLATES_DIR" ]]; then
+  echo "ERROR: FORGE skill templates directory not found at $FORGE_SKILL_TEMPLATES_DIR" >&2
   exit 1
 fi
 
-cp -r "$FORGE_TEMPLATES_DIR/." "$TARGET_DIR/templates/"
-echo "  Copied: templates/"
+cp "$FORGE_SKILL_TEMPLATES_DIR/AI.md" "$TARGET_DIR/docs/forge/AI.md"
+cp "$FORGE_SKILL_TEMPLATES_DIR/TASKS.yaml" "$TARGET_DIR/docs/forge/TASKS.yaml"
+cp "$FORGE_SKILL_TEMPLATES_DIR/MEMORY.md" "$TARGET_DIR/docs/forge/MEMORY.md"
+echo "  Copied: docs/forge/AI.md"
+echo "  Copied: docs/forge/TASKS.yaml"
+echo "  Copied: docs/forge/MEMORY.md"
 
 # ---------------------------------------------------------------------------
 # Generate forge.yaml
@@ -218,7 +222,9 @@ For open-source tools, accepted public pull requests can be imported back into t
 
 ## Next Step
 
-Run your AI assistant against \`templates/GENERATE_PROJECT_DOCS.md\` to generate the real FORGE governance docs into \`docs/forge/\`.
+Install or make the FORGE skill pack available, then tell your AI assistant:
+
+\`Use the forge skill and bootstrap or refresh docs/forge for this project, preserving the existing tool scaffold.\`
 EOF
 
 # ---------------------------------------------------------------------------
@@ -300,11 +306,12 @@ echo "================================================================"
 echo ""
 echo "Next steps:"
 echo "  1. cd $DEV_REPO"
-echo "  2. Generate FORGE project docs — point your AI at:"
-echo "     templates/GENERATE_PROJECT_DOCS.md"
-echo "     and tell it to generate docs for your project into docs/forge/."
-echo "  3. Review the generated docs/forge/AI.md and docs/forge/TASKS.yaml"
-echo "  4. Start a FORGE session"
+echo "  2. Make the FORGE skill pack available to your AI agent."
+echo "  3. Tell it:"
+echo "     Use the forge skill and bootstrap or refresh docs/forge for this project,"
+echo "     preserving the existing tool scaffold."
+echo "  4. Review docs/forge/AI.md and docs/forge/TASKS.yaml"
+echo "  5. Start a FORGE session"
 echo ""
 if [[ "$VISIBILITY" == "closed-source" ]]; then
   echo "  When ready to release:"

@@ -152,8 +152,8 @@ That last rule matters. It prevents maintainers from accidentally overwriting or
 
 If this proposal is accepted, FORGE should update:
 
-- `templates/forge.yaml.template`
-- `templates/TOOL_WORKFLOW.template.md`
+- `skills/forge/assets/templates/AI.md`
+- `skills/forge/tool-workflow/SKILL.md`
 - `GETTING_STARTED.md`
 - `README.md`
 

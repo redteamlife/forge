@@ -1,0 +1,49 @@
+name: Verify FORGE Skills Pack
+
+on:
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "skills/forge/**"
+      - "install.sh"
+      - "install.ps1"
+      - "uninstall.sh"
+      - "uninstall.ps1"
+      - "verify-install.sh"
+      - "verify-repo.py"
+      - "README.md"
+      - "GETTING_STARTED.md"
+      - "MIGRATION.md"
+      - "AGENTS.md"
+      - ".github/workflows/verify-forge-skills-based.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "skills/forge/**"
+      - "install.sh"
+      - "install.ps1"
+      - "uninstall.sh"
+      - "uninstall.ps1"
+      - "verify-install.sh"
+      - "verify-repo.py"
+      - "README.md"
+      - "GETTING_STARTED.md"
+      - "MIGRATION.md"
+      - "AGENTS.md"
+      - ".github/workflows/verify-forge-skills-based.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Verify FORGE skill pack
+        run: python3 verify-repo.py

@@ -33,6 +33,9 @@ jobs:
       - name: Validate task state
         run: bash ci/scripts/validate-task-state.sh
 
+      - name: Validate team task metadata
+        run: bash ci/scripts/validate-team-task-metadata.sh
+
       - name: Validate evidence artifacts
         run: bash ci/scripts/validate-evidence-artifacts.sh
 

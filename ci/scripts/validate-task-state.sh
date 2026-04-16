@@ -5,7 +5,18 @@
 set -e
 
 BASE_REF="${GITHUB_BASE_REF:-main}"
+AI_MD="docs/forge/AI.md"
 TASKS_FILE="docs/forge/TASKS.yaml"
+
+INTEGRATION_BRANCH="develop"
+RELEASE_BRANCH="main"
+
+if [ -f "$AI_MD" ]; then
+  INTEGRATION_BRANCH=$(grep 'integration_branch:' "$AI_MD" | sed 's/.*integration_branch: *//' | sed 's/[[:space:]]*$//' || true)
+  RELEASE_BRANCH=$(grep 'release_branch:' "$AI_MD" | sed 's/.*release_branch: *//' | sed 's/[[:space:]]*$//' || true)
+  [ -z "$INTEGRATION_BRANCH" ] && INTEGRATION_BRANCH="develop"
+  [ -z "$RELEASE_BRANCH" ] && RELEASE_BRANCH="main"
+fi
 
 if [ ! -f "$TASKS_FILE" ]; then
   echo "FORGE: $TASKS_FILE not found - skipping task state validation."
@@ -58,7 +69,27 @@ print("not_found")
 EOF
 )
 
-  if [ "$STATUS" = "complete" ]; then
+  if [ "$BASE_REF" = "$RELEASE_BRANCH" ]; then
+    if [ "$STATUS" = "integrated" ] || [ "$STATUS" = "complete" ]; then
+      echo "FORGE: Task '$TASK_ID' is ready for release branch merge (status: $STATUS)."
+    elif [ "$STATUS" = "not_found" ]; then
+      echo "FORGE: Task '$TASK_ID' not found in $TASKS_FILE."
+      FAILED=1
+    else
+      echo "FORGE: Task '$TASK_ID' is not ready for release branch merge (status: $STATUS)."
+      FAILED=1
+    fi
+  elif [ "$BASE_REF" = "$INTEGRATION_BRANCH" ]; then
+    if [ "$STATUS" = "implemented" ] || [ "$STATUS" = "integrated" ] || [ "$STATUS" = "complete" ]; then
+      echo "FORGE: Task '$TASK_ID' is ready for integration branch merge (status: $STATUS)."
+    elif [ "$STATUS" = "not_found" ]; then
+      echo "FORGE: Task '$TASK_ID' not found in $TASKS_FILE."
+      FAILED=1
+    else
+      echo "FORGE: Task '$TASK_ID' is not ready for integration branch merge (status: $STATUS)."
+      FAILED=1
+    fi
+  elif [ "$STATUS" = "complete" ]; then
     echo "FORGE: Task '$TASK_ID' is complete."
   elif [ "$STATUS" = "not_found" ]; then
     echo "FORGE: Task '$TASK_ID' not found in $TASKS_FILE."

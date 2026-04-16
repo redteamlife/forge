@@ -47,6 +47,7 @@ Using git trailers keeps the primary commit message compatible with Conventional
 | --- | --- | --- |
 | Commit message format | `commit-msg` hook + CI script | CC format violations, missing FORGE trailers |
 | Task state | CI script | Task in FORGE-task trailer not marked complete |
+| Team task metadata | CI script | Missing claim or branch metadata in `collaboration_mode: team` |
 | Evidence artifacts | CI script | PR missing updated EVALUATION.md or MEMORY.md |
 
 ---
@@ -59,6 +60,7 @@ ci/
 │   └── commit-msg                      ← local git hook
 ├── scripts/
 │   ├── validate-commit-format.sh       ← CI: subject line + trailer validation
+│   ├── validate-team-task-metadata.sh  ← CI: task claim and branch metadata for team mode
 │   ├── validate-task-state.sh          ← CI: task marked complete in TASKS.yaml
 │   └── validate-evidence-artifacts.sh  ← CI: EVALUATION.md and MEMORY.md updated
 ├── workflows/
@@ -87,7 +89,7 @@ mkdir -p .github/workflows
 cp ci/workflows/forge-governance.yml .github/workflows/forge-governance.yml
 ```
 
-The workflow runs on every pull request and executes all three validation scripts in sequence.
+The workflow runs on every pull request and executes the validation scripts in sequence.
 
 ### 3. Set the workflow as a required status check
 
@@ -107,10 +109,33 @@ Add `ci_enforcement: enabled` to the `FORGE-config` block in `docs/forge/AI.md`:
 ```text
 FORGE_mode: Mid
 execution_mode: manual
+collaboration_mode: team
+coordination_branch: forge-state
+integration_branch: develop
+release_branch: main
 ci_enforcement: enabled
 ```
 
 The evidence artifact check reads this field. If absent or not `enabled`, that check is skipped.
+In `collaboration_mode: team`, the team metadata validator also requires it and fails closed if it is not enabled.
+
+### Team Mode Enforcement
+
+If `docs/forge/AI.md` declares `collaboration_mode: team`, CI additionally expects:
+
+- `docs/forge/TEAM.md` to exist and contain branch, claiming, file-scope, and review policy
+- every task referenced by a `FORGE-task` trailer to include `file_scope`
+- every merged task to include `claimed_by`, `claimed_by_email`, `agent`, `claimed_at`, `claim_commit`, and `branch`
+- the task's recorded `branch` to match the PR branch being validated
+- teams should publish claims from a shared coordination branch before feature-branch implementation begins
+- feature PRs should target the configured integration branch, and release promotion should flow from the integration branch to the release branch
+
+Task-state expectations are branch-aware:
+
+- PRs targeting `integration_branch` require task status `implemented`, `integrated`, or `complete`
+- PRs targeting `release_branch` require task status `integrated` or `complete`
+
+This gives teams a minimal but enforceable coordination contract across multiple developers and multiple IDE agents.
 
 ### 5. (Optional) Configure org-level policy
 

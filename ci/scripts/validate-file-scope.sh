@@ -11,12 +11,14 @@ TASKS_FILE="docs/forge/TASKS.yaml"
 
 # Read FORGE mode from AI.md
 FORGE_MODE=""
+COLLABORATION_MODE=""
 if [ -f "$AI_MD" ]; then
   FORGE_MODE=$(grep 'FORGE_mode:' "$AI_MD" | sed 's/.*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
+  COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
 fi
 
-# Skip for Lightweight mode - file_scope is optional there
-if [ "$FORGE_MODE" = "Lightweight" ] || [ -z "$FORGE_MODE" ]; then
+# Skip for Lightweight mode only when not in team collaboration mode.
+if [ "$COLLABORATION_MODE" != "team" ] && { [ "$FORGE_MODE" = "Lightweight" ] || [ -z "$FORGE_MODE" ]; }; then
   echo "FORGE: Mode is Lightweight or unset - file scope validation skipped."
   exit 0
 fi
@@ -72,10 +74,16 @@ for task in tasks:
 EOF
 )
 
-  # If no file_scope declared, skip validation for this task
+  # If no file_scope declared, skip only outside team mode
   if [ -z "$FILE_SCOPE" ]; then
-    echo "FORGE: Task '$TASK_ID' has no file_scope declared - skipping scope check."
-    continue
+    if [ "$COLLABORATION_MODE" = "team" ]; then
+      echo "FORGE: Task '$TASK_ID' has no file_scope declared - required in collaboration_mode: team."
+      FAILED=1
+      continue
+    else
+      echo "FORGE: Task '$TASK_ID' has no file_scope declared - skipping scope check."
+      continue
+    fi
   fi
 
   # Get files changed in this specific commit

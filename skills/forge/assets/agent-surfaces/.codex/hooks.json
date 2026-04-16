@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "echo 'This repo uses FORGE governance. Read docs/forge/AI.md and docs/forge/TASKS.yaml. Use the forge skill explicitly. Bootstrap docs/forge first if missing. Execute one bounded task at a time. Keep working responses terse and implementation-focused.'"
+      }
+    ]
+  }
+}

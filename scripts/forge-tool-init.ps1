@@ -1,4 +1,4 @@
-# forge-tool-init.ps1 — Scaffold a new FORGE-governed tool development repository.
+# forge-tool-init.ps1 — Scaffold a new FORGE skill-based tool development repository.
 #
 # Usage:
 #   .\scripts\forge-tool-init.ps1 [[-ToolName] <string>]
@@ -18,7 +18,7 @@ $ErrorActionPreference = "Stop"
 
 $ForgeScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ForgeRoot      = Split-Path -Parent $ForgeScriptDir
-$ForgeTemplates = Join-Path $ForgeRoot "templates"
+$ForgeSkillTemplates = Join-Path $ForgeRoot "skills/forge/assets/templates"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -112,9 +112,9 @@ Print-Step "Creating directory structure in $TargetDir"
 $dirs = @(
   (Join-Path $TargetDir "src"),
   (Join-Path $TargetDir "docs"),
+  (Join-Path $TargetDir "docs/forge"),
   (Join-Path $TargetDir "release"),
-  (Join-Path $TargetDir "scripts"),
-  (Join-Path $TargetDir "templates")
+  (Join-Path $TargetDir "scripts")
 )
 if ($Visibility -eq "closed-source") {
   $dirs += (Join-Path $TargetDir "bin")
@@ -125,18 +125,22 @@ foreach ($d in $dirs) {
 }
 
 # ---------------------------------------------------------------------------
-# Copy FORGE templates
+# Seed minimal FORGE docs
 # ---------------------------------------------------------------------------
 
-Print-Step "Copying FORGE templates into templates/"
+Print-Step "Seeding minimal docs/forge files"
 
-if (-not (Test-Path $ForgeTemplates)) {
-  Write-Error "FORGE templates directory not found at $ForgeTemplates"
+if (-not (Test-Path $ForgeSkillTemplates)) {
+  Write-Error "FORGE skill templates directory not found at $ForgeSkillTemplates"
   exit 1
 }
 
-Copy-Item (Join-Path $ForgeTemplates "*") (Join-Path $TargetDir "templates") -Recurse -Force
-Write-Host "  Copied: templates/"
+Copy-Item (Join-Path $ForgeSkillTemplates "AI.md") (Join-Path $TargetDir "docs/forge/AI.md") -Force
+Copy-Item (Join-Path $ForgeSkillTemplates "TASKS.yaml") (Join-Path $TargetDir "docs/forge/TASKS.yaml") -Force
+Copy-Item (Join-Path $ForgeSkillTemplates "MEMORY.md") (Join-Path $TargetDir "docs/forge/MEMORY.md") -Force
+Write-Host "  Copied: docs/forge/AI.md"
+Write-Host "  Copied: docs/forge/TASKS.yaml"
+Write-Host "  Copied: docs/forge/MEMORY.md"
 
 # ---------------------------------------------------------------------------
 # Generate forge.yaml
@@ -231,7 +235,9 @@ For open-source tools, accepted public pull requests can be imported back into t
 
 ## Next Step
 
-Run your AI assistant against ``templates/GENERATE_PROJECT_DOCS.md`` to generate the real FORGE governance docs into ``docs/forge/``.
+Install or make the FORGE skill pack available, then tell your AI assistant:
+
+``Use the forge skill and bootstrap or refresh docs/forge for this project, preserving the existing tool scaffold.``
 "@
 
 Set-Content -Path (Join-Path $TargetDir "README.md") -Value $readme -Encoding UTF8
@@ -322,8 +328,6 @@ if (Get-Command "gh" -ErrorAction SilentlyContinue) {
 # Done
 # ---------------------------------------------------------------------------
 
-$genDocsPath = Join-Path $ForgeTemplates "GENERATE_PROJECT_DOCS.md"
-
 Write-Host ""
 Write-Host "================================================================"
 Write-Host "  $ToolName scaffold created at: $TargetDir"
@@ -331,11 +335,12 @@ Write-Host "================================================================"
 Write-Host ""
 Write-Host "Next steps:"
 Write-Host "  1. cd $DevRepo"
-Write-Host "  2. Generate FORGE project docs — point your AI at:"
-Write-Host "     templates/GENERATE_PROJECT_DOCS.md"
-Write-Host "     and tell it to generate docs for your project into docs/forge/."
-Write-Host "  3. Review the generated docs/forge/AI.md and docs/forge/TASKS.yaml"
-Write-Host "  4. Start a FORGE session"
+Write-Host "  2. Make the FORGE skill pack available to your AI agent."
+Write-Host "  3. Tell it:"
+Write-Host "     Use the forge skill and bootstrap or refresh docs/forge for this project,"
+Write-Host "     preserving the existing tool scaffold."
+Write-Host "  4. Review docs/forge/AI.md and docs/forge/TASKS.yaml"
+Write-Host "  5. Start a FORGE session"
 Write-Host ""
 if ($Visibility -eq "closed-source") {
   Write-Host "  When ready to release:"

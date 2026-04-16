@@ -1,16 +1,16 @@
 # FORGE Execution Model
 
-This document explains the reasoning behind the FORGE execution workflow. It is human-facing. Agents do not need to read it. The authoritative runtime rules live in `FORGE.md` in the target project's `docs/FORGE/` directory.
+This document explains the reasoning behind the FORGE execution workflow. It is human-facing. Agents do not need to read it. The authoritative runtime rules now live in the canonical FORGE skill pack, with project-local state held in `docs/forge/`.
 
-## Why Documentation Governs Execution
+## Why Skills Govern Execution
 
-AI agents working without explicit constraints tend to expand scope, make undocumented architectural decisions, and produce changes that are difficult to trace or reverse. The documentation-first approach addresses this by making the project's intent, constraints, and architecture legible to the agent before it acts. The agent is not trusted to infer scope from the codebase alone.
+AI agents working without explicit constraints tend to expand scope, make undocumented architectural decisions, and produce changes that are difficult to trace or reverse. The skills-first approach addresses this by putting stable workflow rules in reusable skills and leaving project-specific intent, constraints, and architecture in repository-local files. The agent is not trusted to infer scope from the codebase alone.
 
-The contract is: the agent reads the documents, the documents define what is allowed, and the agent stops when the documents are silent or conflicted.
+The contract is: the agent reads the skill and the minimum relevant project-local files, those define what is allowed, and the agent stops when the contract is silent or conflicted.
 
-## Why FORGE.md Is the Execution Authority
+## Why The Skill Pack Is The Execution Authority
 
-Putting the workflow in a dedicated document rather than embedding it in `AI.md` or splitting it across files serves one purpose: conflict resolution. When a task description, an architectural constraint, and a project preference point in different directions, there must be a single authority. `FORGE.md` is that authority. Any other document can inform execution; only `FORGE.md` governs it.
+Putting the workflow in a dedicated skill pack rather than embedding it in `AI.md` or splitting it across project docs serves one purpose: conflict resolution. When a task description, an architectural constraint, and a project preference point in different directions, there must be a single stable authority. The canonical FORGE skill pack is that authority. Project-local docs inform execution; the skill pack governs it.
 
 ## Why Document Presence Is Checked Before Content Is Read
 
@@ -38,9 +38,9 @@ Bundling multiple task changes into a single commit makes it difficult to:
 
 One task, one commit makes the history an accurate record of what was done and what was validated. The structured commit message format reinforces this by making task identity and mode visible directly in the log.
 
-## Why Auto Mode Is Available at Any Mode Level
+## Why Batch Or Auto Behavior Still Preserves Checkpoints
 
-Auto mode allows the agent to iterate across tasks without human reinvocation. Rather than restricting auto mode to higher governance levels, FORGE relies on hard stops to contain risk at any mode. If a gate fails, a document is missing, or a security concern is identified, execution halts unconditionally regardless of execution mode. The hard stop rules are the safety envelope - not the mode level. Teams operating at Lightweight with auto mode accept that fewer gates are enforced; the appropriate response is to match mode to actual risk tolerance, not to restrict the execution model.
+Batch or auto behavior can improve throughput, but it must not weaken per-task checkpoints. FORGE allows a project to continue to the next task in the same session only after the current task is finished, task state is updated, and the required Conventional Commit is created. The hard stop rules remain the safety envelope regardless of execution mode.
 
 ## Why Escalation Stops Execution Rather Than Continuing
 

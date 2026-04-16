@@ -1,0 +1,32 @@
+# GitLab Setup
+
+Use this when the project is hosted on GitLab and `ci_enforcement` should be enabled.
+
+## Repo Files
+
+- Copy the repository `ci/` directory into the target project.
+- Translate or wrap the FORGE validation scripts in `.gitlab-ci.yml` jobs.
+
+## Local Hooks
+
+- Install `ci/hooks/commit-msg` into `.git/hooks/commit-msg`.
+- Optionally install the provided `pre-push` hook if the project uses it.
+
+## Protected Branches And Merge Rules
+
+For the integration branch:
+
+- Require merge requests instead of direct pushes.
+- Require the FORGE validation pipeline to pass before merge.
+- Require the source branch to be up to date with target policy as appropriate.
+
+For the release branch:
+
+- Require merge requests or a documented release automation path instead of ad hoc direct pushes.
+- Require the release validation pipeline to pass before merge if the project uses one.
+- Decide who runs the post-promotion release reconciliation step that moves tasks from `integrated` to `complete`.
+
+For coordination-branch team mode:
+
+- Consider protecting `forge-state` from casual direct pushes.
+- Document who is allowed to publish task claims and how conflicts are resolved.
