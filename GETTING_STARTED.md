@@ -19,6 +19,17 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -Agent claude,codex -Mode copy
 ```
 
+Vercel skills CLI:
+
+```bash
+npx skills add https://github.com/redteamlife/forge.git
+```
+
+Compatibility note:
+
+- Via `npx skills add`, FORGE is meant to work within Vercel's broader skills ecosystem, which Vercel documents as supporting 18+ agents including Claude Code, GitHub Copilot, Cursor, Cline, and many others.
+- The manual install scripts in this repo provide explicit install targets for shared `~/.agents/skills`, Claude Code, Codex, Cursor, and Windsurf.
+
 Optional:
 
 - Set `FORGE_SKILL_TARGET` to install somewhere other than `~/.agents/skills`

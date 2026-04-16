@@ -8,3 +8,4 @@ When working on the skill pack itself:
 - keep install docs and scripts at the repo root aligned with the canonical skill content
 - preserve explicit activation; do not turn FORGE into an always-on behavior by default
 - keep working responses terse and implementation-focused; avoid conversational filler and repeated context recap
+- keep workflow and CI references aligned with `.github/workflows/verify-forge-skills.yml`

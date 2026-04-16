@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Bundled FORGE governance skill pack for AI-assisted coding. Use when a repository follows FORGE-style bounded task execution, hard stops, review gates, memory updates, or when converting FORGE governance into reusable agent skills. Routes to focused sub-skills for bootstrap, task execution, critique, security review, evaluation, memory, and tool workflow.
+description: Keep AI-assisted coding disciplined with bounded tasks, hard stops, review gates, and clear team workflow. Use when you want FORGE to bootstrap docs/forge, execute the next task safely, and coordinate work across solo or team repos.
 ---
 
 # FORGE

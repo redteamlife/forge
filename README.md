@@ -12,6 +12,27 @@ Install the skill pack:
 bash install.sh
 ```
 
+Or install it with Vercel's skills CLI:
+
+```bash
+npx skills add https://github.com/redteamlife/forge.git
+```
+
+## Compatibility
+
+Via `npx skills add`, FORGE follows the shared Agent Skills ecosystem used by Vercel's skills tooling. Vercel documents support for 18+ AI agents, including Claude Code, GitHub Copilot, Cursor, Cline, and many others, and the CLI compatibility table also includes Codex. See:
+
+- https://vercel.com/docs/agent-resources/skills
+- https://github.com/vercel-labs/skills
+
+The manual install scripts in this repo currently provide explicit target helpers for:
+
+- shared `~/.agents/skills`
+- Claude Code
+- Codex
+- Cursor
+- Windsurf
+
 Then in a project:
 
 ```text

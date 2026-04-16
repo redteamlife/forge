@@ -15,7 +15,7 @@ on:
       - "GETTING_STARTED.md"
       - "MIGRATION.md"
       - "AGENTS.md"
-      - ".github/workflows/verify-forge-skills-based.yml"
+      - ".github/workflows/verify-forge-skills.yml"
   push:
     branches: ["main"]
     paths:
@@ -30,7 +30,7 @@ on:
       - "GETTING_STARTED.md"
       - "MIGRATION.md"
       - "AGENTS.md"
-      - ".github/workflows/verify-forge-skills-based.yml"
+      - ".github/workflows/verify-forge-skills.yml"
 
 jobs:
   verify:
