@@ -26,7 +26,9 @@ Read extra docs only when the selected task requires them.
 - prefer fragments when they remain clear
 - report implementation outcome, blocker, or next action without conversational filler
 - do not narrate routine steps if code changes or concrete results can speak for themselves
+- do not narrate that you are reading, checking, confirming, or planning unless that changes a decision
 - do not restate reasoning already recorded in repo files
+- do not echo file contents into chat unless the user asked to inspect them
 - when blocked, explain only the minimum facts needed for a human decision
 
 Default response shapes:

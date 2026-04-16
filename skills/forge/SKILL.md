@@ -43,8 +43,10 @@ Drop by default:
 
 - pleasantries and conversational filler
 - repeated context recap
+- narration of routine inspection or planning steps
 - file-purpose explanations when the file path already says enough
 - reasoning already captured in project docs or changed files
+- file content echo after writing files
 - changelog-style narration unless the user asks for it
 
 Prefer by default:

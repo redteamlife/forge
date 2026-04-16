@@ -44,6 +44,8 @@ Add more docs only if the project's risk, complexity, or compliance needs justif
 - Keep instructions compatible with both skill-aware and document-first agents.
 - Generate only the docs the project actually needs; do not inflate the repo with optional governance files by default.
 - Keep generated narrative compact and factual so future sessions do not pay token cost for unnecessary prose.
+- Do not narrate routine inspection or planning steps such as "I'm checking" or "I have enough context" unless a blocker or scope decision appears.
+- Do not echo generated file contents back into chat unless the user asked to review them.
 - Bootstrap closeout should be compact:
   - `Done: <what was bootstrapped>.`
   - `Changed: <docs created or updated>.`

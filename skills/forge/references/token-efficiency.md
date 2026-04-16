@@ -16,8 +16,10 @@ FORGE should reduce drift and rework without becoming a large token tax.
 
 - restating the selected task or project context in every response
 - reading every governance doc at the start of every step
+- narrating routine inspection and planning steps
 - verbose critique and evaluation writeups
 - copying all security checklist sections into every project
+- echoing generated file contents back into chat
 - repeated warnings about expected branch drift in team mode
 
 ## Practical Default
