@@ -1,5 +1,5 @@
 ---
-name: bootstrap
+name: forge-bootstrap
 description: Bootstrap or migrate a repository into a FORGE skill-based workflow. Use when generating the initial `docs/forge/` files, reducing a document-heavy FORGE setup into a smaller skill-driven contract, or scaffolding the minimum governance files for a project.
 ---
 
@@ -19,7 +19,7 @@ Prefer this minimum:
 - `docs/forge/EVALUATION.md` when explicit completion gates are needed
 - `docs/forge/MEMORY.md` when the project benefits from reusable lessons
 - `docs/forge/TEAM.md` when multiple developers or agents will work in parallel
-- `docs/forge/SECURITY_CHECKLISTS.md` when the security-review skill will be used, composed from the relevant files in `assets/security-checklists/`
+- `docs/forge/SECURITY_CHECKLISTS.md` when `forge-security-review` will be used, composed from the relevant files in `assets/security-checklists/`
 - `docs/forge/SETUP.md` when local hooks or hosted CI enforcement should be tracked explicitly
 
 Add more docs only if the project's risk, complexity, or compliance needs justify them.

@@ -50,7 +50,8 @@ def verify_skill_names() -> None:
             if in_frontmatter and line.startswith("name: "):
                 name = line.split(": ", 1)[1].strip()
                 break
-        ensure(name == parent, f"{skill_file}: name '{name}' does not match parent '{parent}'")
+        expected = "forge" if skill_file == SKILL_ROOT / "SKILL.md" else f"forge-{parent}"
+        ensure(name == expected, f"{skill_file}: name '{name}' does not match expected '{expected}'")
 
 
 def verify_required_files() -> None:

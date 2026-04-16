@@ -8,7 +8,7 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
-- A full skills-first FORGE release under `skills/forge/` with focused subskills for `bootstrap`, `execute-task`, `critique`, `security-review`, `evaluation`, `memory`, and `tool-workflow`.
+- A full skills-first FORGE release under `skills/forge/` with focused subskills for `forge-bootstrap`, `forge-execute-task`, `forge-critique`, `forge-security-review`, `forge-evaluation`, `forge-memory`, and `forge-tool-workflow`.
 - Root install, uninstall, verification, and migration helpers for easier public distribution and local setup.
 - Vercel `npx skills add` compatible repo layout using `skills/forge/`.
 - Reusable agent/editor onboarding assets under `skills/forge/assets/agent-surfaces/`.

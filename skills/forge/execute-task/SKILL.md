@@ -1,5 +1,5 @@
 ---
-name: execute-task
+name: forge-execute-task
 description: Execute one bounded FORGE task from repository-local governance docs. Use when reading `docs/forge/` state, selecting the next incomplete task, enforcing task scope, checking alignment, implementing changes, and stopping on ambiguity or failed gates.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: memory
+name: forge-memory
 description: Read and maintain FORGE project memory across sessions. Use when retrieving recent patterns or failures before implementation, or when appending concise lessons, failure notes, and guardrail refinements after a task attempt.
 ---
 

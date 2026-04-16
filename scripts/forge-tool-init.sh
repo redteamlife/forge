@@ -224,7 +224,7 @@ For open-source tools, accepted public pull requests can be imported back into t
 
 Install or make the FORGE skill pack available, then tell your AI assistant:
 
-\`Use the forge skill and bootstrap or refresh docs/forge for this project, preserving the existing tool scaffold.\`
+\`Use the forge skill or /forge-bootstrap to bootstrap or refresh docs/forge for this project, preserving the existing tool scaffold.\`
 EOF
 
 # ---------------------------------------------------------------------------
@@ -308,7 +308,7 @@ echo "Next steps:"
 echo "  1. cd $DEV_REPO"
 echo "  2. Make the FORGE skill pack available to your AI agent."
 echo "  3. Tell it:"
-echo "     Use the forge skill and bootstrap or refresh docs/forge for this project,"
+echo "     Use the forge skill or /forge-bootstrap to bootstrap or refresh docs/forge for this project,"
 echo "     preserving the existing tool scaffold."
 echo "  4. Review docs/forge/AI.md and docs/forge/TASKS.yaml"
 echo "  5. Start a FORGE session"

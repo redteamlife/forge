@@ -1,5 +1,5 @@
 ---
-name: tool-workflow
+name: forge-tool-workflow
 description: Apply the FORGE private-dev and public-release workflow for tools. Use when scaffolding a tool repo, reasoning about preserve-history publishing, importing accepted public pull requests, or maintaining the dev-public repository split under FORGE governance.
 ---
 

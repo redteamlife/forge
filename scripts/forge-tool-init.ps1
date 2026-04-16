@@ -237,7 +237,7 @@ For open-source tools, accepted public pull requests can be imported back into t
 
 Install or make the FORGE skill pack available, then tell your AI assistant:
 
-``Use the forge skill and bootstrap or refresh docs/forge for this project, preserving the existing tool scaffold.``
+``Use the forge skill or /forge-bootstrap to bootstrap or refresh docs/forge for this project, preserving the existing tool scaffold.``
 "@
 
 Set-Content -Path (Join-Path $TargetDir "README.md") -Value $readme -Encoding UTF8
@@ -337,7 +337,7 @@ Write-Host "Next steps:"
 Write-Host "  1. cd $DevRepo"
 Write-Host "  2. Make the FORGE skill pack available to your AI agent."
 Write-Host "  3. Tell it:"
-Write-Host "     Use the forge skill and bootstrap or refresh docs/forge for this project,"
+Write-Host "     Use the forge skill or /forge-bootstrap to bootstrap or refresh docs/forge for this project,"
 Write-Host "     preserving the existing tool scaffold."
 Write-Host "  4. Review docs/forge/AI.md and docs/forge/TASKS.yaml"
 Write-Host "  5. Start a FORGE session"

@@ -56,6 +56,8 @@ Most people will use FORGE in a very simple loop:
 Use the forge skill to bootstrap this repo for a new project. This project is for an interactive web site that will be the main hub for RedTeam.Life information. We will have a team of people and agents working on it.
 ```
 
+If your editor surfaces installed skills as slash commands, the subskills are grouped under the `forge-` prefix, for example `/forge-bootstrap` and `/forge-execute-task`.
+
 That should generate a lean but team-ready `docs/forge/` set.
 
 ### Example: start working

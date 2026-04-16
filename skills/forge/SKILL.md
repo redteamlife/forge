@@ -17,13 +17,13 @@ FORGE works best when you want to:
 
 ## Quick Routing
 
-- For creating or refreshing FORGE project docs, use `bootstrap/`.
-- For selecting and implementing the next bounded task, use `execute-task/`.
-- For scope and quality review before completion, use `critique/`.
-- For checklist-based security review, use `security-review/`.
-- For definition-of-done and evidence checks, use `evaluation/`.
-- For reading and updating reusable lessons, use `memory/`.
-- For private/public tool release workflows, use `tool-workflow/`.
+- For creating or refreshing FORGE project docs, use `forge-bootstrap`.
+- For selecting and implementing the next bounded task, use `forge-execute-task`.
+- For scope and quality review before completion, use `forge-critique`.
+- For checklist-based security review, use `forge-security-review`.
+- For definition-of-done and evidence checks, use `forge-evaluation`.
+- For reading and updating reusable lessons, use `forge-memory`.
+- For private/public tool release workflows, use `forge-tool-workflow`.
 - For multi-developer coordination rules, branch discipline, and task claiming, read `references/team-mode.md`.
 
 ## Operating Model

@@ -1,5 +1,5 @@
 ---
-name: critique
+name: forge-critique
 description: Run the FORGE critique pass for a completed or in-progress task. Use when checking for scope drift, undocumented assumptions, architecture conflicts, missing docs, or unaddressed failure modes before marking a task complete.
 ---
 

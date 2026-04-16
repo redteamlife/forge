@@ -1,5 +1,5 @@
 ---
-name: evaluation
+name: forge-evaluation
 description: Apply FORGE definition-of-done and evidence checks to a task. Use when verifying completion gates, required testing, documentation updates, and whether the task is eligible to be marked complete and committed.
 ---
 

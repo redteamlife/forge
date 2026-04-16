@@ -1,5 +1,5 @@
 ---
-name: security-review
+name: forge-security-review
 description: Apply FORGE checklist-based security review to a task. Use when selecting a task-specific security checklist, reviewing trust-boundary and sensitive-data impact, and producing explicit pass, n-a, or escalated outcomes for each item.
 ---
 

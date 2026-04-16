@@ -26,6 +26,16 @@ Then use it the way people actually tend to use it:
 Use the forge skill to bootstrap this repo for a new project. This project is for an interactive web site that will be the main hub for RedTeam.Life information. We will have a team of people and agents working on it.
 ```
 
+In editors that expose slash-command skills, FORGE subskills are intentionally grouped as `/forge-*`:
+
+- `/forge-bootstrap`
+- `/forge-execute-task`
+- `/forge-critique`
+- `/forge-security-review`
+- `/forge-evaluation`
+- `/forge-memory`
+- `/forge-tool-workflow`
+
 Review the generated `docs/forge/` files, adjust anything important, then kick off work with:
 
 ```text
@@ -141,13 +151,13 @@ FORGE is designed to reduce drift without adding huge prompt overhead. The skill
 
 FORGE is one install, but it is made of focused subskills so agents can load only the part they need:
 
-- `bootstrap` - scaffold or refresh a lean `docs/forge/` contract for a project
-- `execute-task` - select the next bounded task and implement it safely
-- `critique` - check for scope drift, gaps, and architecture conflicts before completion
-- `security-review` - run checklist-based security review against the actual change surface
-- `evaluation` - apply definition-of-done and evidence gates before a task is treated as complete
-- `memory` - keep reusable lessons and failure notes so future sessions start smarter
-- `tool-workflow` - support the private/public tool development workflow when a project needs it
+- `forge-bootstrap` - scaffold or refresh a lean `docs/forge/` contract for a project
+- `forge-execute-task` - select the next bounded task and implement it safely
+- `forge-critique` - check for scope drift, gaps, and architecture conflicts before completion
+- `forge-security-review` - run checklist-based security review against the actual change surface
+- `forge-evaluation` - apply definition-of-done and evidence gates before a task is treated as complete
+- `forge-memory` - keep reusable lessons and failure notes so future sessions start smarter
+- `forge-tool-workflow` - support the private/public tool development workflow when a project needs it
 
 That structure is what makes FORGE feel lightweight in use even when the workflow itself is serious.
 
@@ -173,7 +183,7 @@ To scaffold that setup, use:
 - `scripts/forge-tool-init.sh`
 - `scripts/forge-tool-init.ps1`
 
-These scripts seed minimal `docs/forge/` files, create the tool workflow scaffolding, and set up the private-dev/public-release structure that FORGE's `tool-workflow` skill understands.
+These scripts seed minimal `docs/forge/` files, create the tool workflow scaffolding, and set up the private-dev/public-release structure that FORGE's `forge-tool-workflow` skill understands.
 
 If you are just building a normal app or website in one repo, you can ignore this section completely. The tool workflow is an optional pattern for projects that need that private/public split.
 
