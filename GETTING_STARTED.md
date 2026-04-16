@@ -42,34 +42,66 @@ Optional:
 
 ## First Use
 
-In a project that has no FORGE docs yet:
+Most people will use FORGE in a very simple loop:
+
+1. Tell the agent what the project is.
+2. Let FORGE bootstrap `docs/forge/`.
+3. Review the generated docs.
+4. Tell the agent to start working tasks.
+5. Step in only when FORGE surfaces a real blocker or decision.
+
+### Example: bootstrap a new project
 
 ```text
-Use the forge skill and bootstrap docs/forge for this project.
+Use the forge skill to bootstrap this repo for a new project. This project is for an interactive web site that will be the main hub for RedTeam.Life information. We will have a team of people and agents working on it.
 ```
 
-In a project that already has FORGE docs:
+That should generate a lean but team-ready `docs/forge/` set.
+
+### Example: start working
+
+After you review the generated docs, tell the agent:
 
 ```text
-Use the forge skill and execute the next bounded task from docs/forge.
+Use the forge skill to start working on tasks.
 ```
 
-## Recommended Starting Flow
+If you want the agent to keep going until it hits a real blocking decision:
 
-1. Install the skill pack.
-2. Start with `bootstrap` to create or refresh `docs/forge/`.
-3. Review `docs/forge/AI.md` and `docs/forge/TASKS.yaml`.
-4. Use `execute-task` for one bounded task at a time.
-5. In solo mode, complete the task, update `docs/forge/TASKS.yaml`, create a Conventional Commit, and stop before starting the next task.
-6. In team repos, set `collaboration_mode: team`, set `coordination_branch`, `integration_branch`, and `release_branch`, add `TEAM.md`, and enable CI enforcement.
-7. Publish task claims on the coordination branch before implementation starts.
-8. Merge feature branches into the integration branch before promoting to the release branch.
-9. Delete merged feature branches after their integration PR is accepted unless project policy says otherwise.
-10. If the repo is on GitHub or GitLab, document hook and CI setup in `docs/forge/SETUP.md`.
-11. Use Conventional Commits for governed task work in both solo and team workflows.
-12. Do not include AI attribution or tool-marketing lines in commit messages.
-13. Keep generated docs and working responses terse unless the project explicitly needs more narrative detail.
-14. If you later opt into batch or auto execution, preserve the same per-task checkpoint rule: finish, update state, commit, then continue.
+```text
+Use the forge skill to start working on tasks, do not stop until done.
+```
+
+FORGE should keep moving while preserving per-task checkpoints, commits, and hard stops.
+
+## What To Review After Bootstrap
+
+You do not need to read every generated file line by line before starting. Usually the highest-value review is:
+
+- `docs/forge/AI.md` for project mode and team settings
+- `docs/forge/TASKS.yaml` for whether the initial task list makes sense
+- `docs/forge/ARCHITECTURE.md` if framework, deployment, or content choices are important early
+- `docs/forge/TEAM.md` if multiple people or agents will be working in parallel
+
+Once those look sane, you can start letting the skill drive task execution.
+
+## How FORGE Behaves
+
+In solo mode:
+
+- the agent should finish one task
+- update `TASKS.yaml`
+- create a Conventional Commit
+- stop before moving to the next task unless you explicitly allow continued execution
+
+In team mode:
+
+- task claims should be coordinated
+- feature work should stay on task branches
+- integration should happen before release promotion
+- CI and setup details should be tracked in `docs/forge/SETUP.md`
+
+FORGE is meant to feel like a trustworthy workflow layer, not a pile of ceremony.
 
 ## Optional Enforcement
 
