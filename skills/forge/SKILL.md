@@ -5,13 +5,15 @@ description: Turn AI coding from chaotic one-shot prompting into a reliable engi
 
 # FORGE
 
-Use this skill when the user wants FORGE-style governance as a reusable skill-based workflow rather than a large prompt or document set.
+Use this skill when you want agents to stop behaving like unpredictable pair-programmers and start working like disciplined teammates. FORGE gives AI work a real execution model: clear task boundaries, hard stops when things get fuzzy, safer commits, review gates, and a workflow teams can actually trust.
 
-FORGE is best treated as:
+FORGE works best when you want to:
 
-- stable workflow logic in skills
-- project-specific state in repository docs
-- optional external enforcement in CI and hooks
+- bootstrap or refresh `docs/forge/` without bloating the repo
+- execute the next task with bounded scope and explicit stop conditions
+- keep solo work checkpointed and committed one task at a time
+- coordinate multiple developers or IDE agents without losing track of ownership
+- add CI-backed enforcement when a project needs stronger guarantees
 
 ## Quick Routing
 
