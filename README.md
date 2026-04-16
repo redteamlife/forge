@@ -2,6 +2,8 @@
 
 FORGE is a skills-first governance workflow for AI-assisted coding.
 
+Turn AI coding from chaotic one-shot prompting into a reliable engineering workflow. FORGE gives you clear task boundaries, safer commits, review gates, and team-ready coordination so agents can ship real work without losing control of the project.
+
 The canonical skill pack lives in [`skills/forge/`](./skills/forge/). This repo also includes install scripts, verification helpers, optional CI enforcement, tool-scaffolding scripts, and philosophy docs.
 
 ## Quick Start

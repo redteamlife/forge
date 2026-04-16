@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Keep AI-assisted coding disciplined with bounded tasks, hard stops, review gates, and clear team workflow. Use when you want FORGE to bootstrap docs/forge, execute the next task safely, and coordinate work across solo or team repos.
+description: Turn AI coding from chaotic one-shot prompting into a reliable engineering workflow. FORGE gives you clear task boundaries, safer commits, review gates, and team-ready coordination so agents can ship real work without losing control of the project.
 ---
 
 # FORGE
