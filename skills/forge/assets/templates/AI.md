@@ -1,7 +1,7 @@
 # AI Execution Configuration
 
 ```FORGE-config
-forge_version: skills-experiment
+forge_version: 1.0.0
 FORGE_mode: Lightweight
 execution_mode: manual
 collaboration_mode: solo
@@ -29,4 +29,5 @@ Define the project-local execution configuration consumed by the FORGE skill pac
 - In team mode, treat `TASKS.yaml` on feature branches as informational only; reconcile against the coordination branch for claim and completion transitions.
 - In team mode, feature branches should merge into `integration_branch` before promotion to `release_branch`.
 - `response_style: terse` means working output should stay compact and implementation-focused unless the user asks for depth.
+- Prefer fixed compact output shapes such as `Done / Changed / Next` over free-form summaries.
 - If `ci_enforcement: enabled`, the project should also document local-hook and hosted-CI setup in `docs/forge/SETUP.md`.

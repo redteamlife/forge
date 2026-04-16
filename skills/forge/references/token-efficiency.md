@@ -10,6 +10,7 @@ FORGE should reduce drift and rework without becoming a large token tax.
 - Use the coordination branch only when claim or task-state transitions require it.
 - Read only the relevant sections of `SECURITY_CHECKLISTS.md`, not the whole file.
 - Keep `MEMORY.md` entries short and high-signal.
+- Prefer fixed response shapes over free-form summaries.
 
 ## Where Tokens Usually Leak
 
@@ -27,9 +28,11 @@ FORGE should behave more like:
 - narrow file loads
 - direct edits
 - compact gate results
+- `Done / Changed / Next` closeouts
 
 and less like:
 
 - long conversational explanation
 - repeated context recap
 - exhaustive changelog narration
+- prose summaries of reasoning already stored in files

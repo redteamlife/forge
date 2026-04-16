@@ -26,5 +26,6 @@ Produce a concise pass/fail style critique with:
 - whether the task metadata remains consistent for a PR-based merge
 
 Keep the critique short. Prefer a few findings over a narrative review.
+Use findings-first output. Avoid explanatory recap when a short finding line is enough.
 
 If there are blocking issues, stop rather than softening the conclusion.

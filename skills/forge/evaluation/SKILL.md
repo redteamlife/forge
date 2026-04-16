@@ -27,3 +27,4 @@ If the project uses CI enforcement, confirm that the expected artifacts are upda
 In team mode, prefer task-scoped append-only entries over rewriting shared narrative summaries.
 
 Keep evaluation output compact: gate result first, short evidence notes second.
+Do not restate validation reasoning already captured in `EVALUATION.md` unless needed to explain a fail or blocker.

@@ -44,3 +44,8 @@ Add more docs only if the project's risk, complexity, or compliance needs justif
 - Keep instructions compatible with both skill-aware and document-first agents.
 - Generate only the docs the project actually needs; do not inflate the repo with optional governance files by default.
 - Keep generated narrative compact and factual so future sessions do not pay token cost for unnecessary prose.
+- Bootstrap closeout should be compact:
+  - `Done: <what was bootstrapped>.`
+  - `Changed: <docs created or updated>.`
+  - `Next: <next task or setup step>.`
+- Do not explain the purpose of every generated file unless the user asks.

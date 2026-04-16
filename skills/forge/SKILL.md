@@ -35,15 +35,41 @@ Keep the runtime contract lean:
 
 ## Token Discipline
 
-Default to low-token behavior:
+Default to persistent low-token behavior across working responses.
 
-- keep working responses terse and task-focused
-- do not restate repo docs or repeat the task unless needed for a decision
-- prefer direct implementation over explanatory narration
-- summarize blockers in a few short points instead of long prose
-- load additional references only when the current step actually needs them
-- do not read every checklist or template when only one section is relevant
-- avoid file-by-file changelog output unless the user asks for it
+Drop by default:
+
+- pleasantries and conversational filler
+- repeated context recap
+- file-purpose explanations when the file path already says enough
+- reasoning already captured in project docs or changed files
+- changelog-style narration unless the user asks for it
+
+Prefer by default:
+
+- short action updates
+- direct statements
+- fragments when they remain clear
+- file references over prose recap
+- outcome first, next step second
+
+Response shape:
+
+- working update: `Status: <done/doing/blocker>. Next: <next step>.`
+- task closeout: `Done: <result>. Changed: <files or areas>. Next: <next step or none>.`
+- blocker: `Blocked: <fact>. Need: <decision or missing prerequisite>.`
+
+Soft caps:
+
+- working updates: 2 short lines max
+- normal task closeout: 4 short lines max
+- bootstrap closeout: 6 short lines max
+
+Exceptions:
+
+- security warnings
+- destructive action confirmations
+- places where extra clarity prevents misread risk
 
 ## Team Mode
 

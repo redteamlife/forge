@@ -21,10 +21,25 @@ Read extra docs only when the selected task requires them.
 
 ## Output Discipline
 
-- keep status updates short
+- keep status updates short and persistent across the full task pass
+- use direct statements, not assistant-style narration
+- prefer fragments when they remain clear
 - report implementation outcome, blocker, or next action without conversational filler
 - do not narrate routine steps if code changes or concrete results can speak for themselves
+- do not restate reasoning already recorded in repo files
 - when blocked, explain only the minimum facts needed for a human decision
+
+Default response shapes:
+
+- working update: `Status: <done/doing/blocker>. Next: <next step>.`
+- closeout: `Done: <result>. Changed: <files or areas>. Next: <next step or none>.`
+- blocker: `Blocked: <fact>. Need: <decision or prerequisite>.`
+
+Soft caps:
+
+- working update: 2 short lines max
+- normal closeout: 4 short lines max
+- bootstrap-style closeout inside execution: 6 short lines max
 
 ## Workflow
 
