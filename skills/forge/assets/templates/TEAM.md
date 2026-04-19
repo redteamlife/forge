@@ -10,6 +10,7 @@ Use this file when multiple developers or multiple agents work in the same repos
 - Work on feature branches only.
 - Branch naming pattern: `<task-id>/<actor>`
 - Do not implement governed tasks directly on `main` or other protected branches.
+- Document the merge semantics used for integration and release promotion, for example PR merge, squash merge, or fast-forward-only.
 
 ## Task Claiming
 
@@ -31,7 +32,9 @@ Use this file when multiple developers or multiple agents work in the same repos
 
 - Feature branches open PRs into the integration branch.
 - Agents do not target the release branch directly from feature branches.
-- Work should reach `implemented` before feature PR review, `integrated` after merge to the integration branch, and `complete` only after promotion or formal acceptance on the release branch.
+- Work should reach `implemented` only after the task branch has a task-scoped Conventional Commit and is ready for feature PR review.
+- `integrated` means the work was accepted on the integration branch and the active claim was released.
+- `complete` means the integrated work was accepted on the release branch or otherwise formally accepted by team policy.
 - Delete merged feature branches after the integration PR is accepted unless the project has an explicit short-lived retention reason.
 - Treat promotion from the integration branch to the release branch as a separate acceptance step.
 
@@ -39,6 +42,15 @@ Use this file when multiple developers or multiple agents work in the same repos
 
 - Every executable task must declare `file_scope`.
 - If two active tasks overlap materially in `file_scope`, resequence or split them before implementation.
+
+## Task Closeout
+
+- Do not treat "implemented on a task branch" as task completion.
+- Before moving a task to `implemented`, create at least one task-scoped Conventional Commit on the recorded feature branch.
+- Before moving a task to `integrated`, verify the recorded feature branch was accepted into the integration branch through the repo's documented merge path.
+- Before moving a task to `complete`, verify release-branch acceptance through promotion, release PR evidence, release commit evidence, or explicit team policy.
+- When a task reaches `integrated` or `complete`, record `claim_released_by` and `claim_released_at` so the ledger shows there is no longer an active claim.
+- Use a standard closeout helper or equivalent local procedure to validate branch, commit, task-state, and merge-target expectations before integration.
 
 ## Review And Merge
 

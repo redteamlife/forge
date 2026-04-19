@@ -31,6 +31,7 @@ Add as needed:
 
 - one bounded task at a time
 - in solo mode, update task state and commit after each completed task before selecting the next one
+- in governed solo mode, use task branches and require explicit human instruction before merge or promotion into the release branch
 - use Conventional Commits for governed task commits in both solo and team workflows
 - keep commit history free of AI attribution or tool-marketing lines
 - if batch or auto execution is allowed, preserve the same per-task checkpoint boundary before continuing

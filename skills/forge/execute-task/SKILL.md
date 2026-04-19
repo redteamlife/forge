@@ -46,7 +46,7 @@ Soft caps:
 ## Workflow
 
 1. Confirm branch safety and project-local prerequisites.
-2. Parse `AI.md` for mode, execution style, and collaboration settings.
+2. Parse `AI.md` for mode, execution style, collaboration settings, and any solo branch-flow policy.
 3. If `TEAM.md` exists, apply its coordination branch, integration branch, release branch, claiming, and review rules before task selection.
 4. In solo mode, select the first eligible task from `TASKS.yaml` and treat it as the only task allowed in this execution pass.
 5. In team mode, fetch the latest coordination branch and select only a task that is unclaimed or already claimed by the current actor and branch in the latest shared state.
@@ -59,9 +59,10 @@ Soft caps:
 12. In team mode, treat merged feature branches as temporary and delete them after the integration PR is accepted unless project policy explicitly keeps them.
 13. Do not move a task from `integrated` to `complete` unless release-branch acceptance is observable through explicit human confirmation, recorded release metadata, or a fetched release-branch reconciliation step.
 14. Hand off to critique, security review, and evaluation before transition to the next task state.
-15. In solo mode, after a task reaches `complete`, update `TASKS.yaml`, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
-16. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
-17. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
+15. In `collaboration_mode: solo` with `solo_branch_flow: task-branches`, create or continue the task branch before implementation, do not implement on `release_branch`, and do not merge or promote into `release_branch` unless the human explicitly instructs that action.
+16. In solo mode, after a task reaches `complete`, update `TASKS.yaml`, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
+17. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
+18. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
 
 ## Token Saving Rules
 
@@ -84,6 +85,8 @@ Stop when:
 - the latest coordination branch state cannot be fetched or the claim cannot be published
 - a task-state transition cannot be reconciled against the latest coordination branch state
 - the current branch does not match the task's recorded branch policy
+- solo-governed mode is active and the current branch is the configured `release_branch`
+- solo-governed mode is active and merge or promotion into `release_branch` was not explicitly instructed by the human
 - unresolved security concerns appear
 - the completed task work has not been committed with a Conventional Commit yet
 - a prior completed task remains uncommitted or `TASKS.yaml` is stale before selecting new work

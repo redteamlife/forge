@@ -33,6 +33,8 @@ Each executable task should support:
 - `claimed_at`
 - `claim_commit`
 - `branch`
+- `claim_released_by`
+- `claim_released_at`
 - `pr`
 - `release_pr`
 - `release_commit`
@@ -46,6 +48,25 @@ Each executable task should support:
 5. If another actor already holds the claim, do not proceed.
 6. If the task's `file_scope` overlaps heavily with another active task, stop and split or resequence the work.
 7. If publishing the claim fails because the coordination branch changed, stop, refresh, and retry from the latest state.
+
+## Closeout Contract
+
+Team mode should treat branch implementation, integration, and release acceptance as separate checkpoints.
+
+- `implemented` means the recorded feature branch contains the task work, that work is committed with a task-scoped Conventional Commit, and the branch is ready for review against the integration branch.
+- `integrated` means the recorded feature branch was accepted into the integration branch through the repo's documented merge path and the active claim was released.
+- `complete` means the integrated work was accepted on the release branch or was otherwise formally accepted by explicit team policy.
+
+Do not treat "work exists on a feature branch" as completion by itself.
+
+When a task reaches `integrated` or `complete`:
+
+- record `claim_released_by`
+- record `claim_released_at`
+- treat the task as no longer actively claimed even though original claim metadata remains for audit history
+
+Projects should document merge semantics in `TEAM.md` or `SETUP.md`, for example PR merge, squash merge, or fast-forward-only.
+FORGE should not assume one merge strategy unless the project-local policy says so.
 
 ## Coordination Branch
 
@@ -75,7 +96,7 @@ Use a shared branch for governance state, for example `forge-state`.
 Agents should not guess when a task becomes `complete`.
 
 - `implemented` means the feature branch is ready for review.
-- `integrated` means the work was accepted on the integration branch.
+- `integrated` means the work was accepted on the integration branch and the active claim was released.
 - `complete` means the integrated work is confirmed on the release branch or was otherwise explicitly accepted by team policy.
 
 Use one of these signals before moving a task to `complete`:
@@ -102,7 +123,7 @@ Promotion from the integration branch to the release branch should be treated as
 - `EVALUATION.md` should prefer append-only task evidence sections or entries.
 - `MEMORY.md` should capture reusable lessons, not full PR narratives.
 - `TEAM.md` should define the coordination branch, branch naming, claim ownership rules, review expectations, and CI requirements.
-- `SETUP.md` should record whether hooks, CI workflows, and protected-branch settings were actually configured.
+- `SETUP.md` should record whether hooks, CI workflows, protected-branch settings, and closeout helper usage were actually configured.
 
 ## Identity Source
 
@@ -123,10 +144,11 @@ If the operator identity cannot be determined from project policy or local git c
 5. Treat the feature-branch copy of `TASKS.yaml` as informational while implementing.
 6. Run critique, security review, and evaluation.
 7. Reconcile with `forge-state` and move the task to `implemented` when the feature branch is ready for review.
-8. Open a PR from the feature branch to the integration branch.
-9. Merge only after CI and required review pass.
-10. Delete the merged feature branch after acceptance on the integration branch unless project policy says otherwise.
-11. Reconcile with `forge-state` and move the task to `integrated` when the change is accepted on the integration branch.
-12. Promote the integration branch to the release branch per project policy.
-13. After promotion, run a release reconciliation step: fetch the latest release branch, record any release PR or release commit metadata, and confirm the task's work is now present on the release branch.
-14. Move the task to `complete` only after that release-branch acceptance is confirmed or otherwise formally accepted by the team.
+8. Run the team's closeout helper or equivalent validation procedure to confirm branch, commit, task-state, and target-branch expectations before opening the PR.
+9. Open a PR from the feature branch to the integration branch.
+10. Merge only after CI and required review pass.
+11. Delete the merged feature branch after acceptance on the integration branch unless project policy says otherwise.
+12. Reconcile with `forge-state`, record `claim_released_by` and `claim_released_at`, and move the task to `integrated` when the change is accepted on the integration branch.
+13. Promote the integration branch to the release branch per project policy.
+14. After promotion, run a release reconciliation step: fetch the latest release branch, record any release PR or release commit metadata, and confirm the task's work is now present on the release branch.
+15. Move the task to `complete` only after that release-branch acceptance is confirmed or otherwise formally accepted by the team.

@@ -100,6 +100,8 @@ for task_id in task_ids:
     claimed_at = task.get("claimed_at")
     claim_commit = task.get("claim_commit")
     branch = task.get("branch")
+    claim_released_by = task.get("claim_released_by")
+    claim_released_at = task.get("claim_released_at")
 
     if base_ref == integration_branch:
         if status not in ("implemented", "integrated", "complete"):
@@ -143,6 +145,14 @@ for task_id in task_ids:
     elif str(branch).strip() != head_ref:
         print(f"FORGE: Team task '{task_id}' branch '{branch}' does not match PR branch '{head_ref}'.")
         failed = True
+
+    if status in ("integrated", "complete"):
+        if not claim_released_by:
+            print(f"FORGE: Team task '{task_id}' is missing claim_released_by for status '{status}'.")
+            failed = True
+        if not claim_released_at:
+            print(f"FORGE: Team task '{task_id}' is missing claim_released_at for status '{status}'.")
+            failed = True
 
 if failed:
     sys.exit(1)

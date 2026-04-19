@@ -19,12 +19,15 @@ For the integration branch:
 - Require merge requests instead of direct pushes.
 - Require the FORGE validation pipeline to pass before merge.
 - Require the source branch to be up to date with target policy as appropriate.
+- Document the merge semantics the repo uses for integration closeout, for example merge commit, squash merge, or fast-forward-only.
+- Run `bash ci/scripts/verify-team-closeout.sh --task <task-id> --target integration` before opening the merge request when practical.
 
 For the release branch:
 
 - Require merge requests or a documented release automation path instead of ad hoc direct pushes.
 - Require the release validation pipeline to pass before merge if the project uses one.
 - Decide who runs the post-promotion release reconciliation step that moves tasks from `integrated` to `complete`.
+- Record how claim release metadata is written when tasks move from active branch work to integrated or complete state.
 
 For coordination-branch team mode:
 

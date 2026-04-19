@@ -42,23 +42,64 @@ Optional:
 
 ## First Use
 
-Most people will use FORGE in a very simple loop:
+FORGE now works best when you choose an explicit bootstrap profile up front:
+
+1. `solo-simple`
+2. `solo-governed`
+3. `team-full`
+
+### Solo-simple
+
+Use this when you want the lightest useful FORGE loop:
 
 1. Tell the agent what the project is.
-2. Let FORGE bootstrap `docs/forge/`.
-3. Review the generated docs.
+2. Ask FORGE to bootstrap in `solo-simple`.
+3. Review `docs/forge/AI.md` and `docs/forge/TASKS.yaml`.
 4. Tell the agent to start working tasks.
-5. Step in only when FORGE surfaces a real blocker or decision.
 
-### Example: bootstrap a new project
+Example:
 
 ```text
-Use the forge skill to bootstrap this repo for a new project. This project is for an interactive web site that will be the main hub for RedTeam.Life information. We will have a team of people and agents working on it.
+Use the forge skill to bootstrap this repo in solo-simple mode for a new project. This is a small internal utility and I am the only operator.
 ```
 
-If your editor surfaces installed skills as slash commands, the subskills are grouped under the `forge-` prefix, for example `/forge-bootstrap` and `/forge-execute-task`.
+### Solo-governed
 
-That should generate a lean but team-ready `docs/forge/` set.
+Use this when you are the only operator but still want branch discipline and human-controlled merges:
+
+1. Ask FORGE to bootstrap in `solo-governed`.
+2. Review `docs/forge/AI.md`, especially `solo_branch_flow: task-branches`, and make sure the protected `release_branch` is still the real release branch such as `main`.
+3. Let the agent implement one task per task branch.
+4. Review and merge yourself, or explicitly tell the agent when a merge is allowed.
+
+Example:
+
+```text
+Use the forge skill to bootstrap this repo in solo-governed mode. I want one task branch per governed task, and the agent must never merge into main unless I say so explicitly.
+```
+
+### Team-full
+
+Use this when multiple people or agents will share the repo and you want the full FORGE experience:
+
+1. Ask FORGE to bootstrap in `team-full`.
+2. Generate the full team-ready `docs/forge/` set.
+3. Let FORGE ask whether it should also copy the repo agent-surface files and `ci/` scaffolding now, or leave those steps manual.
+4. If you choose the automated path, let it copy those repo-local assets.
+5. Configure branch protection and required checks.
+
+Example:
+
+```text
+Use the forge skill to bootstrap this repo in team-full mode for a SaaS web app. We want repo agent surfaces, CI enforcement scaffolding, and team coordination from the start.
+```
+
+Expected follow-up:
+
+- FORGE bootstraps the full team-ready docs first
+- then it asks whether you want it to copy repo agent surfaces and CI scaffolding now, or leave those steps manual
+
+If your editor surfaces installed skills as slash commands, the subskills are grouped under the `forge-` prefix, for example `/forge-bootstrap` and `/forge-execute-task`.
 
 ### Example: start working
 
@@ -89,14 +130,21 @@ Once those look sane, you can start letting the skill drive task execution.
 
 ## How FORGE Behaves
 
-In solo mode:
+In `solo-simple`:
 
 - the agent should finish one task
 - update `TASKS.yaml`
 - create a Conventional Commit
 - stop before moving to the next task unless you explicitly allow continued execution
 
-In team mode:
+In `solo-governed`:
+
+- the agent should work from a task branch for each governed task
+- the agent should not merge into `release_branch` unless you explicitly instruct it
+- the human can review and merge, or explicitly tell the agent when to do so
+- `docs/forge/SETUP.md` is useful when you want the branch and review handoff recorded
+
+In `team-full`:
 
 - task claims should be coordinated
 - feature work should stay on task branches
@@ -105,15 +153,27 @@ In team mode:
 
 FORGE is meant to feel like a trustworthy workflow layer, not a pile of ceremony.
 
-## Optional Enforcement
+## Full Team Setup
 
-If you want CI and hook enforcement, copy the `ci/` layer into the target repo and follow [ci/README.md](./ci/README.md).
+If you want the full team experience, ask FORGE to set up all repo-local pieces it can:
+
+- the full team-ready `docs/forge/` set
+- then an explicit follow-up choice about copying repo agent-surface files from `skills/forge/assets/agent-surfaces/`
+- and an explicit follow-up choice about copying the `ci/` enforcement layer
+
+Then finish the external platform steps yourself:
+
+- branch protection
+- required checks
+- merge policy
+- any provider-specific secrets or admin settings
 
 ## Agent Surfaces
 
 Reusable agent/editor surfaces live in `skills/forge/assets/agent-surfaces/`.
 
 - Copy from there into downstream repos when you want `AGENTS.md`, Copilot instructions, Codex hooks, Cursor rules, or Windsurf rules.
+- Those surfaces are the repo-level reminder layer: they tell agents to use FORGE for governed work or stop and ask for installation if the skill is unavailable.
 - Root `.github/workflows/` files in this repo are repository-specific and stay at the root.
 
 ## Updating Existing Projects

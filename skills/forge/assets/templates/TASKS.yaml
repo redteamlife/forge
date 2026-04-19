@@ -3,6 +3,9 @@ tasks:
     description: Replace this with the first bounded project task.
     status: incomplete
     # valid status values in team mode: incomplete|claimed|in_progress|implemented|integrated|blocked|complete
+    # implemented = committed on the task branch and ready for integration review
+    # integrated = accepted on the integration branch; active claim released
+    # complete = accepted on the release branch or otherwise formally accepted
     # task_type: feature
     # file_scope:
     #   - src/
@@ -10,12 +13,16 @@ tasks:
     # depends_on:
     #   - another-task
     # assignee:
+    # canonical team-mode claim fields:
     # claimed_by:
     # claimed_by_email:
     # agent:
     # claimed_at:
     # claim_commit:
     # branch:
+    # when the active claim is released after integration or formal handoff:
+    # claim_released_by:
+    # claim_released_at:
     # pr:
     # release_pr:
     # release_commit:
