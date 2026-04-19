@@ -157,8 +157,19 @@ fi
 if [ -f "$FORGE_DIR/TEAM.md" ]; then
   check_section_nonempty "$FORGE_DIR/TEAM.md" "Branch Policy"
   check_section_nonempty "$FORGE_DIR/TEAM.md" "Task Claiming"
+  check_section_nonempty "$FORGE_DIR/TEAM.md" "Task Ledger Semantics"
+  check_section_nonempty "$FORGE_DIR/TEAM.md" "Integration Flow"
   check_section_nonempty "$FORGE_DIR/TEAM.md" "File Scope"
+  check_section_nonempty "$FORGE_DIR/TEAM.md" "Task Closeout"
   check_section_nonempty "$FORGE_DIR/TEAM.md" "Review And Merge"
+fi
+
+if [ -f "$FORGE_DIR/SETUP.md" ]; then
+  check_section_nonempty "$FORGE_DIR/SETUP.md" "Local Hooks"
+  check_section_nonempty "$FORGE_DIR/SETUP.md" "CI Enforcement"
+  check_section_nonempty "$FORGE_DIR/SETUP.md" "Branch Protection"
+  check_section_nonempty "$FORGE_DIR/SETUP.md" "Team Closeout"
+  check_section_nonempty "$FORGE_DIR/SETUP.md" "Release Reconciliation"
 fi
 
 # -----------------------------------------------------------------------

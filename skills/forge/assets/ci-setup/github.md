@@ -20,6 +20,8 @@ For the integration branch:
 - Require status checks to pass before merging.
 - Add `FORGE Governance Checks` as a required check.
 - Require branches to be up to date before merging.
+- Document the merge semantics the repo uses for integration closeout, for example merge commit, squash merge, or fast-forward-only.
+- Run `bash ci/scripts/verify-team-closeout.sh --task <task-id> --target integration` before opening the feature PR when practical.
 
 For the release branch:
 
@@ -27,6 +29,7 @@ For the release branch:
 - Require status checks to pass before merging.
 - Limit who can promote integrated work if the project needs stronger release control.
 - Decide who runs the post-promotion release reconciliation step that moves tasks from `integrated` to `complete`.
+- Record how claim release metadata is written when tasks move from active branch work to integrated or complete state.
 
 For coordination-branch team mode:
 

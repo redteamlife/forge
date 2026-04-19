@@ -23,6 +23,14 @@ Use this file to record the project's FORGE enforcement setup.
 - Coordination branch protected: yes/no
 - Coordination branch name:
 
+## Team Closeout
+
+- Merge semantics for integration: PR / squash / fast-forward-only / other
+- Merge semantics for release promotion: PR / fast-forward-only / other
+- Closeout helper used before integration: yes/no
+- Closeout helper path or documented manual procedure:
+- Tasks release active claim on `integrated` or `complete`: yes/no
+
 ## Release Reconciliation
 
 - Release promotion process documented: yes/no

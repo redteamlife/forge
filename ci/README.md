@@ -49,6 +49,7 @@ Using git trailers keeps the primary commit message compatible with Conventional
 | Task state | CI script | Task in FORGE-task trailer not marked complete |
 | Team task metadata | CI script | Missing claim or branch metadata in `collaboration_mode: team` |
 | Evidence artifacts | CI script | PR missing updated EVALUATION.md or MEMORY.md |
+| Team closeout helper | Optional local script | Task branch lacks task-scoped commit or does not match recorded closeout expectations |
 
 ---
 
@@ -62,6 +63,7 @@ ci/
 │   ├── validate-commit-format.sh       ← CI: subject line + trailer validation
 │   ├── validate-team-task-metadata.sh  ← CI: task claim and branch metadata for team mode
 │   ├── validate-task-state.sh          ← CI: task marked complete in TASKS.yaml
+│   ├── verify-team-closeout.sh         ← local helper: task-branch closeout validation
 │   └── validate-evidence-artifacts.sh  ← CI: EVALUATION.md and MEMORY.md updated
 ├── workflows/
 │   └── forge-governance.yml            ← GitHub Actions workflow template
@@ -126,6 +128,7 @@ If `docs/forge/AI.md` declares `collaboration_mode: team`, CI additionally expec
 - `docs/forge/TEAM.md` to exist and contain branch, claiming, file-scope, and review policy
 - every task referenced by a `FORGE-task` trailer to include `file_scope`
 - every merged task to include `claimed_by`, `claimed_by_email`, `agent`, `claimed_at`, `claim_commit`, and `branch`
+- every task at `integrated` or `complete` to include `claim_released_by` and `claim_released_at`
 - the task's recorded `branch` to match the PR branch being validated
 - teams should publish claims from a shared coordination branch before feature-branch implementation begins
 - feature PRs should target the configured integration branch, and release promotion should flow from the integration branch to the release branch
@@ -136,6 +139,16 @@ Task-state expectations are branch-aware:
 - PRs targeting `release_branch` require task status `integrated` or `complete`
 
 This gives teams a minimal but enforceable coordination contract across multiple developers and multiple IDE agents.
+
+### Optional team closeout helper
+
+Use the local helper before opening a feature PR when team mode is active:
+
+```bash
+bash ci/scripts/verify-team-closeout.sh --task <task-id> --target integration
+```
+
+The helper validates the current branch against `docs/forge/TASKS.yaml`, checks for task-scoped commits carrying the matching `FORGE-task` trailer, and confirms the task state is ready for the requested target branch. It can also enforce a clean working tree before closeout.
 
 ### 5. (Optional) Configure org-level policy
 

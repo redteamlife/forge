@@ -7,6 +7,7 @@ This project uses FORGE governance.
 
 - read `docs/forge/AI.md` and `docs/forge/TASKS.yaml`
 - use the installed `forge` skill when doing governed work
+- if the `forge` skill is not installed or available, stop and tell the user FORGE must be installed before governed work continues
 - if docs are missing, bootstrap `docs/forge/` first
 - execute one bounded task at a time
 - in team mode, follow `docs/forge/TEAM.md`, task claim rules, and PR-based merge discipline

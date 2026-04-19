@@ -29,21 +29,31 @@ If the project already has `docs/forge/` and you want the newer team-mode claimi
    - add the coordination branch
    - add the claim publishing rule
    - add the branch/PR alignment rule
+   - define the closeout contract so `implemented`, `integrated`, and `complete` are treated as separate checkpoints
+   - define how claims are released when tasks reach `integrated` or `complete`
 
 3. Update `docs/forge/TASKS.yaml`
    - allow team-mode statuses including `implemented` and `integrated`
    - add `claimed_by_email`, `agent`, and `claim_commit` to active and future tasks
+   - add `claim_released_by` and `claim_released_at` for tasks that are already `integrated` or `complete`
    - ensure executable tasks have `file_scope`
 
-4. Create the coordination branch
+4. Update or create `docs/forge/SETUP.md`
+   - record merge semantics for integration and release promotion
+   - record whether the closeout helper or a documented manual procedure is used before integration
+   - record how release reconciliation moves tasks from `integrated` to `complete`
+
+5. Create the coordination branch
    - for example: `forge-state`
    - publish the updated `TASKS.yaml` there before new claims begin
 
-5. Keep implementation on feature branches
+6. Keep implementation on feature branches
    - claim first on the coordination branch
    - then implement on the task feature branch
    - treat the feature-branch copy of `TASKS.yaml` as informational only during implementation
+   - before opening the feature PR, run `bash ci/scripts/verify-team-closeout.sh --task <task-id> --target integration` or the documented equivalent
    - merge feature branches into the integration branch first
+   - when a task becomes `integrated`, record `claim_released_by` and `claim_released_at`
    - reconcile with `forge-state` when changing task state to `implemented`, `integrated`, or `complete`
 
 ## How To Refresh Existing Docs With The Skill

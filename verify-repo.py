@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -20,8 +22,10 @@ def ensure(condition: bool, message: str) -> None:
         raise CheckFailure(message)
 
 
-def run(args: list[str], cwd: Path = ROOT) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(args, cwd=cwd, text=True, capture_output=True, check=False)
+def run(
+    args: list[str], cwd: Path = ROOT, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(args, cwd=cwd, text=True, capture_output=True, check=False, env=env)
     if result.returncode != 0:
         raise CheckFailure(
             f"Command failed ({result.returncode}): {' '.join(args)}\n"
@@ -82,9 +86,13 @@ def verify_shell_scripts() -> None:
 
 
 def verify_install_flow() -> None:
-    run(["bash", "install.sh", "--force"], cwd=ROOT)
-    run(["bash", "verify-install.sh"], cwd=ROOT)
-    run(["bash", "uninstall.sh"], cwd=ROOT)
+    with tempfile.TemporaryDirectory(prefix="forge-verify-") as temp_dir:
+        env = os.environ.copy()
+        env["FORGE_SKILL_TARGET"] = str(Path(temp_dir) / "skills")
+
+        run(["bash", "install.sh", "--force"], cwd=ROOT, env=env)
+        run(["bash", "verify-install.sh"], cwd=ROOT, env=env)
+        run(["bash", "uninstall.sh"], cwd=ROOT, env=env)
 
 
 def main() -> int:

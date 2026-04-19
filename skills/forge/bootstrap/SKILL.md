@@ -11,6 +11,14 @@ Use this skill to create or refresh the smallest viable project-local files need
 
 Generate lean project state, not a maximal document set.
 
+Treat bootstrap as choosing an explicit setup profile, not as dumping generic templates.
+
+Prefer these profiles:
+
+- `solo-simple`: minimal repo-local governance for one operator working directly with per-task checkpoints
+- `solo-governed`: one operator, but each governed task runs on its own task branch and the agent must not merge to `release_branch` without explicit human instruction
+- `team-full`: multi-human or multi-agent coordination with claims, branch discipline, and full team-ready repo docs, followed by an explicit choice about copying repo agent surfaces and CI scaffolding
+
 Prefer this minimum:
 
 - `docs/forge/AI.md`
@@ -29,13 +37,25 @@ Add more docs only if the project's risk, complexity, or compliance needs justif
 1. Read `references/doc-minimums.md`.
 2. Read `references/team-mode.md` when the repo will be shared by multiple developers or agents.
 3. Inspect the repo shape and infer likely language, framework, and risk profile.
-4. Propose or generate the smallest set of governance docs that supports bounded execution.
-5. If the repo already has FORGE docs, prefer targeted updates over full regeneration so project-specific edits are preserved.
-6. In team mode, include coordination-branch, task-claiming, and branch policy docs from the start rather than adding them later.
-7. When generating `docs/forge/SECURITY_CHECKLISTS.md`, select only the relevant shared checklist assets rather than copying every possible checklist into the project.
-8. If the project uses GitHub or GitLab, generate explicit next-step setup guidance for local hooks, CI assets, and branch protection rather than assuming the team already knows how to wire them.
-9. Keep templates concise and project-specific.
-10. Do not generate application code.
+4. Determine the bootstrap profile from explicit user intent when possible.
+5. If the user wants bootstrap but does not specify the profile and the choice would materially change branch, CI, or collaboration behavior, ask one compact question that offers `solo-simple`, `solo-governed`, or `team-full`.
+6. Propose or generate the smallest set of governance docs that supports the chosen profile.
+7. If the repo already has FORGE docs, prefer targeted updates over full regeneration so project-specific edits are preserved.
+8. In `solo-governed`, emit explicit config and policy cues, not only narrative prose:
+   - set `collaboration_mode: solo`
+   - set `solo_branch_flow: task-branches`
+   - keep `release_branch` as the real protected branch, for example `main`
+   - do not use wildcard branch patterns such as `task/*` as `integration_branch`
+   - do not imply a team-style coordination branch unless the project explicitly wants one
+9. In `solo-governed`, include task-branch policy and an explicit rule that the agent must not merge into `release_branch` without human instruction.
+10. In `team-full`, include coordination-branch, task-claiming, branch policy, and integration closeout rules from the start rather than adding them later.
+11. When generating `docs/forge/SECURITY_CHECKLISTS.md`, select only the relevant shared checklist assets rather than copying every possible checklist into the project.
+12. In `team-full`, bootstrap the full team-ready repo docs first.
+13. After bootstrapping `team-full`, ask one explicit follow-up question: whether the user wants the agent to also copy the reusable agent-surface files and CI scaffolding into the target repo now, or leave those steps manual.
+14. If the user chooses manual setup for those repo-level assets, generate explicit next-step guidance instead of copying them.
+15. If the project uses GitHub or GitLab, generate explicit next-step setup guidance for local hooks, CI assets, and branch protection rather than assuming the team already knows how to wire them.
+16. Keep templates concise and project-specific.
+17. Do not generate application code.
 
 ## Output Style
 
