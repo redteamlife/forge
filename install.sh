@@ -112,6 +112,13 @@ for agent in "${AGENTS[@]}"; do
 done
 
 echo ""
+VERIFY_ARGS=()
+for agent in "${AGENTS[@]}"; do
+  VERIFY_ARGS+=("--agent" "$agent")
+done
+bash "$SCRIPT_DIR/verify-install.sh" "${VERIFY_ARGS[@]}"
+
+echo ""
 echo "Next steps:"
 echo "  1. Open your project in a skill-aware agent."
 echo "  2. Ask it to use the 'forge' skill."

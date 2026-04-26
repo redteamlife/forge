@@ -10,12 +10,20 @@ TASKS_FILE="docs/forge/TASKS.yaml"
 
 INTEGRATION_BRANCH="develop"
 RELEASE_BRANCH="main"
+TASK_SOURCE="local"
 
 if [ -f "$AI_MD" ]; then
   INTEGRATION_BRANCH=$(grep 'integration_branch:' "$AI_MD" | sed 's/.*integration_branch: *//' | sed 's/[[:space:]]*$//' || true)
   RELEASE_BRANCH=$(grep 'release_branch:' "$AI_MD" | sed 's/.*release_branch: *//' | sed 's/[[:space:]]*$//' || true)
+  TASK_SOURCE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//' || true)
   [ -z "$INTEGRATION_BRANCH" ] && INTEGRATION_BRANCH="develop"
   [ -z "$RELEASE_BRANCH" ] && RELEASE_BRANCH="main"
+  [ -z "$TASK_SOURCE" ] && TASK_SOURCE="local"
+fi
+
+if [ "$TASK_SOURCE" != "local" ]; then
+  echo "FORGE: task_source is $TASK_SOURCE - local TASKS.yaml state validation skipped."
+  exit 0
 fi
 
 if [ ! -f "$TASKS_FILE" ]; then

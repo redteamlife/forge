@@ -20,6 +20,7 @@ If the project already has `docs/forge/` and you want the newer team-mode claimi
 
 1. Update `docs/forge/AI.md`
     - set `collaboration_mode: team`
+    - set `task_source: local`, `github`, `gitlab`, or `external`
     - set `coordination_branch: forge-state` or your chosen branch
     - set `integration_branch: develop` or your chosen staging branch
     - set `release_branch: main` or your chosen promotion branch
@@ -46,6 +47,8 @@ If the project already has `docs/forge/` and you want the newer team-mode claimi
 5. Create the coordination branch
    - for example: `forge-state`
    - publish the updated `TASKS.yaml` there before new claims begin
+
+   Skip this step when `task_source` is `github` or `gitlab`; issue assignment and labels are the authoritative claim ledger.
 
 6. Keep implementation on feature branches
    - claim first on the coordination branch

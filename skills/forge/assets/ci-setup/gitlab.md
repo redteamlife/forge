@@ -9,8 +9,14 @@ Use this when the project is hosted on GitLab and `ci_enforcement` should be ena
 
 ## Local Hooks
 
+- Install `ci/hooks/pre-commit` into `.git/hooks/pre-commit`.
 - Install `ci/hooks/commit-msg` into `.git/hooks/commit-msg`.
 - Optionally install the provided `pre-push` hook if the project uses it.
+
+## Task Source
+
+- For `task_source: gitlab`, use issue assignment and labels as the team claim ledger.
+- Keep `docs/forge/TASKS.yaml` only as a planning snapshot when GitLab Issues are authoritative.
 
 ## Protected Branches And Merge Rules
 

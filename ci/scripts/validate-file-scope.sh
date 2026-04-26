@@ -12,9 +12,18 @@ TASKS_FILE="docs/forge/TASKS.yaml"
 # Read FORGE mode from AI.md
 FORGE_MODE=""
 COLLABORATION_MODE=""
+TASK_SOURCE="local"
 if [ -f "$AI_MD" ]; then
   FORGE_MODE=$(grep 'FORGE_mode:' "$AI_MD" | sed 's/.*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
   COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
+  TASK_SOURCE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//')
+  [ -z "$TASK_SOURCE" ] && TASK_SOURCE="local"
+fi
+
+if [ "$TASK_SOURCE" != "local" ]; then
+  echo "FORGE: task_source is $TASK_SOURCE - local TASKS.yaml file-scope validation skipped."
+  echo "FORGE: validate issue-backed scope through issue metadata and review evidence."
+  exit 0
 fi
 
 # Skip for Lightweight mode only when not in team collaboration mode.

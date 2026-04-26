@@ -9,6 +9,7 @@ AI_MD="docs/forge/AI.md"
 TASKS_FILE="docs/forge/TASKS.yaml"
 INTEGRATION_BRANCH="develop"
 RELEASE_BRANCH="main"
+TASK_SOURCE="local"
 
 if [ ! -f "$AI_MD" ]; then
   echo "FORGE: $AI_MD not found - skipping team task metadata validation."
@@ -17,8 +18,10 @@ fi
 
 COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//' || true)
 CI_ENFORCEMENT=$(grep 'ci_enforcement:' "$AI_MD" | sed 's/.*ci_enforcement: *//' | sed 's/[[:space:]]*$//' || true)
+TASK_SOURCE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//' || true)
 INTEGRATION_BRANCH=$(grep 'integration_branch:' "$AI_MD" | sed 's/.*integration_branch: *//' | sed 's/[[:space:]]*$//' || true)
 RELEASE_BRANCH=$(grep 'release_branch:' "$AI_MD" | sed 's/.*release_branch: *//' | sed 's/[[:space:]]*$//' || true)
+[ -z "$TASK_SOURCE" ] && TASK_SOURCE="local"
 [ -z "$INTEGRATION_BRANCH" ] && INTEGRATION_BRANCH="develop"
 [ -z "$RELEASE_BRANCH" ] && RELEASE_BRANCH="main"
 
@@ -31,6 +34,12 @@ if [ "$CI_ENFORCEMENT" != "enabled" ]; then
   echo "FORGE: collaboration_mode is team but ci_enforcement is not enabled."
   echo "  Enable ci_enforcement: enabled in docs/forge/AI.md for shared-repo workflows."
   exit 1
+fi
+
+if [ "$TASK_SOURCE" != "local" ]; then
+  echo "FORGE: task_source is $TASK_SOURCE - local TASKS.yaml team metadata validation skipped."
+  echo "FORGE: validate issue assignment, labels, and reviewer evidence through the hosting platform."
+  exit 0
 fi
 
 if [ ! -f "$TASKS_FILE" ]; then

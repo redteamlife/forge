@@ -46,23 +46,31 @@ Soft caps:
 ## Workflow
 
 1. Confirm branch safety and project-local prerequisites.
-2. Parse `AI.md` for mode, execution style, collaboration settings, and any solo branch-flow policy.
-3. If `TEAM.md` exists, apply its coordination branch, integration branch, release branch, claiming, and review rules before task selection.
-4. In solo mode, select the first eligible task from `TASKS.yaml` and treat it as the only task allowed in this execution pass.
-5. In team mode, fetch the latest coordination branch and select only a task that is unclaimed or already claimed by the current actor and branch in the latest shared state.
-6. If team mode is active, derive operator identity from project policy or local git identity, record `claimed_by`, `claimed_by_email`, and `agent`, publish the claim on the coordination branch, and only then begin implementation.
-7. After claim publication, treat `forge-state` as the authoritative ledger and the feature-branch copy of `TASKS.yaml` as informational only.
-8. If `MEMORY.md` exists, read recent high-signal entries first.
-9. Check task alignment against scope and architecture constraints.
-10. Implement only the selected task.
-11. Before any task-state transition to `implemented`, `integrated`, or `complete`, reconcile again with the latest coordination branch state.
-12. In team mode, treat merged feature branches as temporary and delete them after the integration PR is accepted unless project policy explicitly keeps them.
-13. Do not move a task from `integrated` to `complete` unless release-branch acceptance is observable through explicit human confirmation, recorded release metadata, or a fetched release-branch reconciliation step.
-14. Hand off to critique, security review, and evaluation before transition to the next task state.
-15. In `collaboration_mode: solo` with `solo_branch_flow: task-branches`, create or continue the task branch before implementation, do not implement on `release_branch`, and do not merge or promote into `release_branch` unless the human explicitly instructs that action.
-16. In solo mode, after a task reaches `complete`, update `TASKS.yaml`, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
-17. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
-18. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
+2. Parse `AI.md` for mode, execution style, collaboration settings, `task_source`, and any solo branch-flow policy.
+3. If `TEAM.md` exists, apply its integration branch, release branch, claiming, and review rules before task selection.
+4. For `task_source: local`, select tasks from `TASKS.yaml`.
+5. For `task_source: github`, use `gh issue list` / `gh issue view` to select work when `gh auth status` passes; otherwise stop and ask for authentication or an explicit issue reference.
+6. For `task_source: gitlab`, use `glab issue list` / `glab issue view` to select work when `glab auth status` passes; otherwise stop and ask for authentication or an explicit issue reference.
+7. For `task_source: external`, use only the configured MCP, CLI, or human-provided issue reference; do not invent local tasks as authoritative state.
+8. In solo mode, select the first eligible task from the authoritative task source and treat it as the only task allowed in this execution pass.
+9. In team mode with `task_source: local`, fetch the latest coordination branch and select only a task that is unclaimed or already claimed by the current actor and branch in the latest shared state.
+10. In team mode with `task_source: github`, claim by assigning the GitHub Issue to the current actor and adding an `in-progress` label; if it is assigned to someone else, skip it.
+11. In team mode with `task_source: gitlab`, claim by assigning the GitLab Issue to the current actor and adding an `in-progress` label; if it is assigned to someone else, skip it.
+12. If team mode is active, derive operator identity from project policy or local git identity before claiming work.
+13. For local team claims, record `claimed_by`, `claimed_by_email`, and `agent`, publish the claim on the coordination branch, and only then begin implementation.
+14. For issue-backed team claims, record task state with issue assignment, labels, and comments rather than editing `TASKS.yaml` as the primary ledger.
+15. After local claim publication, treat `forge-state` as the authoritative ledger and the feature-branch copy of `TASKS.yaml` as informational only.
+16. If `MEMORY.md` exists, read recent high-signal entries first.
+17. Check task alignment against scope and architecture constraints.
+18. Implement only the selected task.
+19. Before any task-state transition to `implemented`, `integrated`, or `complete`, reconcile again with the authoritative task source.
+20. In team mode, treat merged feature branches as temporary and delete them after the integration PR is accepted unless project policy explicitly keeps them.
+21. Do not move a task from `integrated` to `complete` unless release-branch acceptance is observable through explicit human confirmation, recorded release metadata, or a fetched release-branch reconciliation step.
+22. Hand off to critique, security review, and evaluation before transition to the next task state.
+23. In `collaboration_mode: solo` with `solo_branch_flow: task-branches`, create or continue the task branch before implementation, do not implement on `release_branch`, and do not merge or promote into `release_branch` unless the human explicitly instructs that action.
+24. In solo mode, after a task reaches `complete`, update the authoritative task source, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
+25. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
+26. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
 
 ## Token Saving Rules
 
@@ -82,8 +90,11 @@ Stop when:
 - team mode is active and the task lacks claim metadata or required `file_scope`
 - the operator identity cannot be determined for a team-mode claim
 - another actor already holds the claim for the selected task
-- the latest coordination branch state cannot be fetched or the claim cannot be published
-- a task-state transition cannot be reconciled against the latest coordination branch state
+- `task_source: github` is configured but GitHub issue state cannot be read or updated
+- `task_source: gitlab` is configured but GitLab issue state cannot be read or updated
+- `task_source: external` is configured but the external task cannot be read or updated through the configured interface
+- the latest authoritative task source cannot be fetched or the claim cannot be published
+- a task-state transition cannot be reconciled against the authoritative task source
 - the current branch does not match the task's recorded branch policy
 - solo-governed mode is active and the current branch is the configured `release_branch`
 - solo-governed mode is active and merge or promotion into `release_branch` was not explicitly instructed by the human

@@ -46,6 +46,7 @@ Using git trailers keeps the primary commit message compatible with Conventional
 | Check | Mechanism | Catches |
 | --- | --- | --- |
 | Commit message format | `commit-msg` hook + CI script | CC format violations, missing FORGE trailers |
+| Local task evidence | `pre-commit` hook | Local `TASKS.yaml` state changed without `EVALUATION.md` |
 | Task state | CI script | Task in FORGE-task trailer not marked complete |
 | Team task metadata | CI script | Missing claim or branch metadata in `collaboration_mode: team` |
 | Evidence artifacts | CI script | PR missing updated EVALUATION.md or MEMORY.md |
@@ -58,6 +59,7 @@ Using git trailers keeps the primary commit message compatible with Conventional
 ```text
 ci/
 ├── hooks/
+│   ├── pre-commit                      ← local hook: task-state evidence coupling
 │   └── commit-msg                      ← local git hook
 ├── scripts/
 │   ├── validate-commit-format.sh       ← CI: subject line + trailer validation
@@ -75,14 +77,16 @@ ci/
 
 ## Setup
 
-### 1. Install the local commit hook
+### 1. Install the local hooks
 
 ```bash
+cp ci/hooks/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 cp ci/hooks/commit-msg .git/hooks/commit-msg
 chmod +x .git/hooks/commit-msg
 ```
 
-This validates commit format before git accepts the commit. No CI cost. Instant feedback.
+These validate local task/evidence coupling and commit format before git accepts the commit. No CI cost. Instant feedback.
 
 ### 2. Copy the workflow into the project
 
@@ -112,6 +116,7 @@ Add `ci_enforcement: enabled` to the `FORGE-config` block in `docs/forge/AI.md`:
 FORGE_mode: Mid
 execution_mode: manual
 collaboration_mode: team
+task_source: github
 coordination_branch: forge-state
 integration_branch: develop
 release_branch: main
@@ -120,6 +125,7 @@ ci_enforcement: enabled
 
 The evidence artifact check reads this field. If absent or not `enabled`, that check is skipped.
 In `collaboration_mode: team`, the team metadata validator also requires it and fails closed if it is not enabled.
+When `ci_enforcement: enabled`, a PR that changes `docs/forge/TASKS.yaml` or contains a `FORGE-task` trailer must also update `docs/forge/EVALUATION.md` in the same PR. Mid and higher modes still require `docs/forge/MEMORY.md`.
 
 ### Team Mode Enforcement
 
@@ -131,6 +137,7 @@ If `docs/forge/AI.md` declares `collaboration_mode: team`, CI additionally expec
 - every task at `integrated` or `complete` to include `claim_released_by` and `claim_released_at`
 - the task's recorded `branch` to match the PR branch being validated
 - teams should publish claims from a shared coordination branch before feature-branch implementation begins
+- teams using `task_source: github` or `task_source: gitlab` should use issue assignment and labels as the claim ledger instead of `forge-state`
 - feature PRs should target the configured integration branch, and release promotion should flow from the integration branch to the release branch
 
 Task-state expectations are branch-aware:

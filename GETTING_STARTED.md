@@ -36,7 +36,7 @@ Optional:
 - Use `--agent shared|claude|codex|cursor|windsurf` or `-Agent ...` to install to native agent paths
 - Use `--link` / `-Mode link` to symlink instead of copying
 - Use `--force` or `-Force` to replace an existing install
-- Run `bash verify-install.sh --agent claude` after install
+- Install scripts run verification automatically; `bash verify-install.sh --agent claude` is still available when you want a separate check
 - Copy `skills/forge/assets/agent-surfaces/` into your repo if you want editor-specific onboarding files
 - Treat `skills/forge/assets/agent-surfaces/` as the canonical source for reusable agent/editor surfaces
 
@@ -47,6 +47,13 @@ FORGE now works best when you choose an explicit bootstrap profile up front:
 1. `solo-simple`
 2. `solo-governed`
 3. `team-full`
+
+Bootstrap also asks where tasks should be tracked:
+
+- `local`: `docs/forge/TASKS.yaml`
+- `github`: GitHub Issues, preferred when the repo has a GitHub remote and `gh` is authenticated
+- `gitlab`: GitLab Issues, preferred when the repo has a GitLab remote and `glab` is authenticated
+- `external`: Jira, Linear, or another tracker managed through MCP, CLI, or human workflow
 
 ### Solo-simple
 
@@ -147,6 +154,7 @@ In `solo-governed`:
 In `team-full`:
 
 - task claims should be coordinated
+- GitHub/GitLab repos should prefer issue assignment and labels as the coordination ledger
 - feature work should stay on task branches
 - integration should happen before release promotion
 - CI and setup details should be tracked in `docs/forge/SETUP.md`
@@ -160,6 +168,7 @@ If you want the full team experience, ask FORGE to set up all repo-local pieces 
 - the full team-ready `docs/forge/` set
 - then an explicit follow-up choice about copying repo agent-surface files from `skills/forge/assets/agent-surfaces/`
 - and an explicit follow-up choice about copying the `ci/` enforcement layer
+- issue-backed task coordination when `task_source` is `github` or `gitlab`
 
 Then finish the external platform steps yourself:
 

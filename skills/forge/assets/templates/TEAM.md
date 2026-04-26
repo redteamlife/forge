@@ -7,6 +7,7 @@ Use this file when multiple developers or multiple agents work in the same repos
 - Coordination branch: `forge-state`
 - Integration branch: `develop`
 - Release branch: `main`
+- Task source: `local`
 - Work on feature branches only.
 - Branch naming pattern: `<task-id>/<actor>`
 - Do not implement governed tasks directly on `main` or other protected branches.
@@ -15,7 +16,11 @@ Use this file when multiple developers or multiple agents work in the same repos
 ## Task Claiming
 
 - Fetch the latest coordination branch before claiming any task.
-- A task must be claimed in `docs/forge/TASKS.yaml` and pushed on the coordination branch before implementation starts.
+- A task must be claimed in the configured task source before implementation starts.
+- For `task_source: local`, claim in `docs/forge/TASKS.yaml` and push on the coordination branch.
+- For `task_source: github`, claim by assigning the GitHub Issue and adding an `in-progress` label.
+- For `task_source: gitlab`, claim by assigning the GitLab Issue and adding an `in-progress` label.
+- For `task_source: external`, use the configured MCP, CLI, or human-owned tracker workflow.
 - The claim must record `claimed_by`, `claimed_by_email`, `agent`, `claimed_at`, `claim_commit`, and `branch`.
 - Do not work a task already claimed by another actor.
 - If the claim push conflicts, refresh the coordination branch and retry rather than proceeding from stale state.
@@ -23,7 +28,8 @@ Use this file when multiple developers or multiple agents work in the same repos
 
 ## Task Ledger Semantics
 
-- `forge-state` is the authoritative task ledger branch.
+- `forge-state` is the authoritative task ledger branch only when `task_source: local`.
+- For `task_source: github` or `task_source: gitlab`, the issue tracker is the authoritative task ledger.
 - `docs/forge/TASKS.yaml` on feature branches is informational only during implementation.
 - Ordinary drift between a feature branch and `forge-state` does not block implementation by itself.
 - Claim and task-state transitions must reconcile against the latest `forge-state` state.

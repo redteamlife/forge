@@ -4,6 +4,24 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-04-26
+
+### Added
+
+- Added `task_source` configuration with `local`, `github`, `gitlab`, and `external` task ledger modes.
+- Added bootstrap guidance for choosing task tracking during setup and detecting authenticated GitHub/GitLab CLIs.
+- Added issue-backed team coordination guidance for GitHub and GitLab repositories.
+- Added structured memory entry guidance with `max_entries` consolidation behavior.
+- Added a local `pre-commit` hook that blocks local `TASKS.yaml` changes without matching `EVALUATION.md` evidence.
+
+### Changed
+
+- Bumped the default generated `forge_version` to `1.1.0`.
+- Updated team-mode execution guidance to prefer GitHub/GitLab issue assignment and labels over `forge-state` when issue-backed task sources are selected.
+- Updated evidence validation so task-state changes or `FORGE-task` trailers require `EVALUATION.md` in the same PR when CI enforcement is enabled.
+- Updated install scripts so verification runs automatically after install.
+- Updated setup docs to include the new hook, task-source configuration, and issue-backed coordination model.
+
 ## [1.0.0] - 2026-04-15
 
 ### Added

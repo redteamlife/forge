@@ -17,6 +17,8 @@ Use this skill to decide whether a task is actually complete.
 - task status and Conventional Commit metadata are ready
 - commit message is free of AI attribution or tool-marketing lines
 - in team mode, task claim, branch, reviewer, and PR metadata are consistent
+- for `task_source: github` or `task_source: gitlab`, issue assignment, labels, and comments match the intended task transition
+- for `task_source: external`, external tracker evidence or human acceptance is recorded before completion
 - in solo mode, the task is ready to be marked `complete` and committed with a Conventional Commit before any new task starts
 
 ## Evidence
@@ -24,6 +26,8 @@ Use this skill to decide whether a task is actually complete.
 Prefer storing structured evidence in `docs/forge/EVALUATION.md`.
 
 If the project uses CI enforcement, confirm that the expected artifacts are updated in the same change set.
+For team-full mode, prefer also posting the evaluation summary on the PR so reviewers see it in the review surface.
+If a task declares `requires_independent_review: true`, do not self-evaluate completion; post the PR or handoff and wait for human sign-off or a separate review session.
 In team mode, prefer task-scoped append-only entries over rewriting shared narrative summaries.
 
 Keep evaluation output compact: gate result first, short evidence notes second.

@@ -243,6 +243,17 @@ if grep -q 'FORGE-config' "$AI_MD"; then
       FAILED=1
     fi
   fi
+  if grep -q 'task_source:' "$AI_MD"; then
+    TASK_SOURCE_VALUE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//')
+    case "$TASK_SOURCE_VALUE" in
+      local|github|gitlab|external)
+        ;;
+      *)
+        echo "FORGE: task_source must be local, github, gitlab, or external when present."
+        FAILED=1
+        ;;
+    esac
+  fi
 else
   echo "FORGE: AI.md is missing a FORGE-config block."
   FAILED=1

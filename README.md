@@ -91,8 +91,15 @@ Copy those agent-surface files into downstream repos when you want the repo itse
 FORGE treats:
 
 - skills as the stable execution contract
-- `docs/forge/` as project-local state
+- `docs/forge/` or the configured issue tracker as project-local state
 - CI and hooks as optional external enforcement
+
+`task_source` in `docs/forge/AI.md` controls where tasks live:
+
+- `local`: `docs/forge/TASKS.yaml`
+- `github`: GitHub Issues via `gh`
+- `gitlab`: GitLab Issues via `glab`
+- `external`: Jira, Linear, or another tracker managed through MCP, CLI, or human workflow
 
 In `solo-simple`, the agent should finish one task, update `TASKS.yaml`, create a Conventional Commit, and stop before moving on.
 
@@ -100,7 +107,7 @@ In `solo-governed`, the agent should still preserve one-task checkpoints, but it
 
 In `team-full`, FORGE supports:
 
-- task claiming on `forge-state`
+- task claiming through GitHub/GitLab Issues when selected, or `forge-state` for local task ledgers
 - feature branches for implementation
 - an integration branch such as `develop`
 - a release branch such as `main`

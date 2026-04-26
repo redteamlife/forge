@@ -83,6 +83,9 @@ def verify_manifests() -> None:
 
 def verify_shell_scripts() -> None:
     run(["bash", "-n", "install.sh", "uninstall.sh", "verify-install.sh"], cwd=ROOT)
+    for hook in sorted((ROOT / "ci" / "hooks").iterdir()):
+        if hook.is_file():
+            run(["bash", "-n", str(hook.relative_to(ROOT))], cwd=ROOT)
 
 
 def verify_install_flow() -> None:

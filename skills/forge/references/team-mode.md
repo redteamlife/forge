@@ -13,10 +13,24 @@ Use this reference when a repository will be worked on by multiple developers, m
 
 - Work from feature branches, never shared long-lived branches.
 - Claim a task before implementation starts.
-- Publish claims on a shared coordination branch before editing implementation files.
+- Publish claims in the configured task source before editing implementation files.
 - Require explicit `file_scope` for executable tasks.
 - Record the actor and branch on the task itself.
 - Use PR-based merge with CI enforcement for completed task work.
+
+## Task Source
+
+`task_source` in `docs/forge/AI.md` selects the authoritative task ledger:
+
+- `local`: `docs/forge/TASKS.yaml`, published through the coordination branch.
+- `github`: GitHub Issues, using issue assignment and labels.
+- `gitlab`: GitLab Issues, using issue assignment and labels.
+- `external`: Jira, Linear, or another tracker managed through MCP, CLI, or human-owned workflow.
+
+For serious multi-agent work on GitHub or GitLab, prefer issue-backed
+coordination over `forge-state`. The hosting platform is the lock and audit
+ledger; `TASKS.yaml` may still exist as a planning snapshot, but it is not
+authoritative.
 
 ## Recommended Task Fields
 
@@ -41,13 +55,14 @@ Each executable task should support:
 
 ## Claim Protocol
 
-1. Fetch the latest coordination branch before selecting work.
+1. Fetch the latest authoritative task source before selecting work.
 2. Select only a task whose dependencies are already complete and which is still unclaimed in the latest shared state.
-3. If the task is unclaimed, record the current actor identity, email, agent/runtime, and feature branch in `TASKS.yaml` and set `status: claimed` or `in_progress`.
-4. Commit and push the claim to the coordination branch immediately before implementation starts.
-5. If another actor already holds the claim, do not proceed.
-6. If the task's `file_scope` overlaps heavily with another active task, stop and split or resequence the work.
-7. If publishing the claim fails because the coordination branch changed, stop, refresh, and retry from the latest state.
+3. If the task is unclaimed in `task_source: local`, record the current actor identity, email, agent/runtime, and feature branch in `TASKS.yaml` and set `status: claimed` or `in_progress`.
+4. Commit and push the local claim to the coordination branch immediately before implementation starts.
+5. If the task is unclaimed in `task_source: github` or `task_source: gitlab`, assign the issue to the current actor, add an `in-progress` label, and comment with the branch name when useful.
+6. If another actor already holds the claim, do not proceed.
+7. If the task's `file_scope` overlaps heavily with another active task, stop and split or resequence the work.
+8. If publishing the claim fails because the authoritative task source changed, stop, refresh, and retry from the latest state.
 
 ## Closeout Contract
 
@@ -70,7 +85,7 @@ FORGE should not assume one merge strategy unless the project-local policy says 
 
 ## Coordination Branch
 
-Use a shared branch for governance state, for example `forge-state`.
+Use a shared branch for governance state, for example `forge-state`, only when `task_source: local`.
 
 - `TASKS.yaml` claims are published there first.
 - `forge-state` is the authoritative task ledger.
@@ -81,11 +96,14 @@ Use a shared branch for governance state, for example `forge-state`.
 - The task's `branch` field should record the feature branch that will carry the code changes.
 - Teams should fetch the coordination branch before claiming any task.
 
+For `task_source: github` or `task_source: gitlab`, the issue tracker replaces
+the coordination branch for claims and task-state labels.
+
 ## Reconciliation Rules
 
 - Drift between a feature branch copy of `TASKS.yaml` and `forge-state` is expected during implementation.
 - Do not treat ordinary ledger drift on a feature branch as a hard stop by itself.
-- Reconcile against `forge-state` when task state transitions matter:
+- Reconcile against the authoritative task source when task state transitions matter:
   - before claiming a task
   - before changing a task to `implemented`, `integrated`, or `complete`
   - when resolving claim conflicts or blocked state transitions

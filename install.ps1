@@ -50,6 +50,39 @@ foreach ($AgentName in $Agent) {
     Write-Host "FORGE: installed skill pack to $TargetDir"
   }
 }
+
+Write-Host ""
+foreach ($AgentName in $Agent) {
+  $TargetRoot = Resolve-ForgeTargetRoot $AgentName
+  $TargetDir = Join-Path $TargetRoot "forge"
+  $Required = @(
+    "SKILL.md",
+    "bootstrap\SKILL.md",
+    "execute-task\SKILL.md",
+    "critique\SKILL.md",
+    "security-review\SKILL.md",
+    "evaluation\SKILL.md",
+    "memory\SKILL.md",
+    "assets\templates\AI.md",
+    "assets\templates\TASKS.yaml"
+  )
+
+  if (-not (Test-Path $TargetDir)) {
+    Write-Error "FORGE: not installed at $TargetDir"
+    exit 1
+  }
+
+  foreach ($RelativePath in $Required) {
+    $Path = Join-Path $TargetDir $RelativePath
+    if (-not (Test-Path $Path)) {
+      Write-Error "FORGE: missing installed file: $Path"
+      exit 1
+    }
+  }
+
+  Write-Host "FORGE: install looks good at $TargetDir"
+}
+
 Write-Host ""
 Write-Host "Next steps:"
 Write-Host "  1. Open your project in a skill-aware agent."

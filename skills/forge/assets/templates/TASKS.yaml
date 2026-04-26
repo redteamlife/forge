@@ -2,6 +2,8 @@ tasks:
   - id: example-task
     description: Replace this with the first bounded project task.
     status: incomplete
+    # Used when task_source is github, gitlab, or external.
+    # issue: https://example.com/org/repo/issues/1
     # valid status values in team mode: incomplete|claimed|in_progress|implemented|integrated|blocked|complete
     # implemented = committed on the task branch and ready for integration review
     # integrated = accepted on the integration branch; active claim released
