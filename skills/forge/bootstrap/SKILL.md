@@ -29,6 +29,8 @@ Prefer this minimum:
 - `docs/forge/TEAM.md` when multiple developers or agents will work in parallel
 - `docs/forge/SECURITY_CHECKLISTS.md` when `forge-security-review` will be used, composed from the relevant files in `assets/security-checklists/`
 - `docs/forge/SETUP.md` when local hooks or hosted CI enforcement should be tracked explicitly
+- `AGENTS.md` at repo root — always; instructs OpenAI Codex and other agents to read the forge docs before working
+- `CLAUDE.md` at repo root — always; uses `@./docs/forge/` includes so Claude Code auto-loads the forge docs on every session
 
 Add more docs only if the project's risk, complexity, or compliance needs justify them.
 
@@ -55,7 +57,9 @@ Add more docs only if the project's risk, complexity, or compliance needs justif
 14. If the user chooses manual setup for those repo-level assets, generate explicit next-step guidance instead of copying them.
 15. If the project uses GitHub or GitLab, generate explicit next-step setup guidance for local hooks, CI assets, and branch protection rather than assuming the team already knows how to wire them.
 16. Keep templates concise and project-specific.
-17. Do not generate application code.
+17. After all `docs/forge/` files are written, generate `AGENTS.md` at the repo root. List only the docs that were actually bootstrapped, in reading order, with a one-line description of each. Use the repo directory name as the title. Instruct the agent to read them before doing any work.
+18. After writing `AGENTS.md`, generate `CLAUDE.md` at the repo root. Use `@./docs/forge/<file>` include syntax for each bootstrapped doc in the same reading order. Add a one-line repo title heading above the includes.
+19. Do not generate application code.
 
 ## Output Style
 
@@ -68,6 +72,6 @@ Add more docs only if the project's risk, complexity, or compliance needs justif
 - Do not echo generated file contents back into chat unless the user asked to review them.
 - Bootstrap closeout should be compact:
   - `Done: <what was bootstrapped>.`
-  - `Changed: <docs created or updated>.`
+  - `Changed: <docs created or updated, including AGENTS.md and CLAUDE.md>.`
   - `Next: <next task or setup step>.`
 - Do not explain the purpose of every generated file unless the user asks.
