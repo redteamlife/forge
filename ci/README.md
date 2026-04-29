@@ -135,6 +135,23 @@ For stronger security profiles, document which external checks are required:
 branch protection, CODEOWNERS, security policy, SAST, secret scanning, SCA,
 SBOM, DAST, provenance, and cleanup/rollback evidence.
 
+### Evaluation Currency Validator
+
+`ci/scripts/validate-evaluation-currency.sh` requires that any commit that
+transitions a task into `implemented`, `integrated`, or `complete` in
+`docs/forge/TASKS.yaml` also updates `docs/forge/EVALUATION.md` in the
+**same commit**. This is stricter than the same-PR check in
+`validate-evidence-artifacts.sh`: it prevents splitting state changes and
+their evidence across separate commits. Skipped in Lightweight mode and when
+`ci_enforcement` is disabled.
+
+### Memory Bounds Validator
+
+`ci/scripts/validate-memory-bounds.sh` fails closed when
+`docs/forge/MEMORY.md` exceeds its declared `max_entries`. Forces
+consolidation of oldest entries into a `consolidated` summary entry before
+new entries can land.
+
 ### Security Profile Validator
 
 `ci/scripts/validate-security-profile.sh` enforces that a stronger

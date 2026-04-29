@@ -100,9 +100,10 @@ Write only what the chosen configuration requires.
 
 Hand off cleanly with explicit next steps.
 
-28. In `team-full`, after bootstrapping the full team-ready docs, ask one explicit follow-up question: whether the user wants the agent to also copy the reusable agent-surface files and CI scaffolding into the target repo now, or leave those steps manual.
-29. If the user chooses manual setup for those repo-level assets, generate explicit next-step guidance instead of copying them.
-30. If the project uses GitHub or GitLab, generate explicit next-step setup guidance for local hooks, CI assets, branch protection, issue-token access, issue/MR or issue/PR linking, and enabled security scanning rather than assuming the team already knows how to wire them.
+28. For `solo-governed` and `team-full`, install the FORGE git hooks automatically by running `bash scripts/install-forge-hooks.sh` (or `powershell -File scripts/install-forge-hooks.ps1` on Windows) from the FORGE install directory against the target repo. The installer is idempotent and backs up any non-FORGE hooks to `<name>.bak`. Record the installation outcome in `docs/forge/SETUP.md` under Local Hooks. For `solo-simple`, leave hook installation manual unless the user asks.
+29. In `team-full`, after bootstrapping the full team-ready docs, ask one explicit follow-up question: whether the user wants the agent to also copy the reusable agent-surface files and CI scaffolding into the target repo now, or leave those steps manual.
+30. If the user chooses manual setup for those repo-level assets, generate explicit next-step guidance instead of copying them.
+31. If the project uses GitHub or GitLab, generate explicit next-step setup guidance for CI assets, branch protection, issue-token access, issue/MR or issue/PR linking, and enabled security scanning rather than assuming the team already knows how to wire them.
 
 ## Output Style
 

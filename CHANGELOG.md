@@ -7,6 +7,10 @@ All notable changes to this repository will be documented in this file.
 ### Added
 
 - `ci/scripts/validate-security-profile.sh` enforces that a stronger `security_profile` is backed by concrete `SETUP.md` evidence, fails closed when sections are missing or blank, and verifies SAST claims have a workflow or recorded tool.
+- `ci/scripts/validate-evaluation-currency.sh` requires task-state transitions and `EVALUATION.md` evidence to land in the same commit, not split across the PR.
+- `ci/scripts/validate-memory-bounds.sh` fails closed when `MEMORY.md` exceeds its declared `max_entries`, forcing consolidation before new entries can land.
+- `scripts/install-forge-hooks.sh` and `scripts/install-forge-hooks.ps1` install the FORGE git hooks idempotently with `.bak` of any non-FORGE hook found.
+- `forge-bootstrap` runs the hook installer automatically for `solo-governed` and `team-full` profiles and records the outcome in `SETUP.md`.
 - Profile-aware `SETUP.md` generation via `<!-- FORGE-section: <profile> -->` markers so baseline projects do not carry DevSecOps boilerplate.
 - Hard-stop wiring for `requires_independent_review` in `forge-execute-task` and `forge-evaluation`; the implementing agent cannot self-evaluate when the flag is set.
 

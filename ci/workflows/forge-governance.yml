@@ -39,8 +39,14 @@ jobs:
       - name: Validate evidence artifacts
         run: bash ci/scripts/validate-evidence-artifacts.sh
 
+      - name: Validate evaluation currency
+        run: bash ci/scripts/validate-evaluation-currency.sh
+
       - name: Validate file scope
         run: bash ci/scripts/validate-file-scope.sh
 
       - name: Validate security profile
         run: bash ci/scripts/validate-security-profile.sh
+
+      - name: Validate memory bounds
+        run: bash ci/scripts/validate-memory-bounds.sh
