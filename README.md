@@ -79,7 +79,7 @@ See [GETTING_STARTED.md](./GETTING_STARTED.md) for the fuller flow and [MIGRATIO
 - `install.sh`, `install.ps1`, `uninstall.sh`, `uninstall.ps1` - install helpers
 - `verify-install.sh`, `verify-repo.py` - verification helpers
 - `ci/` - optional governance validators and hooks for team mode
-- `scripts/` - tool-development scaffolding and related helpers
+- `scripts/` - tool-development scaffolding plus `install-forge-hooks.sh`/`.ps1` for idempotent git-hook install
 - `philosophy/` - design rationale and background material
 
 Reusable agent/editor onboarding files live in `skills/forge/assets/agent-surfaces/`.

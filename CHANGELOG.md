@@ -4,6 +4,8 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-28
+
 ### Added
 
 - Optional `application_docs: true` flag in `AI.md` enables a human-facing `docs/` tree (separate from `docs/forge/`) with overview, architecture, threat model, developer guide, interfaces, deployment, runbook, and ADR templates. Default `false`.

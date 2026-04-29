@@ -75,6 +75,50 @@ If a repo already has `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`,
 `.github/copilot-instructions.md`, `.codex/hooks.json`, or `.windsurf/rules/`,
 refresh only the FORGE routing lines. Preserve project-specific local rules.
 
+## Installing Git Hooks On An Existing Repo
+
+For repos that already have FORGE docs but did not install the local hooks:
+
+```bash
+bash scripts/install-forge-hooks.sh
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-forge-hooks.ps1
+```
+
+The installer is idempotent. Any non-FORGE hook found at the same path is
+backed up to `<name>.bak` before the FORGE hook is installed. Re-run safely
+to upgrade. Solo-governed and team-full bootstraps run this automatically
+from 1.3.0 onward; older repos can adopt it without re-bootstrapping.
+
+## Adopting Application Docs
+
+For repos that want a human-facing `docs/` tree (overview, architecture,
+threat model, developer guide, interfaces, deployment, runbook, ADRs)
+alongside the agent-facing `docs/forge/`:
+
+1. Add `application_docs: true` to the `FORGE-config` block in `docs/forge/AI.md`.
+2. Ask the installed `forge` skill to bootstrap the human-facing docs into
+   the repo `docs/` directory. The default subset is profile-aware:
+   - always: `tool-overview.md`, `developer-guide.md`, `adr/`
+   - `solo-governed` and `team-full` add: `architecture-overview.md`,
+     `interfaces-and-protocols.md`, `deployment-playbook.md`,
+     `incident-runbook.md`
+   - `security_profile: repo-fortress` and stronger add: `threat-model.md`
+3. Fill `owners:` and `updated:` in each generated frontmatter.
+4. Distinguish the two architecture docs:
+   - `docs/forge/ARCHITECTURE.md` is **agent-facing** constraints and
+     contract files.
+   - `docs/architecture-overview.md` is the **human-facing** system
+     explanation.
+5. Tag tasks that represent significant architectural decisions with
+   `task_type: architecture-decision` so `forge-execute-task` and
+   `forge-evaluation` expect a new `docs/adr/NNNN-<slug>.md`.
+
+The maintenance trigger map (which task types update which docs) lives in
+the installed skill at `references/application-docs.md`.
+
 ## Adopting DevSecOps Gates
 
 For repos that want stronger security enforcement:

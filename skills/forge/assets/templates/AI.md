@@ -1,7 +1,7 @@
 # AI Execution Configuration
 
 ```FORGE-config
-forge_version: 1.2.0
+forge_version: 1.3.0
 FORGE_mode: Lightweight
 execution_mode: manual
 collaboration_mode: solo

@@ -40,6 +40,24 @@ Optional:
 - Copy `skills/forge/assets/agent-surfaces/` into your repo if you want editor-specific onboarding files
 - Treat `skills/forge/assets/agent-surfaces/` as the canonical source for reusable agent/editor surfaces
 
+## Local Hooks
+
+`solo-governed` and `team-full` bootstraps install the FORGE git hooks
+automatically. To install or upgrade hooks on an existing repo, run from
+the FORGE install directory against the target repo:
+
+```bash
+bash scripts/install-forge-hooks.sh
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-forge-hooks.ps1
+```
+
+The installer is idempotent and backs up any non-FORGE hook found at the
+same path to `<name>.bak`. Solo-simple bootstraps leave hooks manual unless
+you ask for them.
+
 ## First Use
 
 FORGE now works best when you choose an explicit bootstrap profile up front:
