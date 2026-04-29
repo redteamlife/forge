@@ -28,6 +28,7 @@ FORGE works best when you want to:
 - For repo-shape routing such as contract-first or tooling projects, read `references/repo-flavors.md`.
 - For agent-specific files such as `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, Codex hooks, or Windsurf rules, read `references/agent-flavors.md`.
 - For DevSecOps gate profiles, repository hardening, CI/CD security, SCA, or SBOM controls, read `references/devsecops-gates.md`.
+- For human-facing application documentation (overview, architecture, threat model, developer guide, interfaces, deployment, runbooks, ADRs), read `references/application-docs.md`.
 
 ## Operating Model
 
@@ -97,6 +98,7 @@ Read these shared references only when needed:
 - `references/repo-flavors.md`
 - `references/agent-flavors.md`
 - `references/devsecops-gates.md`
+- `references/application-docs.md`
 - `references/token-efficiency.md`
 
 Use templates from `assets/templates/` only when scaffolding or migrating a project into this skill-based flow.

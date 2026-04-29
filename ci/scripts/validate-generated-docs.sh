@@ -265,6 +265,17 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         ;;
     esac
   fi
+  if grep -q 'application_docs:' "$AI_MD"; then
+    APPLICATION_DOCS_VALUE=$(grep 'application_docs:' "$AI_MD" | sed 's/.*application_docs: *//' | sed 's/[[:space:]]*$//')
+    case "$APPLICATION_DOCS_VALUE" in
+      true|false)
+        ;;
+      *)
+        echo "FORGE: application_docs must be true or false when present."
+        FAILED=1
+        ;;
+    esac
+  fi
   if grep -q 'security_profile:' "$AI_MD"; then
     SECURITY_PROFILE_VALUE=$(grep 'security_profile:' "$AI_MD" | sed 's/.*security_profile: *//' | sed 's/[[:space:]]*$//')
     case "$SECURITY_PROFILE_VALUE" in

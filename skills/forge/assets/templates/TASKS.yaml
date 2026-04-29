@@ -14,6 +14,9 @@ tasks:
     # integrated = accepted on the integration branch; active claim released
     # complete = accepted on the release branch or otherwise formally accepted
     # task_type: feature
+    # task_type values that change downstream behavior:
+    #   architecture-decision -> when application_docs: true, a new
+    #     docs/adr/NNNN-<slug>.md is expected for this task
     # file_scope:
     #   - src/
     #   - docs/forge/TASKS.yaml

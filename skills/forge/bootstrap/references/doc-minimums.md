@@ -57,3 +57,4 @@ Add these from the start when multiple developers or agents will work in paralle
 - copy CI assets when the user wants hosted enforcement from the start
 - add contract files, role split, and integration-boundary rules when `repo_flavor: contract-first`
 - add issue/MR or issue/PR traceability when `task_source` is GitHub, GitLab, or external
+- generate the human-facing `docs/` tree (overview, developer guide, ADRs, plus the profile-appropriate subset of architecture, threat model, interfaces, deployment, runbook) when `application_docs: true`

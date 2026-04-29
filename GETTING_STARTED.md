@@ -60,6 +60,8 @@ FORGE may also record an optional `repo_flavor` hint, only when the repo shape c
 - `contract-first`: shared OpenAPI, protobuf, schema, or generated-client files are part of the task boundary
 - `tooling`: private/public tool release workflow
 
+FORGE may also enable `application_docs: true` to generate a human-facing `docs/` tree (overview, architecture, threat model, developer guide, interfaces, deployment, runbook, ADRs) parallel to `docs/forge/`. Default is `false`.
+
 FORGE may also record a `security_profile`:
 
 - `baseline`: task-local checklist review

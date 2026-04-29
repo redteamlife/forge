@@ -13,6 +13,7 @@ integration_branch: develop
 release_branch: main
 response_style: terse
 ci_enforcement: disabled
+application_docs: false
 ```
 
 ## Purpose
@@ -46,3 +47,4 @@ Define the project-local execution configuration consumed by the FORGE skill pac
 - Prefer fixed compact output shapes such as `Done / Changed / Next` over free-form summaries.
 - If `ci_enforcement: enabled`, the project should also document local-hook and hosted-CI setup in `docs/forge/SETUP.md`.
 - If `security_profile` is stronger than `baseline`, document enabled repository, CI, CD, supply-chain, and SBOM controls in `docs/forge/SETUP.md`.
+- `application_docs: true` enables a human-facing `docs/` tree (separate from `docs/forge/`) with maintenance triggers wired into execute, critique, and evaluation. See `references/application-docs.md`.

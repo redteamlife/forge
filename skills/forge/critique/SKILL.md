@@ -15,6 +15,8 @@ Review the change strictly through the lens of bounded execution.
 - Does the change conflict with architecture or documented constraints?
 - If contract files are declared, were required OpenAPI, protobuf, schema, generated-client, or integration-boundary updates included?
 - Were required docs updated?
+- If `application_docs: true`, were the human-facing `docs/` files matching the task's triggers updated in scope? See `references/application-docs.md` for the trigger map.
+- If the task represents a significant architectural decision (framework choice, data store change, trust boundary, major component replacement) and `application_docs: true`, was a new `docs/adr/NNNN-<slug>.md` proposed? Routine refactors and bug fixes do not need ADRs.
 - In team mode, do branch, claim, and file-scope records still match the actual work?
 - For issue-backed task sources, does the PR/MR link the issue, does the branch or title identify the ticket, and does the current assignee/label state match project policy?
 

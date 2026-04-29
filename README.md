@@ -114,6 +114,8 @@ FORGE treats:
 - `ci-security`: repo-fortress plus SAST, secret scanning, dependency/SCA, and findings visibility
 - `full-devsecops`: CI security plus CD pre-flight, DAST, SBOM, provenance, and cleanup evidence
 
+`application_docs: true` enables a separate human-facing `docs/` tree alongside `docs/forge/`. It generates a profile-aware subset of overview, architecture, threat model, developer guide, interfaces, deployment, runbook, and ADR templates with maintenance triggers wired into execute, critique, and evaluation. Default is `false`.
+
 In `solo-simple`, the agent should finish one task, update `TASKS.yaml`, create a Conventional Commit, and stop before moving on.
 
 In `solo-governed`, the agent should still preserve one-task checkpoints, but it should use task branches and must not merge or promote into the release branch without explicit human instruction.

@@ -66,15 +66,23 @@ Soft caps:
 19. If the task or architecture declares `contract_files`, treat those files as shared interface boundaries.
 20. When a task changes API, generated client, schema, wire format, or integration-boundary behavior, include the relevant contract file in scope and update it in the same task, PR, or MR.
 21. If a needed contract file is owned by another active task, issue, PR, or MR, stop for sequencing rather than creating a parallel contract collision.
-22. Implement only the selected task.
-23. Before any task-state transition to `implemented`, `integrated`, or `complete`, reconcile again with the authoritative task source.
-24. In team mode, treat merged feature branches as temporary and delete them after the integration PR is accepted unless project policy explicitly keeps them.
-25. Do not move a task from `integrated` to `complete` unless release-branch acceptance is observable through explicit human confirmation, recorded release metadata, or a fetched release-branch reconciliation step.
-26. Hand off to critique, security review, and evaluation before transition to the next task state.
-27. In `collaboration_mode: solo` with `solo_branch_flow: task-branches`, create or continue the task branch before implementation, do not implement on `release_branch`, and do not merge or promote into `release_branch` unless the human explicitly instructs that action.
-28. In solo mode, after a task reaches `complete`, update the authoritative task source, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
-29. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
-30. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
+22. If `application_docs: true`, identify which human-facing `docs/` files the current task triggers an update for and include them in scope. The trigger map lives in `references/application-docs.md`; the most common cases:
+    - API/schema/contract change → `docs/interfaces-and-protocols.md`
+    - new component, trust boundary, or major dependency → `docs/architecture-overview.md`
+    - build/test/local-dev/release-process change → `docs/developer-guide.md`
+    - new attack surface or post-incident hardening → `docs/threat-model.md`
+    - deployment process change → `docs/deployment-playbook.md`
+    - newly observed failure mode → `docs/incident-runbook.md`
+    - significant architectural decision → new `docs/adr/NNNN-<slug>.md`
+23. Implement only the selected task.
+24. Before any task-state transition to `implemented`, `integrated`, or `complete`, reconcile again with the authoritative task source.
+25. In team mode, treat merged feature branches as temporary and delete them after the integration PR is accepted unless project policy explicitly keeps them.
+26. Do not move a task from `integrated` to `complete` unless release-branch acceptance is observable through explicit human confirmation, recorded release metadata, or a fetched release-branch reconciliation step.
+27. Hand off to critique, security review, and evaluation before transition to the next task state.
+28. In `collaboration_mode: solo` with `solo_branch_flow: task-branches`, create or continue the task branch before implementation, do not implement on `release_branch`, and do not merge or promote into `release_branch` unless the human explicitly instructs that action.
+29. In solo mode, after a task reaches `complete`, update the authoritative task source, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
+30. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
+31. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
 
 ## Token Saving Rules
 

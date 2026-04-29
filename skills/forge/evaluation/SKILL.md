@@ -15,6 +15,8 @@ Use this skill to decide whether a task is actually complete.
 - security review is complete
 - if the task declares `requires_independent_review: true`, the implementing agent does not mark it `complete`; evaluation must be performed by a human reviewer or a separate agent session
 - required docs are updated
+- when `application_docs: true`, the human-facing `docs/` files matching the task's maintenance triggers are updated in the same change set; see `references/application-docs.md` for the trigger map
+- when `application_docs: true` and `task_type: architecture-decision`, a new `docs/adr/NNNN-<slug>.md` is present in the change set
 - required contract artifacts are updated in the same change set when API, client, schema, generated artifact, or integration-boundary behavior changes
 - required DevSecOps evidence is present when the task changes repository controls, CI, CD, dependencies, build artifacts, SBOM, or deployment behavior
 - task status and Conventional Commit metadata are ready
