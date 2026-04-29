@@ -41,3 +41,6 @@ jobs:
 
       - name: Validate file scope
         run: bash ci/scripts/validate-file-scope.sh
+
+      - name: Validate security profile
+        run: bash ci/scripts/validate-security-profile.sh

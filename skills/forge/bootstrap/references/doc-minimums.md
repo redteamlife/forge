@@ -14,6 +14,7 @@ Recommended:
 - `docs/forge/ARCHITECTURE.md` when architecture constraints materially matter
 - `docs/forge/EVALUATION.md` when explicit completion gates are needed
 - `docs/forge/MEMORY.md` when the project benefits from reusable lessons
+- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to load FORGE
 
 Use this for `solo-simple`.
 
@@ -32,6 +33,7 @@ Recommended:
 - `docs/forge/EVALUATION.md` when explicit completion gates are needed
 - `docs/forge/MEMORY.md` when the project benefits from reusable lessons
 - `docs/forge/SETUP.md` when branch protection or human review handoff needs to be recorded
+- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to load FORGE
 
 Additional expectations:
 
@@ -53,3 +55,5 @@ Add these from the start when multiple developers or agents will work in paralle
 - task claim metadata in `TASKS.yaml`
 - copy repo agent-surface files when the user wants persistent repo reminders
 - copy CI assets when the user wants hosted enforcement from the start
+- add contract files, role split, and integration-boundary rules when `repo_flavor: contract-first`
+- add issue/MR or issue/PR traceability when `task_source` is GitHub, GitLab, or external

@@ -25,6 +25,9 @@ FORGE works best when you want to:
 - For reading and updating reusable lessons, use `forge-memory`.
 - For private/public tool release workflows, use `forge-tool-workflow`.
 - For multi-developer coordination rules, branch discipline, and task claiming, read `references/team-mode.md`.
+- For repo-shape routing such as contract-first or tooling projects, read `references/repo-flavors.md`.
+- For agent-specific files such as `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, Codex hooks, or Windsurf rules, read `references/agent-flavors.md`.
+- For DevSecOps gate profiles, repository hardening, CI/CD security, SCA, or SBOM controls, read `references/devsecops-gates.md`.
 
 ## Operating Model
 
@@ -91,6 +94,9 @@ Read these shared references only when needed:
 - `references/doc-minimums.md`
 - `references/forge-to-skills-mapping.md`
 - `references/team-mode.md`
+- `references/repo-flavors.md`
+- `references/agent-flavors.md`
+- `references/devsecops-gates.md`
 - `references/token-efficiency.md`
 
 Use templates from `assets/templates/` only when scaffolding or migrating a project into this skill-based flow.

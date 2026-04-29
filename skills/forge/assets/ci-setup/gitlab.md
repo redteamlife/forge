@@ -17,6 +17,9 @@ Use this when the project is hosted on GitLab and `ci_enforcement` should be ena
 
 - For `task_source: gitlab`, use issue assignment and labels as the team claim ledger.
 - Keep `docs/forge/TASKS.yaml` only as a planning snapshot when GitLab Issues are authoritative.
+- Prefer read-only project access tokens for issue-state checks.
+- Use a human account or user PAT for assignment when assignee means engineer ownership.
+- Link each MR to the issue it closes or advances.
 
 ## Protected Branches And Merge Rules
 

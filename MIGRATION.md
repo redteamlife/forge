@@ -59,6 +59,32 @@ If the project already has `docs/forge/` and you want the newer team-mode claimi
    - when a task becomes `integrated`, record `claim_released_by` and `claim_released_at`
    - reconcile with `forge-state` when changing task state to `implemented`, `integrated`, or `complete`
 
+## Adopting Contract-First Rules
+
+For repos with OpenAPI, protobuf, GraphQL, generated clients, schemas, or other
+shared interface files:
+
+1. Add `repo_flavor: contract-first` to `docs/forge/AI.md`.
+2. Add contract files and ownership rules to `docs/forge/ARCHITECTURE.md`.
+3. Add `contract_files` to executable tasks that may touch the integration boundary.
+4. Update `docs/forge/TEAM.md` with role split and sequencing rules when frontend/backend or service boundaries are shared.
+
+## Refreshing Agent Surfaces
+
+If a repo already has `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`,
+`.github/copilot-instructions.md`, `.codex/hooks.json`, or `.windsurf/rules/`,
+refresh only the FORGE routing lines. Preserve project-specific local rules.
+
+## Adopting DevSecOps Gates
+
+For repos that want stronger security enforcement:
+
+1. Add `security_profile: repo-fortress`, `ci-security`, or `full-devsecops` to `docs/forge/AI.md`.
+2. Update `docs/forge/SETUP.md` with the controls that are actually configured.
+3. Add the relevant checklist sections to `docs/forge/SECURITY_CHECKLISTS.md`.
+4. Record evidence for configured scans and gates in `docs/forge/EVALUATION.md`.
+5. Treat missing expected controls as setup findings rather than passing them silently.
+
 ## How To Refresh Existing Docs With The Skill
 
 Ask the installed `forge` skill to refresh only the affected governance files, for example:

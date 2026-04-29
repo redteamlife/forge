@@ -4,6 +4,38 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `ci/scripts/validate-security-profile.sh` enforces that a stronger `security_profile` is backed by concrete `SETUP.md` evidence, fails closed when sections are missing or blank, and verifies SAST claims have a workflow or recorded tool.
+- Profile-aware `SETUP.md` generation via `<!-- FORGE-section: <profile> -->` markers so baseline projects do not carry DevSecOps boilerplate.
+- Hard-stop wiring for `requires_independent_review` in `forge-execute-task` and `forge-evaluation`; the implementing agent cannot self-evaluate when the flag is set.
+
+### Changed
+
+- Trimmed `repo_flavor` enum to `contract-first` and `tooling`; the `minimal` and `issue-tracker-heavy` values are dropped because they restated `task_source`.
+- Reorganized `forge-bootstrap` workflow into explicit **Detect / Generate / Follow-up** phases.
+- Consolidated speculative memory entry types: `parallelism-incident` and `tracker-workflow` are replaced by a single `coordination-incident` type.
+
+## [1.2.0] - 2026-04-28
+
+### Added
+
+- Added optional `repo_flavor` routing guidance for `contract-first` and `tooling` repositories.
+- Added `agent-flavors` guidance for `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, Codex hooks, and Windsurf rules.
+- Added contract artifact guidance for OpenAPI, protobuf, GraphQL, generated clients, schemas, and other integration-boundary files.
+- Added optional task traceability fields for issue provider, issue IID, issue URL, plan refs, PR/MR URLs, contract files, and independent review.
+- Added team role split, integration boundary, tracker access, and token-scope setup guidance.
+- Added memory incident types `contract-conflict` and `coordination-incident` for reusable interface and parallel-work failure lessons.
+- Added `security_profile` guidance for baseline, repo-fortress, ci-security, and full-devsecops gate levels.
+- Added DevSecOps checklist assets for repository governance, CI security, supply chain, and continuous delivery security.
+
+### Changed
+
+- Bumped the default generated `forge_version` to `1.2.0`.
+- Updated execute, critique, evaluation, and security-review gates for contract-first and external source-of-truth workflows.
+- Updated reusable agent surfaces so they respect configured task sources and declared contract files.
+- Expanded setup and security-review guidance for branch protection, CODEOWNERS, security policy, SAST, DAST, SCA, SBOM, provenance, and cleanup evidence.
+
 ## [1.1.0] - 2026-04-26
 
 ### Added

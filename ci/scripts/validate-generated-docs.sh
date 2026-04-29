@@ -254,6 +254,28 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         ;;
     esac
   fi
+  if grep -q 'repo_flavor:' "$AI_MD"; then
+    REPO_FLAVOR_VALUE=$(grep 'repo_flavor:' "$AI_MD" | sed 's/.*repo_flavor: *//' | sed 's/[[:space:]]*$//')
+    case "$REPO_FLAVOR_VALUE" in
+      contract-first|tooling)
+        ;;
+      *)
+        echo "FORGE: repo_flavor must be contract-first or tooling when present."
+        FAILED=1
+        ;;
+    esac
+  fi
+  if grep -q 'security_profile:' "$AI_MD"; then
+    SECURITY_PROFILE_VALUE=$(grep 'security_profile:' "$AI_MD" | sed 's/.*security_profile: *//' | sed 's/[[:space:]]*$//')
+    case "$SECURITY_PROFILE_VALUE" in
+      baseline|repo-fortress|ci-security|full-devsecops)
+        ;;
+      *)
+        echo "FORGE: security_profile must be baseline, repo-fortress, ci-security, or full-devsecops when present."
+        FAILED=1
+        ;;
+    esac
+  fi
 else
   echo "FORGE: AI.md is missing a FORGE-config block."
   FAILED=1

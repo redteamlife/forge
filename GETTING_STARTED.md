@@ -55,6 +55,18 @@ Bootstrap also asks where tasks should be tracked:
 - `gitlab`: GitLab Issues, preferred when the repo has a GitLab remote and `glab` is authenticated
 - `external`: Jira, Linear, or another tracker managed through MCP, CLI, or human workflow
 
+FORGE may also record an optional `repo_flavor` hint, only when the repo shape changes generated docs:
+
+- `contract-first`: shared OpenAPI, protobuf, schema, or generated-client files are part of the task boundary
+- `tooling`: private/public tool release workflow
+
+FORGE may also record a `security_profile`:
+
+- `baseline`: task-local checklist review
+- `repo-fortress`: branch protection, CODEOWNERS, security policy, and risk visibility
+- `ci-security`: repo-fortress plus SAST, secret scanning, dependency/SCA, and findings visibility
+- `full-devsecops`: CI security plus CD pre-flight, DAST, SBOM, provenance, and cleanup evidence
+
 ### Solo-simple
 
 Use this when you want the lightest useful FORGE loop:
@@ -158,6 +170,8 @@ In `team-full`:
 - feature work should stay on task branches
 - integration should happen before release promotion
 - CI and setup details should be tracked in `docs/forge/SETUP.md`
+- contract files should be updated with the task that changes API, schema, generated client, or integration-boundary behavior
+- enabled security scans, SBOM, DAST, and repository hardening controls should be recorded as setup evidence
 
 FORGE is meant to feel like a trustworthy workflow layer, not a pile of ceremony.
 
@@ -169,6 +183,7 @@ If you want the full team experience, ask FORGE to set up all repo-local pieces 
 - then an explicit follow-up choice about copying repo agent-surface files from `skills/forge/assets/agent-surfaces/`
 - and an explicit follow-up choice about copying the `ci/` enforcement layer
 - issue-backed task coordination when `task_source` is `github` or `gitlab`
+- optional agent-specific surfaces such as `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, Codex hooks, or Windsurf rules
 
 Then finish the external platform steps yourself:
 

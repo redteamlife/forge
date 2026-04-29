@@ -17,6 +17,9 @@ Use this when the project is hosted on GitHub and `ci_enforcement` should be ena
 
 - For `task_source: github`, use issue assignment and labels as the team claim ledger.
 - Keep `docs/forge/TASKS.yaml` only as a planning snapshot when GitHub Issues are authoritative.
+- Prefer read-only tokens for issue-state checks.
+- Use a human account or user-scoped token for assignment when assignee means engineer ownership.
+- Link each PR to the issue it closes or advances.
 
 ## Branch Protection
 

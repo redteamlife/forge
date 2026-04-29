@@ -69,6 +69,9 @@ def verify_required_files() -> None:
         SKILL_ROOT / "memory" / "SKILL.md",
         SKILL_ROOT / "assets" / "templates" / "AI.md",
         SKILL_ROOT / "assets" / "agent-surfaces" / "AGENTS.md",
+        SKILL_ROOT / "references" / "repo-flavors.md",
+        SKILL_ROOT / "references" / "agent-flavors.md",
+        SKILL_ROOT / "references" / "devsecops-gates.md",
     ]
     for path in required:
         ensure(path.exists(), f"Missing required file: {path}")

@@ -41,6 +41,12 @@ Each executable task should support:
 - `file_scope`
 - `depends_on`
 - `assignee`
+- `issue_provider`
+- `issue_iid`
+- `issue_url`
+- `plan_ref`
+- `mr_url`
+- `pr_url`
 - `claimed_by`
 - `claimed_by_email`
 - `agent`
@@ -52,6 +58,8 @@ Each executable task should support:
 - `pr`
 - `release_pr`
 - `release_commit`
+- `contract_files`
+- `requires_independent_review`
 
 ## Claim Protocol
 
@@ -137,11 +145,34 @@ Promotion from the integration branch to the release branch should be treated as
 
 ## Shared Artifact Guidance
 
-- `TASKS.yaml` is the coordination ledger on the shared coordination branch. Keep edits deterministic.
+- With `task_source: local`, `TASKS.yaml` is the coordination ledger on the shared coordination branch. Keep edits deterministic.
+- Optional issue fields such as `issue_provider`, `issue_iid`, `issue_url`, and `plan_ref` provide traceability when an external tracker is authoritative.
+- Optional PR/MR fields such as `pr_url` and `mr_url` should point at the review surface where critique and evaluation evidence are visible.
+- `contract_files` marks shared interface artifacts that must not drift from implementation.
 - `EVALUATION.md` should prefer append-only task evidence sections or entries.
 - `MEMORY.md` should capture reusable lessons, not full PR narratives.
-- `TEAM.md` should define the coordination branch, branch naming, claim ownership rules, review expectations, and CI requirements.
+- `TEAM.md` should define the task source, branch naming, claim ownership rules, review expectations, and CI requirements.
 - `SETUP.md` should record whether hooks, CI workflows, protected-branch settings, and closeout helper usage were actually configured.
+
+## Role Split And Contract Boundaries
+
+When multiple people or agents split work by layer, record:
+
+- `engineering_roles`, for example backend, frontend, infrastructure, data, or QA
+- `integration_boundary`, for example OpenAPI, protobuf, GraphQL, generated client, database migration, or message schema
+- contract owners and sequencing rules for shared interface files
+
+If an active task changes behavior across the boundary, it should update the
+contract artifact in the same PR/MR. If another active task owns that contract,
+stop and resequence rather than creating competing contract changes.
+
+## Tracker Access
+
+Use the least privilege mechanism that still supports the project policy:
+
+- read-only project or service tokens for issue-state verification
+- human account or user-scoped token for assignment when assignee means human owner
+- bot assignment only when project policy explicitly accepts bot ownership
 
 ## Identity Source
 
@@ -155,18 +186,18 @@ If the operator identity cannot be determined from project policy or local git c
 
 ## Minimum Team Workflow
 
-1. Fetch the coordination branch.
-2. Claim the task on the coordination branch and push the claim.
-3. Create or update the feature branch recorded on the task.
-4. Implement only within declared `file_scope`.
-5. Treat the feature-branch copy of `TASKS.yaml` as informational while implementing.
+1. Fetch the authoritative task source.
+2. Claim the task in that source and publish the claim.
+3. Create or update the feature branch recorded on the task or issue.
+4. Implement only within declared `file_scope` and contract-boundary rules.
+5. Treat non-authoritative task snapshots as informational while implementing.
 6. Run critique, security review, and evaluation.
-7. Reconcile with `forge-state` and move the task to `implemented` when the feature branch is ready for review.
-8. Run the team's closeout helper or equivalent validation procedure to confirm branch, commit, task-state, and target-branch expectations before opening the PR.
-9. Open a PR from the feature branch to the integration branch.
+7. Reconcile with the authoritative task source and move the task to `implemented` when the feature branch is ready for review.
+8. Run the team's closeout helper or equivalent validation procedure to confirm branch, commit, task-state, tracker links, contract updates, and target-branch expectations before opening the PR/MR.
+9. Open a PR/MR from the feature branch to the integration branch and link the issue.
 10. Merge only after CI and required review pass.
 11. Delete the merged feature branch after acceptance on the integration branch unless project policy says otherwise.
-12. Reconcile with `forge-state`, record `claim_released_by` and `claim_released_at`, and move the task to `integrated` when the change is accepted on the integration branch.
+12. Reconcile with the authoritative task source, record claim release evidence, and move the task to `integrated` when the change is accepted on the integration branch.
 13. Promote the integration branch to the release branch per project policy.
-14. After promotion, run a release reconciliation step: fetch the latest release branch, record any release PR or release commit metadata, and confirm the task's work is now present on the release branch.
+14. After promotion, run a release reconciliation step: fetch the latest release branch, record any release PR/MR or release commit metadata, and confirm the task's work is now present on the release branch.
 15. Move the task to `complete` only after that release-branch acceptance is confirmed or otherwise formally accepted by the team.

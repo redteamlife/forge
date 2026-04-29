@@ -46,7 +46,7 @@ Soft caps:
 ## Workflow
 
 1. Confirm branch safety and project-local prerequisites.
-2. Parse `AI.md` for mode, execution style, collaboration settings, `task_source`, and any solo branch-flow policy.
+2. Parse `AI.md` for mode, execution style, collaboration settings, `task_source`, `repo_flavor`, and any solo branch-flow policy.
 3. If `TEAM.md` exists, apply its integration branch, release branch, claiming, and review rules before task selection.
 4. For `task_source: local`, select tasks from `TASKS.yaml`.
 5. For `task_source: github`, use `gh issue list` / `gh issue view` to select work when `gh auth status` passes; otherwise stop and ask for authentication or an explicit issue reference.
@@ -60,17 +60,21 @@ Soft caps:
 13. For local team claims, record `claimed_by`, `claimed_by_email`, and `agent`, publish the claim on the coordination branch, and only then begin implementation.
 14. For issue-backed team claims, record task state with issue assignment, labels, and comments rather than editing `TASKS.yaml` as the primary ledger.
 15. After local claim publication, treat `forge-state` as the authoritative ledger and the feature-branch copy of `TASKS.yaml` as informational only.
-16. If `MEMORY.md` exists, read recent high-signal entries first.
-17. Check task alignment against scope and architecture constraints.
-18. Implement only the selected task.
-19. Before any task-state transition to `implemented`, `integrated`, or `complete`, reconcile again with the authoritative task source.
-20. In team mode, treat merged feature branches as temporary and delete them after the integration PR is accepted unless project policy explicitly keeps them.
-21. Do not move a task from `integrated` to `complete` unless release-branch acceptance is observable through explicit human confirmation, recorded release metadata, or a fetched release-branch reconciliation step.
-22. Hand off to critique, security review, and evaluation before transition to the next task state.
-23. In `collaboration_mode: solo` with `solo_branch_flow: task-branches`, create or continue the task branch before implementation, do not implement on `release_branch`, and do not merge or promote into `release_branch` unless the human explicitly instructs that action.
-24. In solo mode, after a task reaches `complete`, update the authoritative task source, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
-25. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
-26. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
+16. If a local task includes `issue_provider`, `issue_iid`, or `issue_url`, reconcile claim and state through that issue before implementation even when `TASKS.yaml` is present.
+17. If `MEMORY.md` exists, read recent high-signal entries first.
+18. Check task alignment against scope and architecture constraints.
+19. If the task or architecture declares `contract_files`, treat those files as shared interface boundaries.
+20. When a task changes API, generated client, schema, wire format, or integration-boundary behavior, include the relevant contract file in scope and update it in the same task, PR, or MR.
+21. If a needed contract file is owned by another active task, issue, PR, or MR, stop for sequencing rather than creating a parallel contract collision.
+22. Implement only the selected task.
+23. Before any task-state transition to `implemented`, `integrated`, or `complete`, reconcile again with the authoritative task source.
+24. In team mode, treat merged feature branches as temporary and delete them after the integration PR is accepted unless project policy explicitly keeps them.
+25. Do not move a task from `integrated` to `complete` unless release-branch acceptance is observable through explicit human confirmation, recorded release metadata, or a fetched release-branch reconciliation step.
+26. Hand off to critique, security review, and evaluation before transition to the next task state.
+27. In `collaboration_mode: solo` with `solo_branch_flow: task-branches`, create or continue the task branch before implementation, do not implement on `release_branch`, and do not merge or promote into `release_branch` unless the human explicitly instructs that action.
+28. In solo mode, after a task reaches `complete`, update the authoritative task source, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
+29. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
+30. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
 
 ## Token Saving Rules
 
@@ -87,6 +91,9 @@ Stop when:
 - required repo-local docs are missing
 - the change conflicts with documented architecture
 - the task would exceed declared file scope
+- the task would change an integration boundary but the relevant contract file is not in scope
+- a contract file needed by the task is owned by another active task, issue, PR, or MR
+- the task declares `requires_independent_review: true` and the same agent that implemented it is being asked to run `forge-evaluation` or move the task to `complete` without an independent reviewer or separate session
 - team mode is active and the task lacks claim metadata or required `file_scope`
 - the operator identity cannot be determined for a team-mode claim
 - another actor already holds the claim for the selected task
@@ -96,6 +103,7 @@ Stop when:
 - the latest authoritative task source cannot be fetched or the claim cannot be published
 - a task-state transition cannot be reconciled against the authoritative task source
 - the current branch does not match the task's recorded branch policy
+- an issue-backed task cannot verify that the issue assignee, label, branch, and PR/MR link match project policy
 - solo-governed mode is active and the current branch is the configured `release_branch`
 - solo-governed mode is active and merge or promotion into `release_branch` was not explicitly instructed by the human
 - unresolved security concerns appear

@@ -17,6 +17,7 @@ Recommended:
 - `docs/forge/TEAM.md` when more than one developer or agent may execute in the same repo
 - `docs/forge/SECURITY_CHECKLISTS.md` when security review should be checklist-driven
 - `docs/forge/SETUP.md` when enforcement setup needs to be handed off clearly to humans
+- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to load FORGE
 
 Optional:
 
@@ -67,6 +68,8 @@ Additional expectations:
 - `ci_enforcement` should be enabled
 - task `file_scope` should be required for any task that will be implemented by an agent
 - task claims should be recorded before code changes begin
+- issue-backed task sources should record issue/MR or issue/PR traceability
+- contract-first repos should record contract files, role split, and integration-boundary rules
 
 ## Governed Solo Mode
 

@@ -13,11 +13,15 @@ Use this skill to decide whether a task is actually complete.
 - required validation was run
 - critique pass is complete
 - security review is complete
+- if the task declares `requires_independent_review: true`, the implementing agent does not mark it `complete`; evaluation must be performed by a human reviewer or a separate agent session
 - required docs are updated
+- required contract artifacts are updated in the same change set when API, client, schema, generated artifact, or integration-boundary behavior changes
+- required DevSecOps evidence is present when the task changes repository controls, CI, CD, dependencies, build artifacts, SBOM, or deployment behavior
 - task status and Conventional Commit metadata are ready
 - commit message is free of AI attribution or tool-marketing lines
 - in team mode, task claim, branch, reviewer, and PR metadata are consistent
 - for `task_source: github` or `task_source: gitlab`, issue assignment, labels, and comments match the intended task transition
+- for issue-backed work, PR/MR links, branch naming, and issue identifiers match project policy
 - for `task_source: external`, external tracker evidence or human acceptance is recorded before completion
 - in solo mode, the task is ready to be marked `complete` and committed with a Conventional Commit before any new task starts
 

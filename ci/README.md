@@ -127,6 +127,27 @@ The evidence artifact check reads this field. If absent or not `enabled`, that c
 In `collaboration_mode: team`, the team metadata validator also requires it and fails closed if it is not enabled.
 When `ci_enforcement: enabled`, a PR that changes `docs/forge/TASKS.yaml` or contains a `FORGE-task` trailer must also update `docs/forge/EVALUATION.md` in the same PR. Mid and higher modes still require `docs/forge/MEMORY.md`.
 
+For issue-backed task sources, validate issue assignment, labels, and PR/MR
+links through the hosting platform. For contract-first repos, document the
+contract file check in project CI or review policy so API/schema/client changes
+cannot merge without the matching contract update.
+For stronger security profiles, document which external checks are required:
+branch protection, CODEOWNERS, security policy, SAST, secret scanning, SCA,
+SBOM, DAST, provenance, and cleanup/rollback evidence.
+
+### Security Profile Validator
+
+`ci/scripts/validate-security-profile.sh` enforces that a stronger
+`security_profile` is backed by concrete setup evidence rather than blank
+checkboxes. It runs only when `security_profile` is set to `repo-fortress`,
+`ci-security`, or `full-devsecops`, and fails closed when:
+
+- the profile-required SETUP.md sections are missing
+- profile-required sections contain only blank or placeholder values
+- SAST is marked enabled but no SAST workflow or recorded tool exists
+
+Baseline projects skip this check.
+
 ### Team Mode Enforcement
 
 If `docs/forge/AI.md` declares `collaboration_mode: team`, CI additionally expects:

@@ -23,6 +23,7 @@ After a task attempt:
 - keep entries factual, brief, and attributable to a concrete task
 - in team mode, include actor, branch, and task id so future agents can tell parallel work apart
 - use the project-local entry shape when `MEMORY.md` defines one
+- prefer `contract-conflict` or `coordination-incident` entries for reusable interface or parallel-work failures
 - if a `max_entries` value is present, consolidate oldest entries before exceeding it
 
 This skill exists mainly to save tokens while preserving operational learning.
