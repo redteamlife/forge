@@ -4,9 +4,12 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-04-30
+
 ### Changed
 
 - Bundled the FORGE governance assets inside the skill pack itself so installs via `skills add` are self-sufficient. The `ci/` tree (hooks, validators, workflow template, org-policy template) moved from the repo root to `skills/forge/assets/ci/`, and the git-hook installer scripts moved from `scripts/install-forge-hooks.{sh,ps1}` to `skills/forge/assets/scripts/install-forge-hooks.{sh,ps1}`. CI-setup guides, bootstrap, and root docs now point at `<skill-root>/assets/ci/` and `<skill-root>/assets/scripts/`. The hook-installer's relative `../ci/hooks` path is preserved (both directories are still siblings under `assets/`), so the installer continues to work without code changes. Direct-clone consumers who referenced repo-root `ci/` or `scripts/install-forge-hooks.*` need to update to the new paths.
+- Bumped the default generated `forge_version` to `1.4.0`.
 
 ## [1.3.0] - 2026-04-28
 
