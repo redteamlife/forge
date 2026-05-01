@@ -76,6 +76,13 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "application-docs" / "tool-overview.md",
         SKILL_ROOT / "assets" / "application-docs" / "developer-guide.md",
         SKILL_ROOT / "assets" / "application-docs" / "adr" / "0001-record-architecture-decisions.md",
+        SKILL_ROOT / "assets" / "ci" / "hooks" / "pre-commit",
+        SKILL_ROOT / "assets" / "ci" / "hooks" / "commit-msg",
+        SKILL_ROOT / "assets" / "ci" / "hooks" / "pre-push",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "forge-governance.yml",
+        SKILL_ROOT / "assets" / "ci" / "scripts" / "verify-team-closeout.sh",
+        SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.sh",
+        SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.ps1",
     ]
     for path in required:
         ensure(path.exists(), f"Missing required file: {path}")
@@ -90,9 +97,16 @@ def verify_manifests() -> None:
 
 def verify_shell_scripts() -> None:
     run(["bash", "-n", "install.sh", "uninstall.sh", "verify-install.sh"], cwd=ROOT)
-    for hook in sorted((ROOT / "ci" / "hooks").iterdir()):
+    hooks_dir = SKILL_ROOT / "assets" / "ci" / "hooks"
+    for hook in sorted(hooks_dir.iterdir()):
         if hook.is_file():
             run(["bash", "-n", str(hook.relative_to(ROOT))], cwd=ROOT)
+    scripts_dir = SKILL_ROOT / "assets" / "scripts"
+    for script in sorted(scripts_dir.glob("*.sh")):
+        run(["bash", "-n", str(script.relative_to(ROOT))], cwd=ROOT)
+    ci_scripts_dir = SKILL_ROOT / "assets" / "ci" / "scripts"
+    for script in sorted(ci_scripts_dir.glob("*.sh")):
+        run(["bash", "-n", str(script.relative_to(ROOT))], cwd=ROOT)
 
 
 def verify_install_flow() -> None:

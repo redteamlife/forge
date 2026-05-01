@@ -68,6 +68,11 @@ for agent in "${AGENTS[@]}"; do
     "$TARGET_DIR/memory/SKILL.md"
     "$TARGET_DIR/assets/templates/AI.md"
     "$TARGET_DIR/assets/templates/TASKS.yaml"
+    "$TARGET_DIR/assets/ci/hooks/pre-commit"
+    "$TARGET_DIR/assets/ci/hooks/commit-msg"
+    "$TARGET_DIR/assets/ci/workflows/forge-governance.yml"
+    "$TARGET_DIR/assets/scripts/install-forge-hooks.sh"
+    "$TARGET_DIR/assets/scripts/install-forge-hooks.ps1"
   )
 
   for path in "${REQUIRED[@]}"; do

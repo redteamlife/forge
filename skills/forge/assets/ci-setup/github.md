@@ -4,14 +4,13 @@ Use this when the project is hosted on GitHub and `ci_enforcement` should be ena
 
 ## Repo Files
 
-- Copy the repository `ci/` directory into the target project.
-- Copy `ci/workflows/forge-governance.yml` into `.github/workflows/`.
+- Copy the FORGE skill's bundled `assets/ci/` directory into the target project as `ci/` (e.g. `cp -R <skill-root>/assets/ci ./ci`, where `<skill-root>` is the installed FORGE skill directory such as `~/.claude/skills/forge`).
+- Copy `ci/workflows/forge-governance.yml` from the just-copied `ci/` tree into `.github/workflows/`.
 
 ## Local Hooks
 
-- Install `ci/hooks/pre-commit` into `.git/hooks/pre-commit`.
-- Install `ci/hooks/commit-msg` into `.git/hooks/commit-msg`.
-- Optionally install the provided `pre-push` hook if the project uses it.
+- Run `bash <skill-root>/assets/scripts/install-forge-hooks.sh` (or `powershell -File <skill-root>/assets/scripts/install-forge-hooks.ps1` on Windows) against the target repo to install `pre-commit`, `commit-msg`, and `pre-push` hooks idempotently from the skill's bundled `assets/ci/hooks/`.
+- Or install manually: copy `ci/hooks/pre-commit` into `.git/hooks/pre-commit` and `ci/hooks/commit-msg` into `.git/hooks/commit-msg` (and optionally `pre-push`) after the `ci/` directory is in place.
 
 ## Task Source
 

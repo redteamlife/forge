@@ -77,14 +77,17 @@ refresh only the FORGE routing lines. Preserve project-specific local rules.
 
 ## Installing Git Hooks On An Existing Repo
 
-For repos that already have FORGE docs but did not install the local hooks:
+For repos that already have FORGE docs but did not install the local hooks,
+run the installer bundled with the FORGE skill against the target repo,
+where `<skill-root>` is the installed FORGE skill directory (for example
+`~/.claude/skills/forge`):
 
 ```bash
-bash scripts/install-forge-hooks.sh
+bash <skill-root>/assets/scripts/install-forge-hooks.sh
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\install-forge-hooks.ps1
+powershell -ExecutionPolicy Bypass -File <skill-root>\assets\scripts\install-forge-hooks.ps1
 ```
 
 The installer is idempotent. Any non-FORGE hook found at the same path is

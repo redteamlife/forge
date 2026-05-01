@@ -43,15 +43,18 @@ Optional:
 ## Local Hooks
 
 `solo-governed` and `team-full` bootstraps install the FORGE git hooks
-automatically. To install or upgrade hooks on an existing repo, run from
-the FORGE install directory against the target repo:
+automatically. To install or upgrade hooks on an existing repo, run the
+installer bundled with the FORGE skill against the target repo, where
+`<skill-root>` is the installed FORGE skill directory (for example
+`~/.claude/skills/forge` for `skills add` installs, or wherever
+`install.sh` placed it):
 
 ```bash
-bash scripts/install-forge-hooks.sh
+bash <skill-root>/assets/scripts/install-forge-hooks.sh
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\install-forge-hooks.ps1
+powershell -ExecutionPolicy Bypass -File <skill-root>\assets\scripts\install-forge-hooks.ps1
 ```
 
 The installer is idempotent and backs up any non-FORGE hook found at the

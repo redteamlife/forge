@@ -76,10 +76,11 @@ See [GETTING_STARTED.md](./GETTING_STARTED.md) for the fuller flow and [MIGRATIO
 ## Repo Layout
 
 - `skills/forge/` - canonical FORGE skill pack
+  - `skills/forge/assets/ci/` - optional governance validators, hooks, and workflow templates that ship with the skill (used by `team-full` and `solo-governed` profiles)
+  - `skills/forge/assets/scripts/install-forge-hooks.{sh,ps1}` - idempotent git-hook installer bundled with the skill
 - `install.sh`, `install.ps1`, `uninstall.sh`, `uninstall.ps1` - install helpers
 - `verify-install.sh`, `verify-repo.py` - verification helpers
-- `ci/` - optional governance validators and hooks for team mode
-- `scripts/` - tool-development scaffolding plus `install-forge-hooks.sh`/`.ps1` for idempotent git-hook install
+- `scripts/` - tool-development scaffolding (`forge-tool-init`, `forge-publish`, `forge-sync-public`)
 - `philosophy/` - design rationale and background material
 
 Reusable agent/editor onboarding files live in `skills/forge/assets/agent-surfaces/`.
