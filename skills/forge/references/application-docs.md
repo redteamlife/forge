@@ -65,6 +65,27 @@ significant architectural decision, propose a new ADR by:
 
 Routine refactors, bug fixes, and small features do not need ADRs.
 
+## Diagrams
+
+Default to **Mermaid** for any diagram embedded in application docs
+(architecture, sequence, state, deployment, data flow, threat-model trust
+boundaries, runbook decision flows, etc.). Mermaid keeps diagrams in plain
+text alongside the prose, renders natively on GitHub/GitLab, and stays
+diffable in PRs.
+
+- Use fenced ` ```mermaid ` blocks. Do not embed binary images, drawio
+  exports, or screenshot diagrams when a Mermaid equivalent is feasible.
+- Pick the chart type that fits: `flowchart` for component/data flow,
+  `sequenceDiagram` for request/response and protocol exchanges,
+  `stateDiagram-v2` for lifecycle, `erDiagram` for data models,
+  `C4Context`/`C4Container` for system context when supported by the
+  renderer the project uses.
+- Keep diagrams small and scoped to one concept; prefer multiple focused
+  diagrams over one omnibus diagram.
+- Only fall back to another tool (PlantUML, drawio, image asset) when
+  Mermaid genuinely cannot express the diagram (e.g., complex network
+  topologies). Note the reason in the doc when you do.
+
 ## Frontmatter
 
 Application docs use a minimal frontmatter:
