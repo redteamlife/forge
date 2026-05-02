@@ -43,6 +43,7 @@ In editors that expose slash-command skills, FORGE subskills are intentionally g
 - `/forge-evaluation`
 - `/forge-memory`
 - `/forge-tool-workflow`
+- `/forge-cross-project`
 
 Review the generated `docs/forge/` files, adjust anything important, then kick off work with:
 
@@ -77,6 +78,7 @@ See [GETTING_STARTED.md](./GETTING_STARTED.md) for the fuller flow and [MIGRATIO
 
 - `skills/forge/` - canonical FORGE skill pack
   - `skills/forge/assets/ci/` - optional governance validators, hooks, and workflow templates that ship with the skill (used by `team-full` and `solo-governed` profiles)
+  - `skills/forge/assets/cross-project/` - optional cross-project coordination templates for authority/peer/downstream repo workflows
   - `skills/forge/assets/scripts/install-forge-hooks.{sh,ps1}` - idempotent git-hook installer bundled with the skill
 - `install.sh`, `install.ps1`, `uninstall.sh`, `uninstall.ps1` - install helpers
 - `verify-install.sh`, `verify-repo.py` - verification helpers
@@ -107,6 +109,11 @@ FORGE treats:
 
 - `contract-first`: OpenAPI, protobuf, GraphQL, generated clients, or other shared interface files
 - `tooling`: private/public tool release workflows
+
+Cross-project coordination is opt-in through `forge-cross-project`, not a default
+bootstrap behavior. It adds `docs/forge/cross-project/` for authority repos,
+XPDs, shared-contract docs, inbox proposals, and peer/downstream pointers when a
+multi-repo project needs that layer.
 
 `security_profile` controls optional DevSecOps gate guidance:
 
@@ -205,6 +212,7 @@ FORGE is one install, but it is made of focused subskills so agents can load onl
 - `forge-evaluation` - apply definition-of-done and evidence gates before a task is treated as complete
 - `forge-memory` - keep reusable lessons and failure notes so future sessions start smarter
 - `forge-tool-workflow` - support the private/public tool development workflow when a project needs it
+- `forge-cross-project` - coordinate opt-in multi-repo authority, peer, downstream, contract, XPD, and inbox workflows
 
 That structure is what makes FORGE feel lightweight in use even when the workflow itself is serious.
 

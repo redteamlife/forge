@@ -81,6 +81,11 @@ FORGE may also record an optional `repo_flavor` hint, only when the repo shape c
 - `contract-first`: shared OpenAPI, protobuf, schema, or generated-client files are part of the task boundary
 - `tooling`: private/public tool release workflow
 
+For multi-repo projects with shared authority-owned contracts, FORGE can also
+use the explicit `forge-cross-project` skill. That creates or maintains
+`docs/forge/cross-project/` for authority repos, XPDs, inbox proposals, and
+peer/downstream pointers. Normal `team-full` does not enable this by default.
+
 FORGE may also enable `application_docs: true` to generate a human-facing `docs/` tree (overview, architecture, threat model, developer guide, interfaces, deployment, runbook, ADRs) parallel to `docs/forge/`. Default is `false`.
 
 FORGE may also record a `security_profile`:
@@ -143,6 +148,12 @@ Expected follow-up:
 
 If your editor surfaces installed skills as slash commands, the subskills are grouped under the `forge-` prefix, for example `/forge-bootstrap` and `/forge-execute-task`.
 
+For cross-project coordination, ask explicitly:
+
+```text
+Use forge-cross-project to initialize this repo as the authority repo for our multi-repo project.
+```
+
 ### Example: start working
 
 After you review the generated docs, tell the agent:
@@ -167,6 +178,7 @@ You do not need to read every generated file line by line before starting. Usual
 - `docs/forge/TASKS.yaml` for whether the initial task list makes sense
 - `docs/forge/ARCHITECTURE.md` if framework, deployment, or content choices are important early
 - `docs/forge/TEAM.md` if multiple people or agents will be working in parallel
+- `docs/forge/cross-project/COORDINATION.yaml` only when the repo has explicitly opted into cross-project coordination
 
 Once those look sane, you can start letting the skill drive task execution.
 

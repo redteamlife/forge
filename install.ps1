@@ -63,8 +63,13 @@ foreach ($AgentName in $Agent) {
     "security-review\SKILL.md",
     "evaluation\SKILL.md",
     "memory\SKILL.md",
+    "cross-project\SKILL.md",
+    "references\cross-project.md",
     "assets\templates\AI.md",
-    "assets\templates\TASKS.yaml"
+    "assets\templates\TASKS.yaml",
+    "assets\cross-project\templates\COORDINATION.yaml",
+    "assets\cross-project\templates\decisions\XPD-0001-template.md",
+    "assets\cross-project\templates\sister-repo-pointer.md"
   )
 
   if (-not (Test-Path $TargetDir)) {

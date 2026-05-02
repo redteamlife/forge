@@ -24,6 +24,7 @@ FORGE works best when you want to:
 - For definition-of-done and evidence checks, use `forge-evaluation`.
 - For reading and updating reusable lessons, use `forge-memory`.
 - For private/public tool release workflows, use `forge-tool-workflow`.
+- For explicit multi-repo shared-contract or XPD coordination, use `forge-cross-project`.
 - For multi-developer coordination rules, branch discipline, and task claiming, read `references/team-mode.md`.
 - For repo-shape routing such as contract-first or tooling projects, read `references/repo-flavors.md`.
 - For agent-specific files such as `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, Codex hooks, or Windsurf rules, read `references/agent-flavors.md`.
@@ -99,6 +100,7 @@ Read these shared references only when needed:
 - `references/agent-flavors.md`
 - `references/devsecops-gates.md`
 - `references/application-docs.md`
+- `references/cross-project.md`
 - `references/token-efficiency.md`
 
 Use templates from `assets/templates/` only when scaffolding or migrating a project into this skill-based flow.

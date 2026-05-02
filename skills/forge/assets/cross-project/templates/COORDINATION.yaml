@@ -1,0 +1,9 @@
+version: 1
+authority_repo: "<repo-name-or-url>"
+updated: YYYY-MM-DD
+roles:
+  authority:
+    - "<authority-repo>"
+  peers: []
+  downstream: []
+items: []

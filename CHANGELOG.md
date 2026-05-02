@@ -4,6 +4,10 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added optional `forge-cross-project` coordination for multi-repo projects, with authority/peer/downstream roles, `docs/forge/cross-project/` templates, XPD decision records, contract docs, inbox proposals, sister-repo pointers, and install/verification coverage.
+
 ## [1.4.0] - 2026-04-30
 
 ### Changed

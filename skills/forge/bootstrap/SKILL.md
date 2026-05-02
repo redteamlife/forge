@@ -29,6 +29,7 @@ Prefer this minimum:
 - `docs/forge/TEAM.md` when multiple developers or agents will work in parallel
 - `docs/forge/SECURITY_CHECKLISTS.md` when `forge-security-review` will be used, composed from the relevant files in `assets/security-checklists/`
 - `docs/forge/SETUP.md` when local hooks or hosted CI enforcement should be tracked explicitly
+- `docs/forge/cross-project/` only when the user explicitly asks for cross-project, multi-repo, authority-repo, shared-contract, sister-repo, or XPD coordination
 - `AGENTS.md` at repo root — always; instructs OpenAI Codex and other agents to read the forge docs before working
 - `CLAUDE.md` at repo root — always; uses `@./docs/forge/` includes so Claude Code auto-loads the forge docs on every session
 - `docs/` (separate from `docs/forge/`) — only when `application_docs: true`; human-facing delivery and operational documentation. The default subset is profile-aware; see `references/application-docs.md`.
@@ -61,20 +62,22 @@ Decide what to generate before writing anything.
    - `full-devsecops` for CI security plus CD pre-flight, DAST, SBOM, provenance, and cleanup evidence
 10. Detect existing agent surfaces from the repo, for example `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, `.codex/hooks.json`, or `.windsurf/rules/`.
 11. Determine `application_docs` from explicit user intent. Default `false`. Set `true` when the project wants a human-facing `docs/` tree alongside `docs/forge/` for overview, architecture, threat model, developer guide, interfaces, deployment, runbooks, and ADRs.
-12. Load the matching reference docs only when their guidance affects generation:
+12. Determine `cross_project_coordination` only from explicit user intent or existing `docs/forge/cross-project/` state. Default `false`; normal `team-full` does not imply cross-project coordination.
+13. Load the matching reference docs only when their guidance affects generation:
     - `references/repo-flavors.md` when `repo_flavor` is set
     - `references/devsecops-gates.md` when `security_profile` is stronger than `baseline`
     - `references/agent-flavors.md` when generating or copying agent-specific surfaces
     - `references/application-docs.md` when `application_docs: true`
+    - `references/cross-project.md` when `cross_project_coordination: true`
 
 ### Phase 2: Generate
 
 Write only what the chosen configuration requires.
 
-13. Generate the smallest set of governance docs that supports the chosen profile, task source, repo flavor, security profile, and detected agent surfaces.
-14. If the repo already has FORGE docs, prefer targeted updates over full regeneration so project-specific edits are preserved.
-15. Use `local` for `docs/forge/TASKS.yaml`, `github` for GitHub Issues, `gitlab` for GitLab Issues, and `external` for Jira, Linear, or another tracker managed through MCP, CLI, or human-owned workflow. Do not implement native Jira or Linear behavior in the skill pack itself; document the external tracker key, URL, or MCP expectation in project-local docs.
-16. In `solo-governed`, emit explicit config and policy cues in `AI.md`:
+14. Generate the smallest set of governance docs that supports the chosen profile, task source, repo flavor, security profile, and detected agent surfaces.
+15. If the repo already has FORGE docs, prefer targeted updates over full regeneration so project-specific edits are preserved.
+16. Use `local` for `docs/forge/TASKS.yaml`, `github` for GitHub Issues, `gitlab` for GitLab Issues, and `external` for Jira, Linear, or another tracker managed through MCP, CLI, or human-owned workflow. Do not implement native Jira or Linear behavior in the skill pack itself; document the external tracker key, URL, or MCP expectation in project-local docs.
+17. In `solo-governed`, emit explicit config and policy cues in `AI.md`:
     - `collaboration_mode: solo`
     - `solo_branch_flow: task-branches`
     - `task_source` matching the selected source
@@ -84,36 +87,37 @@ Write only what the chosen configuration requires.
     - keep `release_branch` as the real protected branch
     - do not use wildcard patterns such as `task/*` as `integration_branch`
     - do not imply a team-style coordination branch unless explicitly wanted
-17. In `solo-governed`, include task-branch policy and an explicit rule that the agent must not merge into `release_branch` without human instruction.
-18. In `team-full`, include branch policy, task-claiming, and integration closeout rules from the start.
-19. In `team-full` with `task_source: github` or `gitlab`, make issue assignment and labels the primary coordination ledger.
-20. In `team-full` with `task_source: local`, use `docs/forge/TASKS.yaml` plus `coordination_branch` as the shared ledger; document that this is best for smaller teams or offline work.
-21. In `team-full` with `repo_flavor: contract-first`, include `contract_files`, role split, and integration-boundary rules in `ARCHITECTURE.md`, `TEAM.md`, and executable task fields.
-22. When generating `docs/forge/SECURITY_CHECKLISTS.md`, select only the relevant shared checklist assets rather than copying every possible checklist.
-23. Include security checklist sections matching the configured `security_profile` (each level is additive):
+18. In `solo-governed`, include task-branch policy and an explicit rule that the agent must not merge into `release_branch` without human instruction.
+19. In `team-full`, include branch policy, task-claiming, and integration closeout rules from the start.
+20. In `team-full` with `task_source: github` or `gitlab`, make issue assignment and labels the primary coordination ledger.
+21. In `team-full` with `task_source: local`, use `docs/forge/TASKS.yaml` plus `coordination_branch` as the shared ledger; document that this is best for smaller teams or offline work.
+22. In `team-full` with `repo_flavor: contract-first`, include `contract_files`, role split, and integration-boundary rules in `ARCHITECTURE.md`, `TEAM.md`, and executable task fields.
+23. When generating `docs/forge/SECURITY_CHECKLISTS.md`, select only the relevant shared checklist assets rather than copying every possible checklist.
+24. Include security checklist sections matching the configured `security_profile` (each level is additive):
     - `repo-fortress` adds Repository Governance
     - `ci-security` adds CI Security and Supply Chain
     - `full-devsecops` adds Continuous Delivery Security
-24. When generating `docs/forge/SETUP.md`, include only sections whose `<!-- FORGE-section: <profile> -->` marker matches the configured `security_profile` or is marked `always`. Drop sections that exceed the profile so the file does not carry dead checklist boilerplate.
-25. Keep IDE-rule files optional and explicit. Do not turn FORGE into mandatory always-on behavior beyond the user-selected agent-surface files. For Cursor repos, mirror only the project-local collaboration, security, stack, and contract constraints that should be automatic.
-26. After all `docs/forge/` files are written, generate `AGENTS.md` at the repo root. List only the docs that were actually bootstrapped, in reading order, with a one-line description of each. Use the repo directory name as the title. Instruct the agent to read them before doing any work.
-27. After writing `AGENTS.md`, generate `CLAUDE.md` at the repo root. Use `@./docs/forge/<file>` include syntax for each bootstrapped doc in the same reading order. Add a one-line repo title heading above the includes.
-28. When `application_docs: true`, copy the profile-appropriate subset of `assets/application-docs/` into the target repo's `docs/` directory:
+25. When generating `docs/forge/SETUP.md`, include only sections whose `<!-- FORGE-section: <profile> -->` marker matches the configured `security_profile` or is marked `always`. Drop sections that exceed the profile so the file does not carry dead checklist boilerplate.
+26. Keep IDE-rule files optional and explicit. Do not turn FORGE into mandatory always-on behavior beyond the user-selected agent-surface files. For Cursor repos, mirror only the project-local collaboration, security, stack, and contract constraints that should be automatic.
+27. After all `docs/forge/` files are written, generate `AGENTS.md` at the repo root. List only the docs that were actually bootstrapped, in reading order, with a one-line description of each. Use the repo directory name as the title. Instruct the agent to read them before doing any work.
+28. After writing `AGENTS.md`, generate `CLAUDE.md` at the repo root. Use `@./docs/forge/<file>` include syntax for each bootstrapped doc in the same reading order. Add a one-line repo title heading above the includes.
+29. When `application_docs: true`, copy the profile-appropriate subset of `assets/application-docs/` into the target repo's `docs/` directory:
     - always: `tool-overview.md`, `developer-guide.md`, `adr/0001-record-architecture-decisions.md`, `adr/README.md`
     - `solo-governed` and `team-full` add: `architecture-overview.md`, `interfaces-and-protocols.md`, `deployment-playbook.md`, `incident-runbook.md`
     - `security_profile >= repo-fortress` adds: `threat-model.md`
     - Fill `updated:` with today's date in each frontmatter.
     - If a file already exists, prefer targeted updates over full overwrite.
-29. Keep templates concise and project-specific. Do not generate application code.
+30. Keep templates concise and project-specific. Do not generate application code.
+31. When `cross_project_coordination: true`, create or refresh `docs/forge/cross-project/` from `assets/cross-project/templates/`. Treat the current repo as authority only when the user says so; otherwise stop for the authority/peer/downstream role decision. Add a compact `docs/forge/AI.md` pointer with `cross_project_role`, `cross_project_authority`, `cross_project_docs`, and `cross_project_reviews_required` when known. Do not make cross-project coordination default behavior for future sessions beyond explicit project-local pointers.
 
 ### Phase 3: Follow-up
 
 Hand off cleanly with explicit next steps.
 
-30. For `solo-governed` and `team-full`, install the FORGE git hooks automatically by running `bash <skill-root>/assets/scripts/install-forge-hooks.sh` (or `powershell -File <skill-root>/assets/scripts/install-forge-hooks.ps1` on Windows) against the target repo, where `<skill-root>` is the installed FORGE skill directory (for example `~/.claude/skills/forge` or wherever the skill was installed). The installer is idempotent, sources hooks from the skill's bundled `assets/ci/hooks/`, and backs up any non-FORGE hooks to `<name>.bak`. Record the installation outcome in `docs/forge/SETUP.md` under Local Hooks. For `solo-simple`, leave hook installation manual unless the user asks.
-31. In `team-full`, after bootstrapping the full team-ready docs, ask one explicit follow-up question: whether the user wants the agent to also copy the reusable agent-surface files and CI scaffolding into the target repo now, or leave those steps manual.
-32. If the user chooses manual setup for those repo-level assets, generate explicit next-step guidance instead of copying them.
-33. If the project uses GitHub or GitLab, generate explicit next-step setup guidance for CI assets, branch protection, issue-token access, issue/MR or issue/PR linking, and enabled security scanning rather than assuming the team already knows how to wire them.
+32. For `solo-governed` and `team-full`, install the FORGE git hooks automatically by running `bash <skill-root>/assets/scripts/install-forge-hooks.sh` (or `powershell -File <skill-root>/assets/scripts/install-forge-hooks.ps1` on Windows) against the target repo, where `<skill-root>` is the installed FORGE skill directory (for example `~/.claude/skills/forge` or wherever the skill was installed). The installer is idempotent, sources hooks from the skill's bundled `assets/ci/hooks/`, and backs up any non-FORGE hooks to `<name>.bak`. Record the installation outcome in `docs/forge/SETUP.md` under Local Hooks. For `solo-simple`, leave hook installation manual unless the user asks.
+33. In `team-full`, after bootstrapping the full team-ready docs, ask one explicit follow-up question: whether the user wants the agent to also copy the reusable agent-surface files and CI scaffolding into the target repo now, or leave those steps manual.
+34. If the user chooses manual setup for those repo-level assets, generate explicit next-step guidance instead of copying them.
+35. If the project uses GitHub or GitLab, generate explicit next-step setup guidance for CI assets, branch protection, issue-token access, issue/MR or issue/PR linking, and enabled security scanning rather than assuming the team already knows how to wire them.
 
 ## Output Style
 
