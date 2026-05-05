@@ -5,7 +5,9 @@ This reference maps the current FORGE repository concepts into a bundled skill p
 ## Move Into Skills
 
 - execution workflow
+- lifecycle routing aliases
 - hard stop behavior
+- rationalization guards
 - critique workflow
 - security review procedure
 - evaluation workflow

@@ -13,6 +13,19 @@ Do not load or apply this workflow during normal `solo-simple`,
 `solo-governed`, or `team-full` work unless the project-local docs already
 declare cross-project coordination.
 
+## Use When
+
+- the user asks for multi-repo, cross-project, authority-repo, peer-repo,
+  downstream, sister-repo, shared-contract, inbox, or XPD coordination
+- a repo already declares `docs/forge/cross-project/`
+- an authority-owned contract change needs affected repo review
+
+## Do Not Use When
+
+- normal single-repo team mode is sufficient
+- the repo only needs `contract-first` local contract discipline
+- no repo can act as authority and the user has not chosen a federation model
+
 ## Covers
 
 - authority, peer, and downstream repo roles
@@ -80,7 +93,7 @@ When adding cross-project awareness to a peer or downstream repo:
    contract docs the repo must check.
 4. Keep the pointer explicit and non-blocking; do not make FORGE always-on.
 
-## Stop Conditions
+## Hard Stops
 
 Stop and ask for a human decision when:
 
@@ -89,3 +102,20 @@ Stop and ask for a human decision when:
 - a peer repo proposes a breaking contract change without an XPD
 - an XPD lists a repo in `review_requested_from` and that repo has not reviewed
 - a project needs a federation model rather than authority-led coordination
+
+## Rationalizations To Reject
+
+| Rationalization | FORGE response |
+|---|---|
+| "The peer repo can just patch the contract." | Authority-owned contracts change through the authority workflow. |
+| "This breaking change is obvious." | Breaking or externally visible changes require XPD traceability. |
+| "We can notify sister repos after merge." | XPDs pause for listed affected repo review before acceptance. |
+| "The inbox draft is already a decision." | Inbox drafts are proposals until elevated by the authority repo. |
+
+## Evidence Required
+
+- authority, peer, or downstream role recorded or explicitly confirmed
+- `COORDINATION.yaml` entry for active cross-project movement
+- linked XPD, inbox draft, contract doc, PR/MR, or issue artifact
+- review status for repos listed in `review_requested_from`
+- updated agent-surface pointer when adding a peer or downstream repo

@@ -7,6 +7,18 @@ description: Execute one bounded FORGE task from repository-local governance doc
 
 Use this skill to perform one controlled implementation pass.
 
+## Use When
+
+- the user asks to start, build, implement, execute, or continue FORGE-governed work
+- project-local FORGE docs or a configured issue tracker define bounded tasks
+- a lifecycle alias such as `forge-build` routes here
+
+## Do Not Use When
+
+- the repo has not been bootstrapped and needs `forge-bootstrap`
+- the user only wants review, security review, evaluation, or release reconciliation
+- the task cannot be bounded to one checkpointed unit of work
+
 ## Required Inputs
 
 Prefer to read only:
@@ -83,6 +95,25 @@ Soft caps:
 29. In solo mode, after a task reaches `complete`, update the authoritative task source, create a Conventional Commit for the completed task work, and stop. Do not begin or partially implement the next task in the same pass.
 30. If the project explicitly allows batch or auto execution, start the next task only after the current task has been fully checkpointed: task state updated, required evidence recorded, and Conventional Commit created. Batch mode never permits combining multiple tasks into one uncommitted work span.
 31. Do not include AI attribution, assistant branding, or tool-marketing lines in commit messages or trailers. Commit history should describe the work, not advertise the agent.
+
+## Rationalizations To Reject
+
+| Rationalization | FORGE response |
+|---|---|
+| "This is small enough to skip task state." | Small work still needs bounded scope and a clean checkpoint. |
+| "I can touch nearby files while I am here." | Only the selected task and declared scope are allowed. |
+| "I will update docs after the code works." | Triggered docs and contract artifacts move in the same change set. |
+| "I can start the next task while tests run." | Next-task work waits until validation, state, evidence, and commit are complete. |
+| "The contract change is obvious." | Integration-boundary changes require explicit contract traceability. |
+
+## Evidence Required
+
+- selected task id or issue reference
+- changed files limited to task scope
+- validation commands run, or a concise blocker explaining why they could not run
+- updated task source when the task state changes
+- required docs, contracts, ADRs, XPDs, or evaluation entries when triggers fire
+- Conventional Commit for completed solo task work, or PR/MR-ready state in team mode
 
 ## Token Saving Rules
 

@@ -7,6 +7,18 @@ description: Apply FORGE definition-of-done and evidence checks to a task. Use w
 
 Use this skill to decide whether a task is actually complete.
 
+## Use When
+
+- critique and required security review are complete
+- the user asks whether a task is done, complete, ready to commit, or ready to close
+- `forge-review` routes here as the final review gate
+
+## Do Not Use When
+
+- the implementing agent is barred by `requires_independent_review: true`
+- critique or required security review has not run
+- the task source, validation evidence, or completion target is unclear
+
 ## Evaluate
 
 - task scope is satisfied without unrelated work
@@ -26,6 +38,27 @@ Use this skill to decide whether a task is actually complete.
 - for issue-backed work, PR/MR links, branch naming, and issue identifiers match project policy
 - for `task_source: external`, external tracker evidence or human acceptance is recorded before completion
 - in solo mode, the task is ready to be marked `complete` and committed with a Conventional Commit before any new task starts
+
+## Hard Stops
+
+Stop when:
+
+- critique is missing or has blockers
+- required security review is missing or has unresolved concerns
+- validation did not run and no accepted blocker explains why
+- required docs, contracts, ADRs, XPDs, or DevSecOps evidence are missing
+- task state, branch, PR/MR, issue, or release metadata cannot be reconciled
+- `requires_independent_review: true` prevents self-evaluation
+
+## Rationalizations To Reject
+
+| Rationalization | FORGE response |
+|---|---|
+| "The code works locally." | Completion requires recorded validation and governance evidence. |
+| "The reviewer can catch missing docs." | Evaluation fails when required docs are missing. |
+| "Security is n/a because this is not auth code." | Security review follows the actual change surface, not only auth changes. |
+| "The task is merged, so it is complete." | Team mode distinguishes implemented, integrated, and complete. |
+| "I can self-evaluate despite independent review." | Independent review requires a human or separate session. |
 
 ## Evidence
 

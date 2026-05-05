@@ -146,7 +146,25 @@ Expected follow-up:
 - FORGE bootstraps the full team-ready docs first
 - then it asks whether you want it to copy repo agent surfaces and CI scaffolding now, or leave those steps manual
 
-If your editor surfaces installed skills as slash commands, the subskills are grouped under the `forge-` prefix, for example `/forge-bootstrap` and `/forge-execute-task`.
+If your editor surfaces installed skills as slash commands, the subskills are grouped under the `forge-` prefix, for example `/forge-bootstrap`, `/forge-plan`, `/forge-build`, `/forge-review`, `/forge-ship`, and `/forge-execute-task`.
+
+Lifecycle prompts are also supported:
+
+```text
+Use forge-plan to break this work into bounded tasks.
+```
+
+```text
+Use forge-build to implement the next task.
+```
+
+```text
+Use forge-review to review this task.
+```
+
+```text
+Use forge-ship to reconcile and close out this task.
+```
 
 For cross-project coordination, ask explicitly:
 

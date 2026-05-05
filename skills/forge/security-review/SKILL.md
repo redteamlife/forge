@@ -7,6 +7,18 @@ description: Apply FORGE checklist-based security review to a task. Use when sel
 
 Use this skill after implementation and before completion.
 
+## Use When
+
+- implementation changes security-relevant behavior or project policy requires review
+- the change touches auth, data, APIs, frontend surfaces, storage, infra, CI, CD, dependencies, build artifacts, or deployment
+- `forge-review` routes here between critique and evaluation
+
+## Do Not Use When
+
+- the user wants general code review rather than security checklist review
+- project-local checklist inputs are required but missing
+- the change surface cannot be identified
+
 ## Workflow
 
 1. Read the task's `task_type` from `docs/forge/TASKS.yaml` if available.
@@ -16,6 +28,32 @@ Use this skill after implementation and before completion.
 5. If the change touches repository settings, CI, CD, dependency management, build artifacts, or deployment, apply the matching DevSecOps checklist sections.
 6. Require an explicit outcome for every item: `pass`, `n/a`, or escalated.
 7. If any unresolved concern remains, stop before evaluation.
+
+## Hard Stops
+
+Stop when:
+
+- required `docs/forge/SECURITY_CHECKLISTS.md` is missing for a workflow that expects it
+- the change surface is unclear
+- any checklist item remains unresolved
+- a declared security profile lacks setup evidence for claimed controls
+- token scope, secret handling, trust boundary, or sensitive-data concerns cannot be resolved
+
+## Rationalizations To Reject
+
+| Rationalization | FORGE response |
+|---|---|
+| "This is not a security task." | Security review follows touched surfaces, not task labels alone. |
+| "No auth changed, so security is n/a." | Data, APIs, frontend, CI, dependencies, and deployment can all be security surfaces. |
+| "The scanner will catch it." | Automated scans are evidence, not a substitute for checklist outcomes. |
+| "We probably have branch protection." | Claimed controls need setup evidence. |
+
+## Evidence Required
+
+- selected checklist sections
+- `pass`, `n/a`, or escalated result for every applicable item
+- unresolved findings, if any
+- recorded setup evidence for claimed DevSecOps controls
 
 ## Notes
 

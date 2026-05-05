@@ -18,6 +18,10 @@ FORGE works best when you want to:
 ## Quick Routing
 
 - For creating or refreshing FORGE project docs, use `forge-bootstrap`.
+- For lifecycle-style planning requests, use `forge-plan`.
+- For lifecycle-style build requests, use `forge-build`.
+- For lifecycle-style review requests, use `forge-review`.
+- For lifecycle-style ship, release, or closeout requests, use `forge-ship`.
 - For selecting and implementing the next bounded task, use `forge-execute-task`.
 - For scope and quality review before completion, use `forge-critique`.
 - For checklist-based security review, use `forge-security-review`.
@@ -30,6 +34,8 @@ FORGE works best when you want to:
 - For agent-specific files such as `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, Codex hooks, or Windsurf rules, read `references/agent-flavors.md`.
 - For DevSecOps gate profiles, repository hardening, CI/CD security, SCA, or SBOM controls, read `references/devsecops-gates.md`.
 - For human-facing application documentation (overview, architecture, threat model, developer guide, interfaces, deployment, runbooks, ADRs), read `references/application-docs.md`.
+- For lifecycle intent routing, read `references/lifecycle-map.md`.
+- For creating or revising FORGE skills, read `references/skill-anatomy.md`.
 
 ## Operating Model
 
@@ -101,6 +107,8 @@ Read these shared references only when needed:
 - `references/devsecops-gates.md`
 - `references/application-docs.md`
 - `references/cross-project.md`
+- `references/lifecycle-map.md`
+- `references/skill-anatomy.md`
 - `references/token-efficiency.md`
 
 Use templates from `assets/templates/` only when scaffolding or migrating a project into this skill-based flow.

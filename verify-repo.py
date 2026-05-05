@@ -62,6 +62,10 @@ def verify_required_files() -> None:
     required = [
         SKILL_ROOT / "SKILL.md",
         SKILL_ROOT / "bootstrap" / "SKILL.md",
+        SKILL_ROOT / "plan" / "SKILL.md",
+        SKILL_ROOT / "build" / "SKILL.md",
+        SKILL_ROOT / "review" / "SKILL.md",
+        SKILL_ROOT / "ship" / "SKILL.md",
         SKILL_ROOT / "execute-task" / "SKILL.md",
         SKILL_ROOT / "critique" / "SKILL.md",
         SKILL_ROOT / "security-review" / "SKILL.md",
@@ -69,6 +73,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "memory" / "SKILL.md",
         SKILL_ROOT / "cross-project" / "SKILL.md",
         SKILL_ROOT / "assets" / "templates" / "AI.md",
+        SKILL_ROOT / "assets" / "templates" / "SKILL-ANATOMY.md",
         SKILL_ROOT / "assets" / "cross-project" / "templates" / "README.md",
         SKILL_ROOT / "assets" / "cross-project" / "templates" / "COORDINATION.yaml",
         SKILL_ROOT / "assets" / "cross-project" / "templates" / "contracts" / "README.md",
@@ -84,6 +89,8 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "devsecops-gates.md",
         SKILL_ROOT / "references" / "application-docs.md",
         SKILL_ROOT / "references" / "cross-project.md",
+        SKILL_ROOT / "references" / "lifecycle-map.md",
+        SKILL_ROOT / "references" / "skill-anatomy.md",
         SKILL_ROOT / "assets" / "application-docs" / "tool-overview.md",
         SKILL_ROOT / "assets" / "application-docs" / "developer-guide.md",
         SKILL_ROOT / "assets" / "application-docs" / "adr" / "0001-record-architecture-decisions.md",
@@ -104,6 +111,30 @@ def verify_manifests() -> None:
         SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks.json",
     ]:
         read_json(path)
+
+
+def verify_skill_anatomy() -> None:
+    core_skills = [
+        SKILL_ROOT / "execute-task" / "SKILL.md",
+        SKILL_ROOT / "critique" / "SKILL.md",
+        SKILL_ROOT / "security-review" / "SKILL.md",
+        SKILL_ROOT / "evaluation" / "SKILL.md",
+        SKILL_ROOT / "cross-project" / "SKILL.md",
+    ]
+    required_markers = [
+        "## Use When",
+        "## Do Not Use When",
+        "## Hard Stops",
+        "## Rationalizations To Reject",
+    ]
+    for path in core_skills:
+        text = path.read_text()
+        for marker in required_markers:
+            ensure(marker in text, f"{path}: missing skill anatomy marker {marker}")
+        ensure(
+            "## Evidence Required" in text or "## Evidence" in text,
+            f"{path}: missing evidence section",
+        )
 
 
 def verify_shell_scripts() -> None:
@@ -135,6 +166,7 @@ def main() -> int:
         verify_skill_names()
         verify_required_files()
         verify_manifests()
+        verify_skill_anatomy()
         verify_shell_scripts()
         verify_install_flow()
     except CheckFailure as exc:

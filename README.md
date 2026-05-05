@@ -37,6 +37,10 @@ Use the forge skill to bootstrap this repo in team-full mode. We want repo agent
 In editors that expose slash-command skills, FORGE subskills are intentionally grouped as `/forge-*`:
 
 - `/forge-bootstrap`
+- `/forge-plan`
+- `/forge-build`
+- `/forge-review`
+- `/forge-ship`
 - `/forge-execute-task`
 - `/forge-critique`
 - `/forge-security-review`
@@ -124,6 +128,14 @@ multi-repo project needs that layer.
 
 `application_docs: true` enables a separate human-facing `docs/` tree alongside `docs/forge/`. It generates a profile-aware subset of overview, architecture, threat model, developer guide, interfaces, deployment, runbook, and ADR templates with maintenance triggers wired into execute, critique, and evaluation. Default is `false`.
 
+Lifecycle aliases provide a friendlier entry point without duplicating workflow
+logic:
+
+- `forge-plan`: shape bounded work in the authoritative task source
+- `forge-build`: route to one-task execution
+- `forge-review`: run critique, security review, and evaluation gates
+- `forge-ship`: reconcile integration, release, and closeout evidence
+
 In `solo-simple`, the agent should finish one task, update `TASKS.yaml`, create a Conventional Commit, and stop before moving on.
 
 In `solo-governed`, the agent should still preserve one-task checkpoints, but it should use task branches and must not merge or promote into the release branch without explicit human instruction.
@@ -206,6 +218,10 @@ FORGE is designed to reduce drift without adding huge prompt overhead. The skill
 FORGE is one install, but it is made of focused subskills so agents can load only the part they need:
 
 - `forge-bootstrap` - scaffold or refresh a lean `docs/forge/` contract for a project
+- `forge-plan` - shape bounded FORGE tasks in the configured task source
+- `forge-build` - route build requests to bounded task execution
+- `forge-review` - route review requests through critique, security, and evaluation gates
+- `forge-ship` - reconcile integration, release, claim release, and completion evidence
 - `forge-execute-task` - select the next bounded task and implement it safely
 - `forge-critique` - check for scope drift, gaps, and architecture conflicts before completion
 - `forge-security-review` - run checklist-based security review against the actual change surface
