@@ -8,15 +8,15 @@ new always-on behavior.
 
 ## Lifecycle Routes
 
-| User intent | Route | Purpose |
+| User intent | Public route | Underlying workflow |
 |---|---|---|
 | Define project workflow | `forge-bootstrap` | Create or refresh repo-local FORGE docs. |
-| Plan task work | task source, `TASKS.yaml`, or issue tracker | Shape bounded tasks before execution. |
-| Build task | `forge-execute-task` | Implement one selected task with scope and branch discipline. |
-| Review task | `forge-critique` | Check scope drift, assumptions, architecture, docs, and contract consistency. |
+| Plan task work | `forge-plan` | Shape bounded tasks in the authoritative task source. |
+| Build task | `forge-build` | Delegate implementation to `forge-execute-task`. |
+| Review task | `forge-review` | Run `forge-critique`, required `forge-security-review`, then `forge-evaluation`. |
 | Secure task | `forge-security-review` | Apply task-relevant security and DevSecOps checks. |
 | Verify task | `forge-evaluation` | Decide whether completion evidence is sufficient. |
-| Ship task | team closeout and release reconciliation | Confirm integration, release acceptance, and claim release. |
+| Ship task | `forge-ship` | Confirm integration, release acceptance, and claim release. |
 | Coordinate repos | `forge-cross-project` | Manage authority, peer, downstream, contract, XPD, and inbox workflows. |
 
 ## Prompt Patterns

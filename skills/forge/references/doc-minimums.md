@@ -19,11 +19,15 @@ Recommended:
 - `docs/forge/SETUP.md` when enforcement setup needs to be handed off clearly to humans
 - root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to load FORGE
 
-Optional:
+Legacy optional files from older FORGE templates:
 
 - `docs/forge/REVIEW_GUIDE.md`
 - `docs/forge/ROADMAP.md`
 - `docs/forge/ARCHITECTURE_EXPLORATION.md`
+
+Do not generate these by default. Keep or refresh them only when an existing
+project already uses them for project-specific facts that are not better held
+in the current skill pack, task source, or application docs.
 
 ## Rule Of Thumb
 

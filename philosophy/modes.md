@@ -60,18 +60,21 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 ### Required Documentation
 
 - `AI.md`
-- `ARCHITECTURE_EXPLORATION.md`
 - `ARCHITECTURE.md`
-- `REVIEW_GUIDE.md`
 - `TASKS.yaml`
 - `EVALUATION.md`
 - `MEMORY.md`
-- `ROADMAP.md`
+- `TEAM.md` when multiple people or agents share the repo
+- `SECURITY_CHECKLISTS.md`
+- `SETUP.md` when hooks, CI, branch protection, or release handoff need to be tracked
+- human-facing application docs when `application_docs: true`
+- cross-project coordination docs when the repo explicitly opts into `forge-cross-project`
 
 ### Enforcement Profile
 
 - Formal validation of required documents before execution.
 - Task execution must satisfy review, security, and evaluation gates with recorded outcomes.
+- Skill anatomy expectations apply to operational extensions: activation rules, hard stops, rationalization guards, and evidence exits.
 - Batch execution requires explicit `batch_size` and task independence justification.
 - Auto execution may be permitted only if configured and policy-compliant.
 
@@ -91,6 +94,7 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 ### Enforcement Profile
 
 - Deterministic execution workflow enforced for every task.
+- Lifecycle routing is explicit: plan, build, review, and ship requests route through the matching FORGE skills rather than ad hoc agent judgment.
 - Strong hard-stop behavior on missing documentation, failed gates, or branch violations.
 - Mandatory memory updates and guardrail refinement tracking.
 - Auto execution allowed only under explicit policy and only for eligible task classes.

@@ -82,6 +82,7 @@ This maturity model describes progressive adoption of disciplined agentic engine
 
 - Explicit evaluation criteria define release and task readiness.
 - Security review and quality checks are part of the workflow.
+- Review lifecycle is explicit: critique, security review, and evaluation are related but distinct gates.
 - Testing expectations are documented and mode-aware.
 - Completion requires passing documented gates, not just code changes.
 
@@ -122,6 +123,8 @@ This maturity model describes progressive adoption of disciplined agentic engine
 
 - End-to-end execution is governed by mode, documented constraints, and explicit gates.
 - Task selection, implementation bounds, review passes, evaluation, and memory updates are deterministic.
+- Lifecycle aliases make planning, building, reviewing, and shipping routable without weakening the underlying governance primitives.
+- Cross-project coordination is explicit when shared contracts span repositories.
 - Escalation policies and branch discipline are enforced.
 - Operational learning is captured and fed back into guardrails.
 

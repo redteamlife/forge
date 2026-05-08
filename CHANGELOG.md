@@ -4,11 +4,17 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-05-07
+
 ### Added
 
 - Added optional `forge-cross-project` coordination for multi-repo projects, with authority/peer/downstream roles, `docs/forge/cross-project/` templates, XPD decision records, contract docs, inbox proposals, sister-repo pointers, and install/verification coverage.
 - Added FORGE skill-anatomy and lifecycle-map guidance, plus lifecycle alias skills for plan, build, review, and ship flows.
 - Added rationalization guards and evidence exits to core operational skills so agents have clearer stop and proof conditions.
+
+### Changed
+
+- Bumped the default generated `forge_version` to `1.5.0`.
 
 ## [1.4.0] - 2026-04-30
 

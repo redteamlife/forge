@@ -12,6 +12,25 @@ The contract is: the agent reads the skill and the minimum relevant project-loca
 
 Putting the workflow in a dedicated skill pack rather than embedding it in `AI.md` or splitting it across project docs serves one purpose: conflict resolution. When a task description, an architectural constraint, and a project preference point in different directions, there must be a single stable authority. The canonical FORGE skill pack is that authority. Project-local docs inform execution; the skill pack governs it.
 
+## Why Lifecycle Aliases Exist
+
+FORGE's operational primitives are intentionally specific: bootstrap, execute,
+critique, security review, evaluation, memory, tool workflow, and
+cross-project coordination. Humans often think in broader delivery phases:
+plan, build, review, and ship. Lifecycle aliases bridge that gap without
+duplicating workflow logic. `forge-plan`, `forge-build`, `forge-review`, and
+`forge-ship` route intent to the underlying primitives while preserving the
+same task-source, branch, evidence, and hard-stop rules.
+
+## Why Skill Anatomy Is Standardized
+
+Skills are only useful when agents can tell when to activate them, what to do,
+when to stop, and what evidence proves completion. FORGE operational skills use
+explicit activation boundaries, hard stops, rationalization guards, and
+evidence exits so agents cannot quietly skip governance by sounding reasonable.
+The goal is not longer skills; it is less ambiguity at the exact moments where
+agents tend to drift.
+
 ## Why Document Presence Is Checked Before Content Is Read
 
 Existence checks are cheap. Content loading is the token cost. Validating that all required documents are present before task selection prevents mid-task hard stops that waste work already done. Reading document content only when the workflow step that needs it is reached avoids loading documents that are not relevant to the selected task.
