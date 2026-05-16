@@ -33,7 +33,7 @@ If the project already has `docs/forge/` and you want the newer team-mode claimi
    - define the closeout contract so `implemented`, `integrated`, and `complete` are treated as separate checkpoints
    - define how claims are released when tasks reach `integrated` or `complete`
 
-3. Update `docs/forge/TASKS.yaml`
+3. Update the configured local task ledger
    - allow team-mode statuses including `implemented` and `integrated`
    - add `claimed_by_email`, `agent`, and `claim_commit` to active and future tasks
    - add `claim_released_by` and `claim_released_at` for tasks that are already `integrated` or `complete`
@@ -46,14 +46,14 @@ If the project already has `docs/forge/` and you want the newer team-mode claimi
 
 5. Create the coordination branch
    - for example: `forge-state`
-   - publish the updated `TASKS.yaml` there before new claims begin
+   - publish the updated local task ledger there before new claims begin
 
    Skip this step when `task_source` is `github` or `gitlab`; issue assignment and labels are the authoritative claim ledger.
 
 6. Keep implementation on feature branches
    - claim first on the coordination branch
    - then implement on the task feature branch
-   - treat the feature-branch copy of `TASKS.yaml` as informational only during implementation
+   - treat feature-branch task snapshots as informational only during implementation
    - before opening the feature PR, run `bash ci/scripts/verify-team-closeout.sh --task <task-id> --target integration` or the documented equivalent
    - merge feature branches into the integration branch first
    - when a task becomes `integrated`, record `claim_released_by` and `claim_released_at`
@@ -74,6 +74,14 @@ shared interface files:
 If a repo already has `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`,
 `.github/copilot-instructions.md`, `.codex/hooks.json`, or `.windsurf/rules/`,
 refresh only the FORGE routing lines. Preserve project-specific local rules.
+
+For context-safe migration:
+
+1. Add `agent_context_profile: lite` to the `FORGE-config` block in `docs/forge/AI.md` unless the project explicitly needs `standard` or `full`.
+2. Add `docs/forge/CONTEXT.md` from the current template.
+3. Rewrite `CLAUDE.md`, `AGENTS.md`, and always-on IDE rules as routers. In `lite`, do not include `@./docs/forge/*`.
+4. Run `python3 <skill-root>/assets/scripts/forge_validate_context.py <repo>` and fix any include-bomb failures.
+5. For large local task ledgers, migrate toward `docs/forge/TASKS.index.yaml` plus per-task files under `docs/forge/tasks/`.
 
 ## Installing Git Hooks On An Existing Repo
 
@@ -128,7 +136,7 @@ For repos that want stronger security enforcement:
 
 1. Add `security_profile: repo-fortress`, `ci-security`, or `full-devsecops` to `docs/forge/AI.md`.
 2. Update `docs/forge/SETUP.md` with the controls that are actually configured.
-3. Add the relevant checklist sections to `docs/forge/SECURITY_CHECKLISTS.md`.
+3. Add the relevant checklist sections to split checklists or the compatibility `SECURITY_CHECKLISTS.md` wrapper.
 4. Record evidence for configured scans and gates in `docs/forge/EVALUATION.md`.
 5. Treat missing expected controls as setup findings rather than passing them silently.
 

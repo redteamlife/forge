@@ -71,22 +71,39 @@ EOF
   fi
 }
 
+get_config_value() {
+  local file="$1"
+  local field="$2"
+  grep -m1 -E "^[[:space:]]*${field}:" "$file" 2>/dev/null | sed "s/^[[:space:]]*${field}: *//" | sed 's/[[:space:]]*$//'
+}
+
+has_config_field() {
+  local file="$1"
+  local field="$2"
+  grep -q -E "^[[:space:]]*${field}:" "$file" 2>/dev/null
+}
+
 # -----------------------------------------------------------------------
 # Check required files exist
 # -----------------------------------------------------------------------
 
 REQUIRED_FILES=(
   "$FORGE_DIR/AI.md"
-  "$FORGE_DIR/TASKS.yaml"
 )
+
+if [ -f "$FORGE_DIR/TASKS.index.yaml" ]; then
+  REQUIRED_FILES+=("$FORGE_DIR/TASKS.index.yaml")
+else
+  REQUIRED_FILES+=("$FORGE_DIR/TASKS.yaml")
+fi
 
 AI_MD="$FORGE_DIR/AI.md"
 FORGE_MODE=""
 COLLABORATION_MODE=""
 
 if [ -f "$AI_MD" ]; then
-  FORGE_MODE=$(grep 'FORGE_mode:' "$AI_MD" | sed 's/.*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
-  COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
+  FORGE_MODE=$(get_config_value "$AI_MD" "FORGE_mode")
+  COLLABORATION_MODE=$(get_config_value "$AI_MD" "collaboration_mode")
 fi
 
 # Mid and above require additional files
@@ -96,8 +113,10 @@ if [ "$FORGE_MODE" != "Lightweight" ] && [ -n "$FORGE_MODE" ]; then
     "$FORGE_DIR/TEST_STRATEGY.md"
     "$FORGE_DIR/EVALUATION.md"
     "$FORGE_DIR/MEMORY.md"
-    "$FORGE_DIR/SECURITY_CHECKLISTS.md"
   )
+  if [ ! -d "$FORGE_DIR/security-checklists" ]; then
+    REQUIRED_FILES+=("$FORGE_DIR/SECURITY_CHECKLISTS.md")
+  fi
 fi
 
 # Strict and above
@@ -113,10 +132,12 @@ fi
 if [ "$COLLABORATION_MODE" = "team" ]; then
   REQUIRED_FILES+=(
     "$FORGE_DIR/TEAM.md"
-    "$FORGE_DIR/SECURITY_CHECKLISTS.md"
     "$FORGE_DIR/EVALUATION.md"
     "$FORGE_DIR/MEMORY.md"
   )
+  if [ ! -d "$FORGE_DIR/security-checklists" ]; then
+    REQUIRED_FILES+=("$FORGE_DIR/SECURITY_CHECKLISTS.md")
+  fi
 fi
 
 FILES_OK=1
@@ -176,8 +197,55 @@ fi
 # Check TASKS.yaml structure
 # -----------------------------------------------------------------------
 
+TASKS_INDEX_FILE="$FORGE_DIR/TASKS.index.yaml"
 TASKS_FILE="$FORGE_DIR/TASKS.yaml"
-if [ -f "$TASKS_FILE" ]; then
+if [ -f "$TASKS_INDEX_FILE" ]; then
+  python3 - "$TASKS_INDEX_FILE" "$FORGE_DIR" <<'EOF'
+import sys
+from pathlib import Path
+import yaml
+
+with open(sys.argv[1]) as f:
+    data = yaml.safe_load(f)
+
+forge_dir = Path(sys.argv[2])
+repo_root = forge_dir.parent.parent
+tasks = data.get("tasks", []) if data else []
+if not tasks:
+    print("FORGE: TASKS.index.yaml contains no tasks.")
+    sys.exit(1)
+
+failed = False
+valid_statuses = {"todo", "incomplete", "claimed", "in_progress", "implemented", "integrated", "blocked", "complete"}
+for task in tasks:
+    tid = task.get("id")
+    title = task.get("title")
+    status = task.get("status")
+    task_file = task.get("task_file")
+    if not tid or str(tid).strip() == "":
+        print("FORGE: A task index entry is missing an 'id' field.")
+        failed = True
+    if not title or str(title).strip() == "":
+        print(f"FORGE: Task index entry '{tid}' is missing a 'title'.")
+        failed = True
+    if status not in valid_statuses:
+        print(f"FORGE: Task index entry '{tid}' has invalid status '{status}'.")
+        failed = True
+    if not task_file:
+        print(f"FORGE: Task index entry '{tid}' is missing 'task_file'.")
+        failed = True
+    elif not (repo_root / task_file).is_file():
+        print(f"FORGE: Task index entry '{tid}' points to missing task_file '{task_file}'.")
+        failed = True
+
+if failed:
+    sys.exit(1)
+EOF
+  TASKS_OK=$?
+  if [ "$TASKS_OK" -ne 0 ]; then
+    FAILED=1
+  fi
+elif [ -f "$TASKS_FILE" ]; then
   python3 - "$TASKS_FILE" <<'EOF'
 import sys
 import yaml
@@ -219,32 +287,32 @@ fi
 # -----------------------------------------------------------------------
 
 if grep -q 'FORGE-config' "$AI_MD"; then
-  if ! grep -q 'FORGE_mode:' "$AI_MD"; then
+  if ! has_config_field "$AI_MD" "FORGE_mode"; then
     echo "FORGE: FORGE-config block in AI.md is missing FORGE_mode."
     FAILED=1
   fi
-  if ! grep -q 'execution_mode:' "$AI_MD"; then
+  if ! has_config_field "$AI_MD" "execution_mode"; then
     echo "FORGE: FORGE-config block in AI.md is missing execution_mode."
     FAILED=1
   fi
   for field in coordination_branch integration_branch release_branch; do
-    if grep -q "${field}:" "$AI_MD"; then
-      FIELD_VALUE=$(grep "${field}:" "$AI_MD" | sed "s/.*${field}: *//" | sed 's/[[:space:]]*$//')
+    if has_config_field "$AI_MD" "$field"; then
+      FIELD_VALUE=$(get_config_value "$AI_MD" "$field")
       if [ -z "$FIELD_VALUE" ]; then
         echo "FORGE: ${field} must not be empty when present."
         FAILED=1
       fi
     fi
   done
-  if grep -q 'collaboration_mode:' "$AI_MD"; then
-    COLLAB_MODE_VALUE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
+  if has_config_field "$AI_MD" "collaboration_mode"; then
+    COLLAB_MODE_VALUE=$(get_config_value "$AI_MD" "collaboration_mode")
     if [ "$COLLAB_MODE_VALUE" != "solo" ] && [ "$COLLAB_MODE_VALUE" != "team" ]; then
       echo "FORGE: collaboration_mode must be 'solo' or 'team' when present."
       FAILED=1
     fi
   fi
-  if grep -q 'task_source:' "$AI_MD"; then
-    TASK_SOURCE_VALUE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//')
+  if has_config_field "$AI_MD" "task_source"; then
+    TASK_SOURCE_VALUE=$(get_config_value "$AI_MD" "task_source")
     case "$TASK_SOURCE_VALUE" in
       local|github|gitlab|external)
         ;;
@@ -254,8 +322,8 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         ;;
     esac
   fi
-  if grep -q 'repo_flavor:' "$AI_MD"; then
-    REPO_FLAVOR_VALUE=$(grep 'repo_flavor:' "$AI_MD" | sed 's/.*repo_flavor: *//' | sed 's/[[:space:]]*$//')
+  if has_config_field "$AI_MD" "repo_flavor"; then
+    REPO_FLAVOR_VALUE=$(get_config_value "$AI_MD" "repo_flavor")
     case "$REPO_FLAVOR_VALUE" in
       contract-first|tooling)
         ;;
@@ -265,8 +333,8 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         ;;
     esac
   fi
-  if grep -q 'application_docs:' "$AI_MD"; then
-    APPLICATION_DOCS_VALUE=$(grep 'application_docs:' "$AI_MD" | sed 's/.*application_docs: *//' | sed 's/[[:space:]]*$//')
+  if has_config_field "$AI_MD" "application_docs"; then
+    APPLICATION_DOCS_VALUE=$(get_config_value "$AI_MD" "application_docs")
     case "$APPLICATION_DOCS_VALUE" in
       true|false)
         ;;
@@ -276,13 +344,24 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         ;;
     esac
   fi
-  if grep -q 'security_profile:' "$AI_MD"; then
-    SECURITY_PROFILE_VALUE=$(grep 'security_profile:' "$AI_MD" | sed 's/.*security_profile: *//' | sed 's/[[:space:]]*$//')
+  if has_config_field "$AI_MD" "security_profile"; then
+    SECURITY_PROFILE_VALUE=$(get_config_value "$AI_MD" "security_profile")
     case "$SECURITY_PROFILE_VALUE" in
       baseline|repo-fortress|ci-security|full-devsecops)
         ;;
       *)
         echo "FORGE: security_profile must be baseline, repo-fortress, ci-security, or full-devsecops when present."
+        FAILED=1
+        ;;
+    esac
+  fi
+  if has_config_field "$AI_MD" "agent_context_profile"; then
+    AGENT_CONTEXT_PROFILE_VALUE=$(get_config_value "$AI_MD" "agent_context_profile")
+    case "$AGENT_CONTEXT_PROFILE_VALUE" in
+      lite|standard|full)
+        ;;
+      *)
+        echo "FORGE: agent_context_profile must be lite, standard, or full when present."
         FAILED=1
         ;;
     esac

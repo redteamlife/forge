@@ -11,7 +11,7 @@ parallel to FORGE's agent-facing governance docs. They live in `docs/`
 
 | Audience | Path | Examples |
 |---|---|---|
-| Agent execution | `docs/forge/` | AI.md, TASKS.yaml, EVALUATION.md, MEMORY.md, ARCHITECTURE.md (agent-facing constraints) |
+| Agent execution | `docs/forge/` | AI.md, task ledger, EVALUATION.md, MEMORY.md, ARCHITECTURE.md (agent-facing constraints) |
 | Human delivery / ops | `docs/` | tool-overview.md, architecture-overview.md, threat-model.md, developer-guide.md, interfaces-and-protocols.md, deployment-playbook.md, incident-runbook.md, adr/ |
 
 `docs/forge/ARCHITECTURE.md` and `docs/architecture-overview.md` are

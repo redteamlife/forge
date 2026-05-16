@@ -6,6 +6,8 @@ Turn AI coding from chaotic one-shot prompting into a reliable engineering workf
 
 The canonical skill pack lives in [`skills/forge/`](./skills/forge/). This repo also includes install scripts, verification helpers, optional CI enforcement, tool-scaffolding scripts, and philosophy docs.
 
+FORGE does not require a standalone `forge` shell command. The install path is the skill pack itself. Deterministic helpers are bundled under `skills/forge/assets/scripts/` and are run by skill-relative path when needed.
+
 ## Quick Start
 
 Install the skill pack:
@@ -83,7 +85,7 @@ See [GETTING_STARTED.md](./GETTING_STARTED.md) for the fuller flow and [MIGRATIO
 - `skills/forge/` - canonical FORGE skill pack
   - `skills/forge/assets/ci/` - optional governance validators, hooks, and workflow templates that ship with the skill (used by `team-full` and `solo-governed` profiles)
   - `skills/forge/assets/cross-project/` - optional cross-project coordination templates for authority/peer/downstream repo workflows
-  - `skills/forge/assets/scripts/install-forge-hooks.{sh,ps1}` - idempotent git-hook installer bundled with the skill
+  - `skills/forge/assets/scripts/` - bundled deterministic helpers for hooks, context budgets, context migration, agent surfaces, and validation
 - `install.sh`, `install.ps1`, `uninstall.sh`, `uninstall.ps1` - install helpers
 - `verify-install.sh`, `verify-repo.py` - verification helpers
 - `scripts/` - tool-development scaffolding (`forge-tool-init`, `forge-publish`, `forge-sync-public`)
@@ -93,6 +95,8 @@ Reusable agent/editor onboarding files live in `skills/forge/assets/agent-surfac
 Repo-specific operational files such as GitHub workflows stay at the root where the platform expects them.
 Copy those agent-surface files into downstream repos when you want the repo itself to remind agents to use FORGE or stop and ask for installation before governed work.
 Agent-specific behavior is summarized in `skills/forge/references/agent-flavors.md`.
+
+FORGE defaults to context-safe generated surfaces. New bootstraps should include `docs/forge/CONTEXT.md`, router-style `CLAUDE.md` and `AGENTS.md`, and always-on IDE rules that point agents to the next relevant file instead of auto-loading every FORGE doc.
 
 ## Workflow Model
 
@@ -104,10 +108,16 @@ FORGE treats:
 
 `task_source` in `docs/forge/AI.md` controls where tasks live:
 
-- `local`: `docs/forge/TASKS.yaml`
+- `local`: `docs/forge/TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `docs/forge/TASKS.yaml`
 - `github`: GitHub Issues via `gh`
 - `gitlab`: GitLab Issues via `glab`
 - `external`: Jira, Linear, or another tracker managed through MCP, CLI, or human workflow
+
+`agent_context_profile` controls default context loading:
+
+- `lite`: no broad agent-surface includes; read `AI.md`, `CONTEXT.md`, a compact task index, one selected task, and task-relevant source
+- `standard`: may include only `AI.md`; other docs stay on demand
+- `full`: may include selected FORGE docs and should be treated as high-context
 
 `repo_flavor` is an optional routing hint, set only when the repo shape changes generated docs or task selection:
 
@@ -136,7 +146,7 @@ logic:
 - `forge-review`: run critique, security review, and evaluation gates
 - `forge-ship`: reconcile integration, release, and closeout evidence
 
-In `solo-simple`, the agent should finish one task, update `TASKS.yaml`, create a Conventional Commit, and stop before moving on.
+In `solo-simple`, the agent should finish one task, update the configured task source, create a Conventional Commit, and stop before moving on.
 
 In `solo-governed`, the agent should still preserve one-task checkpoints, but it should use task branches and must not merge or promote into the release branch without explicit human instruction.
 
@@ -207,7 +217,7 @@ The checklists are also customizable:
 
 - use the shared baseline checklists in `skills/forge/assets/security-checklists/`
 - generate only the sections that fit your project
-- extend the project-local `docs/forge/SECURITY_CHECKLISTS.md` with your own stack, framework, or deployment-specific concerns
+- extend project-local split security checklists, or the compatibility `SECURITY_CHECKLISTS.md` wrapper, with stack-specific concerns
 
 ### Low-token operation
 

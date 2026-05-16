@@ -7,6 +7,8 @@ BASE_REF="${GITHUB_BASE_REF:-main}"
 HEAD_REF="${GITHUB_HEAD_REF:-$(git rev-parse --abbrev-ref HEAD)}"
 AI_MD="docs/forge/AI.md"
 TASKS_FILE="docs/forge/TASKS.yaml"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TASK_RESOLVER="$SCRIPT_DIR/forge_task_resolver.py"
 INTEGRATION_BRANCH="develop"
 RELEASE_BRANCH="main"
 TASK_SOURCE="local"
@@ -16,11 +18,11 @@ if [ ! -f "$AI_MD" ]; then
   exit 0
 fi
 
-COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//' || true)
-CI_ENFORCEMENT=$(grep 'ci_enforcement:' "$AI_MD" | sed 's/.*ci_enforcement: *//' | sed 's/[[:space:]]*$//' || true)
-TASK_SOURCE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//' || true)
-INTEGRATION_BRANCH=$(grep 'integration_branch:' "$AI_MD" | sed 's/.*integration_branch: *//' | sed 's/[[:space:]]*$//' || true)
-RELEASE_BRANCH=$(grep 'release_branch:' "$AI_MD" | sed 's/.*release_branch: *//' | sed 's/[[:space:]]*$//' || true)
+COLLABORATION_MODE=$(grep -m1 -E '^[[:space:]]*collaboration_mode:' "$AI_MD" | sed 's/^[[:space:]]*collaboration_mode: *//' | sed 's/[[:space:]]*$//' || true)
+CI_ENFORCEMENT=$(grep -m1 -E '^[[:space:]]*ci_enforcement:' "$AI_MD" | sed 's/^[[:space:]]*ci_enforcement: *//' | sed 's/[[:space:]]*$//' || true)
+TASK_SOURCE=$(grep -m1 -E '^[[:space:]]*task_source:' "$AI_MD" | sed 's/^[[:space:]]*task_source: *//' | sed 's/[[:space:]]*$//' || true)
+INTEGRATION_BRANCH=$(grep -m1 -E '^[[:space:]]*integration_branch:' "$AI_MD" | sed 's/^[[:space:]]*integration_branch: *//' | sed 's/[[:space:]]*$//' || true)
+RELEASE_BRANCH=$(grep -m1 -E '^[[:space:]]*release_branch:' "$AI_MD" | sed 's/^[[:space:]]*release_branch: *//' | sed 's/[[:space:]]*$//' || true)
 [ -z "$TASK_SOURCE" ] && TASK_SOURCE="local"
 [ -z "$INTEGRATION_BRANCH" ] && INTEGRATION_BRANCH="develop"
 [ -z "$RELEASE_BRANCH" ] && RELEASE_BRANCH="main"
@@ -37,13 +39,18 @@ if [ "$CI_ENFORCEMENT" != "enabled" ]; then
 fi
 
 if [ "$TASK_SOURCE" != "local" ]; then
-  echo "FORGE: task_source is $TASK_SOURCE - local TASKS.yaml team metadata validation skipped."
+  echo "FORGE: task_source is $TASK_SOURCE - local team metadata validation skipped."
   echo "FORGE: validate issue assignment, labels, and reviewer evidence through the hosting platform."
   exit 0
 fi
 
-if [ ! -f "$TASKS_FILE" ]; then
-  echo "FORGE: $TASKS_FILE not found - team task metadata validation failed."
+if [ ! -f "$TASK_RESOLVER" ]; then
+  echo "FORGE: task resolver not found: $TASK_RESOLVER"
+  exit 1
+fi
+
+if [ ! -f "$TASKS_FILE" ] && [ ! -f "docs/forge/TASKS.index.yaml" ]; then
+  echo "FORGE: no local task ledger found - team task metadata validation failed."
   exit 1
 fi
 
@@ -76,28 +83,27 @@ if [ -z "$TASK_IDS" ]; then
   exit 0
 fi
 
-TASK_IDS_PAYLOAD="$TASK_IDS" python3 - "$TASKS_FILE" "$HEAD_REF" "$BASE_REF" "$INTEGRATION_BRANCH" "$RELEASE_BRANCH" <<'EOF'
+TASK_IDS_PAYLOAD="$TASK_IDS" python3 - "$TASK_RESOLVER" "$HEAD_REF" "$BASE_REF" "$INTEGRATION_BRANCH" "$RELEASE_BRANCH" <<'EOF'
 import sys
 import os
-import yaml
+import importlib.util
 
-tasks_file = sys.argv[1]
+resolver_path = sys.argv[1]
 head_ref = sys.argv[2]
 base_ref = sys.argv[3]
 integration_branch = sys.argv[4]
 release_branch = sys.argv[5]
 task_ids = [line.strip() for line in os.environ.get("TASK_IDS_PAYLOAD", "").splitlines() if line.strip()]
 
-with open(tasks_file) as f:
-    data = yaml.safe_load(f) or {}
-
-tasks = {str(task.get("id", "")): task for task in data.get("tasks", [])}
+spec = importlib.util.spec_from_file_location("forge_task_resolver", resolver_path)
+resolver = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(resolver)
 failed = False
 
 for task_id in task_ids:
-    task = tasks.get(task_id)
+    task, ledger = resolver.load_task(resolver.Path("."), task_id)
     if not task:
-        print(f"FORGE: Task '{task_id}' not found in {tasks_file}.")
+        print(f"FORGE: Task '{task_id}' not found in {ledger}.")
         failed = True
         continue
 

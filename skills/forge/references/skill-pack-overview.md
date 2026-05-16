@@ -17,14 +17,14 @@ FORGE works best as a split system:
 Start small:
 
 - `docs/forge/AI.md`
-- `docs/forge/TASKS.yaml`
+- `docs/forge/TASKS.index.yaml` plus task files, or legacy `TASKS.yaml`
 
 Add as needed:
 
 - `docs/forge/ARCHITECTURE.md`
 - `docs/forge/EVALUATION.md`
 - `docs/forge/MEMORY.md`
-- `docs/forge/SECURITY_CHECKLISTS.md`
+- `docs/forge/security-checklists/` or compatibility `SECURITY_CHECKLISTS.md`
 - `docs/forge/TEAM.md` for shared-repo coordination
 
 ## Core FORGE Ideas To Preserve

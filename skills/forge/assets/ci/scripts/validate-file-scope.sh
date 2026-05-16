@@ -8,20 +8,22 @@ set -e
 BASE_REF="${GITHUB_BASE_REF:-main}"
 AI_MD="docs/forge/AI.md"
 TASKS_FILE="docs/forge/TASKS.yaml"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TASK_RESOLVER="$SCRIPT_DIR/forge_task_resolver.py"
 
 # Read FORGE mode from AI.md
 FORGE_MODE=""
 COLLABORATION_MODE=""
 TASK_SOURCE="local"
 if [ -f "$AI_MD" ]; then
-  FORGE_MODE=$(grep 'FORGE_mode:' "$AI_MD" | sed 's/.*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
-  COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
-  TASK_SOURCE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//')
+  FORGE_MODE=$(grep -m1 -E '^[[:space:]]*FORGE_mode:' "$AI_MD" | sed 's/^[[:space:]]*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
+  COLLABORATION_MODE=$(grep -m1 -E '^[[:space:]]*collaboration_mode:' "$AI_MD" | sed 's/^[[:space:]]*collaboration_mode: *//' | sed 's/[[:space:]]*$//')
+  TASK_SOURCE=$(grep -m1 -E '^[[:space:]]*task_source:' "$AI_MD" | sed 's/^[[:space:]]*task_source: *//' | sed 's/[[:space:]]*$//')
   [ -z "$TASK_SOURCE" ] && TASK_SOURCE="local"
 fi
 
 if [ "$TASK_SOURCE" != "local" ]; then
-  echo "FORGE: task_source is $TASK_SOURCE - local TASKS.yaml file-scope validation skipped."
+  echo "FORGE: task_source is $TASK_SOURCE - local file-scope validation skipped."
   echo "FORGE: validate issue-backed scope through issue metadata and review evidence."
   exit 0
 fi
@@ -32,8 +34,13 @@ if [ "$COLLABORATION_MODE" != "team" ] && { [ "$FORGE_MODE" = "Lightweight" ] ||
   exit 0
 fi
 
-if [ ! -f "$TASKS_FILE" ]; then
-  echo "FORGE: $TASKS_FILE not found - skipping file scope validation."
+if [ ! -f "$TASK_RESOLVER" ]; then
+  echo "FORGE: task resolver not found: $TASK_RESOLVER"
+  exit 1
+fi
+
+if [ ! -f "$TASKS_FILE" ] && [ ! -f "docs/forge/TASKS.index.yaml" ]; then
+  echo "FORGE: no local task ledger found - skipping file scope validation."
   exit 0
 fi
 
@@ -61,27 +68,7 @@ while IFS= read -r hash; do
     continue
   fi
 
-  # Get file_scope for this task from TASKS.yaml
-  FILE_SCOPE=$(python3 - "$TASKS_FILE" "$TASK_ID" <<'EOF'
-import sys
-import yaml
-
-tasks_file = sys.argv[1]
-task_id = sys.argv[2]
-
-with open(tasks_file) as f:
-    data = yaml.safe_load(f)
-
-tasks = data.get("tasks", []) if data else []
-for task in tasks:
-    if str(task.get("id", "")) == task_id:
-        scope = task.get("file_scope")
-        if scope:
-            for entry in scope:
-                print(str(entry))
-        sys.exit(0)
-EOF
-)
+  FILE_SCOPE=$(python3 "$TASK_RESOLVER" --task "$TASK_ID" --field file_scope 2>/dev/null || true)
 
   # If no file_scope declared, skip only outside team mode
   if [ -z "$FILE_SCOPE" ]; then
@@ -125,7 +112,7 @@ done <<< "$COMMIT_HASHES"
 if [ "$FAILED" -ne 0 ]; then
   echo ""
   echo "FORGE: File scope validation failed."
-  echo "  Files changed outside declared file_scope in TASKS.yaml."
+  echo "  Files changed outside declared file_scope in the local task ledger."
   echo "  Either update the task's file_scope or keep changes within declared boundaries."
   exit 1
 fi

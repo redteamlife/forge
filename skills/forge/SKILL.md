@@ -5,110 +5,62 @@ description: Turn AI coding from chaotic one-shot prompting into a reliable engi
 
 # FORGE
 
-Use this skill when you want agents to stop behaving like unpredictable pair-programmers and start working like disciplined teammates. FORGE gives AI work a real execution model: clear task boundaries, hard stops when things get fuzzy, safer commits, review gates, and a workflow teams can actually trust.
+FORGE is an explicit workflow for bounded work: one task, clear scope, hard stops, evidence, and clean checkpoints.
 
-FORGE works best when you want to:
+Use it for governed implementation, planning, review, shipping, coordination, or context-safe bootstrap.
 
-- bootstrap or refresh `docs/forge/` without bloating the repo
-- execute the next task with bounded scope and explicit stop conditions
-- keep solo work checkpointed and committed one task at a time
-- coordinate multiple developers or IDE agents without losing track of ownership
-- add CI-backed enforcement when a project needs stronger guarantees
+## Routing
 
-## Quick Routing
+- Bootstrap or migrate docs: `forge-bootstrap`
+- Plan lifecycle work: `forge-plan`
+- Build/implement a task: `forge-build` or `forge-execute-task`
+- Review work: `forge-review`
+- Ship, release, or close out: `forge-ship`
+- Critique scope and assumptions: `forge-critique`
+- Run security review: `forge-security-review`
+- Check done/evidence: `forge-evaluation`
+- Read/update lessons: `forge-memory`
+- Manage private/public tool releases: `forge-tool-workflow`
+- Coordinate multi-repo shared-contract work: `forge-cross-project`
 
-- For creating or refreshing FORGE project docs, use `forge-bootstrap`.
-- For lifecycle-style planning requests, use `forge-plan`.
-- For lifecycle-style build requests, use `forge-build`.
-- For lifecycle-style review requests, use `forge-review`.
-- For lifecycle-style ship, release, or closeout requests, use `forge-ship`.
-- For selecting and implementing the next bounded task, use `forge-execute-task`.
-- For scope and quality review before completion, use `forge-critique`.
-- For checklist-based security review, use `forge-security-review`.
-- For definition-of-done and evidence checks, use `forge-evaluation`.
-- For reading and updating reusable lessons, use `forge-memory`.
-- For private/public tool release workflows, use `forge-tool-workflow`.
-- For explicit multi-repo shared-contract or XPD coordination, use `forge-cross-project`.
-- For multi-developer coordination rules, branch discipline, and task claiming, read `references/team-mode.md`.
-- For repo-shape routing such as contract-first or tooling projects, read `references/repo-flavors.md`.
-- For agent-specific files such as `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, Codex hooks, or Windsurf rules, read `references/agent-flavors.md`.
-- For DevSecOps gate profiles, repository hardening, CI/CD security, SCA, or SBOM controls, read `references/devsecops-gates.md`.
-- For human-facing application documentation (overview, architecture, threat model, developer guide, interfaces, deployment, runbooks, ADRs), read `references/application-docs.md`.
-- For lifecycle intent routing, read `references/lifecycle-map.md`.
-- For creating or revising FORGE skills, read `references/skill-anatomy.md`.
+Read references only when the current task requires them:
+
+- team and branches: `references/team-mode.md`
+- repo flavors: `references/repo-flavors.md`
+- agent surfaces: `references/agent-flavors.md`
+- DevSecOps gates: `references/devsecops-gates.md`
+- app docs: `references/application-docs.md`
+- lifecycle map: `references/lifecycle-map.md`
+- skill anatomy: `references/skill-anatomy.md`
+- context and token discipline: `references/token-efficiency.md`
 
 ## Operating Model
 
-Keep the runtime contract lean:
+1. Read the minimum project-local context needed for the current step.
+2. Prefer `docs/forge/CONTEXT.md` when present; otherwise use conservative `lite` defaults.
+3. Read `docs/forge/AI.md`, the compact task index or configured task source, one selected task, and task-relevant source files.
+4. Do not load all FORGE docs, all tasks, all memory, or all security checklists at startup.
+5. Preserve one bounded checkpoint at a time: implementation, evidence, task state, and commit or PR/MR handoff.
+6. Stop on ambiguity, missing prerequisites, architecture conflict, unsafe operations, unresolved security concerns, or failed gates.
+7. Keep FORGE explicit. Agent surfaces route; they do not make it always-on by default.
 
-1. Read only the minimum project-local files needed for the current step.
-2. Preserve bounded-task checkpoints at all times. If the project explicitly permits batch or auto behavior, that only means the agent may continue to the next task after finishing the current one, updating task state, and creating the required Conventional Commit.
-3. Stop on ambiguity, missing prerequisites, architecture conflict, or unresolved security concerns.
-4. Record evidence and memory updates in deterministic project-local files.
+## Team Mode
 
-## Token Discipline
+When multiple developers or agents work in parallel:
 
-Default to persistent low-token behavior across working responses.
+- use feature branches rather than direct work on shared branches
+- claim one task before implementation
+- require explicit `file_scope` for executable tasks
+- prefer issue assignment and labels when GitHub or GitLab is authoritative
+- use append-only evidence and memory records where possible
+- require CI and protected-branch merging
 
-Drop by default:
+## Output Discipline
 
-- pleasantries and conversational filler
-- repeated context recap
-- narration of routine inspection or planning steps
-- file-purpose explanations when the file path already says enough
-- reasoning already captured in project docs or changed files
-- file content echo after writing files
-- changelog-style narration unless the user asks for it
-
-Prefer by default:
-
-- short action updates
-- direct statements
-- fragments when they remain clear
-- file references over prose recap
-- outcome first, next step second
-
-Response shape:
+Default to terse, implementation-focused responses:
 
 - working update: `Status: <done/doing/blocker>. Next: <next step>.`
 - task closeout: `Done: <result>. Changed: <files or areas>. Next: <next step or none>.`
 - blocker: `Blocked: <fact>. Need: <decision or missing prerequisite>.`
 
-Soft caps:
-
-- working updates: 2 short lines max
-- normal task closeout: 4 short lines max
-- bootstrap closeout: 6 short lines max
-
-Exceptions:
-
-- security warnings
-- destructive action confirmations
-- places where extra clarity prevents misread risk
-
-## Team Mode
-
-When a repository is worked on by multiple developers or multiple IDE agents at the same time:
-
-- require feature branches rather than direct work on shared branches
-- require task claiming before implementation begins
-- require explicit `file_scope` for executable tasks
-- prefer append-only evidence and memory records over rewriting shared summaries
-- require CI enforcement and protected branch merging for completed task work
-
-Read these shared references only when needed:
-
-- `references/skill-pack-overview.md`
-- `references/doc-minimums.md`
-- `references/forge-to-skills-mapping.md`
-- `references/team-mode.md`
-- `references/repo-flavors.md`
-- `references/agent-flavors.md`
-- `references/devsecops-gates.md`
-- `references/application-docs.md`
-- `references/cross-project.md`
-- `references/lifecycle-map.md`
-- `references/skill-anatomy.md`
-- `references/token-efficiency.md`
-
-Use templates from `assets/templates/` only when scaffolding or migrating a project into this skill-based flow.
+Avoid repeated recap, file-content echoes, and routine narration unless clarity prevents a bad decision.

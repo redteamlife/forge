@@ -9,7 +9,7 @@ updated:
 
 Capture the security assumptions, trust boundaries, abuse paths, and key
 protections for this tool. This document complements
-`docs/forge/SECURITY_CHECKLISTS.md`: the checklist is the per-task review
+`docs/forge/security-checklists/` or `SECURITY_CHECKLISTS.md`: the checklist is the per-task review
 gate, this is the project-specific threat enumeration.
 
 ## Assets

@@ -4,6 +4,26 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-05-15
+
+### Added
+
+- Added `agent_context_profile` and generated `docs/forge/CONTEXT.md` to make default agent reads explicit and budgeted.
+- Added split local task templates with `TASKS.index.yaml` plus per-task files under `docs/forge/tasks/`.
+- Added split memory templates with `MEMORY.index.yaml` plus topic files under `docs/forge/memory/`.
+- Added deterministic context helper scripts for context budgets, agent-surface generation, context migration, context validation, and split-task resolution.
+- Added multi-surface context validation for `CLAUDE.md`, `AGENTS.md`, Cursor, Copilot, Windsurf, and Codex hook surfaces.
+- Added size-budget verification for high-frequency skill files, generated templates, and always-on agent surfaces.
+
+### Changed
+
+- Bumped the default generated `forge_version` to `1.6.0`.
+- Reworked generated agent surfaces to router-style guidance that avoids default `docs/forge/*` include bombs.
+- Reduced default context usage across high-frequency FORGE skills by making `CONTEXT.md`, the task index, and one selected task the normal read path.
+- Shrunk generated `AI.md`, `TEAM.md`, and CI documentation, moving optional details into split references and topic files.
+- Updated CI validators and hooks to support split local task ledgers while preserving `TASKS.yaml` compatibility.
+- Clarified that FORGE installs as a skill pack; bundled scripts are run by skill-relative path rather than requiring a standalone `forge` shell command.
+
 ## [1.5.0] - 2026-05-07
 
 ### Added

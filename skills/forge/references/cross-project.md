@@ -45,7 +45,7 @@ docs/forge/cross-project/
 ```
 
 `COORDINATION.yaml` is a cross-project ledger. It complements, but does not
-replace, `docs/forge/TASKS.yaml`, GitHub Issues, GitLab Issues, or another
+replace, the configured task source, GitHub Issues, GitLab Issues, or another
 configured task source.
 
 ## Coordination Config

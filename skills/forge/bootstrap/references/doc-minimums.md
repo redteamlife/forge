@@ -7,14 +7,15 @@ Use the smallest project-local governance set that still supports bounded execut
 Required:
 
 - `docs/forge/AI.md`
-- `docs/forge/TASKS.yaml`
+- `docs/forge/CONTEXT.md`
+- task ledger: `TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `TASKS.yaml`
 
 Recommended:
 
 - `docs/forge/ARCHITECTURE.md` when architecture constraints materially matter
 - `docs/forge/EVALUATION.md` when explicit completion gates are needed
 - `docs/forge/MEMORY.md` when the project benefits from reusable lessons
-- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to load FORGE
+- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to route into FORGE
 
 Use this for `solo-simple`.
 
@@ -25,7 +26,8 @@ Use the solo-governed profile when one operator still wants branch discipline an
 Required:
 
 - `docs/forge/AI.md`
-- `docs/forge/TASKS.yaml`
+- `docs/forge/CONTEXT.md`
+- task ledger: `TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `TASKS.yaml`
 
 Recommended:
 
@@ -33,7 +35,7 @@ Recommended:
 - `docs/forge/EVALUATION.md` when explicit completion gates are needed
 - `docs/forge/MEMORY.md` when the project benefits from reusable lessons
 - `docs/forge/SETUP.md` when branch protection or human review handoff needs to be recorded
-- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to load FORGE
+- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to route into FORGE
 
 Additional expectations:
 
@@ -50,9 +52,9 @@ Additional expectations:
 Add these from the start when multiple developers or agents will work in parallel:
 
 - `docs/forge/TEAM.md`
-- `docs/forge/SECURITY_CHECKLISTS.md`
+- `docs/forge/security-checklists/` or compatibility `SECURITY_CHECKLISTS.md`
 - explicit `file_scope` on executable tasks
-- task claim metadata in `TASKS.yaml`
+- task claim metadata in the configured task source
 - copy repo agent-surface files when the user wants persistent repo reminders
 - copy CI assets when the user wants hosted enforcement from the start
 - add contract files, role split, and integration-boundary rules when `repo_flavor: contract-first`

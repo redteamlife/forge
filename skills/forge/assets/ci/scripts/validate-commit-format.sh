@@ -79,7 +79,7 @@ if [ "$FAILED" -ne 0 ]; then
   echo "    FORGE-task: <task-id>"
   echo "    FORGE-gate: pass"
   echo ""
-  echo "  See ci/README.md for the full format specification."
+  echo "  See ci/docs/commit-format.md for the full format specification."
   exit 1
 fi
 

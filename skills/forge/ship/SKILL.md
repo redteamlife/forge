@@ -10,14 +10,15 @@ out FORGE-governed work.
 
 ## Workflow
 
-1. Read `docs/forge/AI.md`, `docs/forge/TEAM.md`, and the authoritative task
-   source.
-2. Confirm critique, security review, and evaluation are complete.
-3. Confirm integration acceptance before marking `integrated`.
-4. Confirm release acceptance before marking `complete`.
-5. Record claim release, PR/MR, release PR, or release commit metadata when
+1. Read `docs/forge/CONTEXT.md` if present, then `docs/forge/AI.md`.
+2. Read the selected task from `TASKS.index.yaml`, its task file, `TASKS.yaml`, or the configured issue tracker.
+3. Read `TEAM.md` only when `collaboration_mode: team` or branch/release policy requires it.
+4. Confirm critique, security review, and evaluation are complete.
+5. Confirm integration acceptance before marking `integrated`.
+6. Confirm release acceptance before marking `complete`.
+7. Record claim release, PR/MR, release PR, or release commit metadata when
    project policy requires it.
-6. Do not merge or promote into `release_branch` without explicit permission in
+8. Do not merge or promote into `release_branch` without explicit permission in
    governed solo or team workflows.
 
 ## Hard Stops

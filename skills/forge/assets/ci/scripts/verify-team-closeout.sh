@@ -5,6 +5,8 @@ set -euo pipefail
 
 AI_MD="docs/forge/AI.md"
 TASKS_FILE="docs/forge/TASKS.yaml"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TASK_RESOLVER="$SCRIPT_DIR/forge_task_resolver.py"
 TARGET="integration"
 TASK_ID=""
 REQUIRE_CLEAN="yes"
@@ -13,7 +15,7 @@ usage() {
   cat <<'EOF'
 Usage: bash ci/scripts/verify-team-closeout.sh [--task <task-id>] [--target integration|release] [--allow-dirty]
 
-Validates local task closeout against docs/forge/AI.md and docs/forge/TASKS.yaml.
+Validates local task closeout against docs/forge/AI.md and the local task ledger.
 If --task is omitted, the helper uses the latest FORGE-task trailer on the current branch.
 EOF
 }
@@ -44,14 +46,19 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ ! -f "$AI_MD" ] || [ ! -f "$TASKS_FILE" ]; then
-  echo "FORGE: Missing $AI_MD or $TASKS_FILE."
+if [ ! -f "$AI_MD" ] || { [ ! -f "$TASKS_FILE" ] && [ ! -f "docs/forge/TASKS.index.yaml" ]; }; then
+  echo "FORGE: Missing $AI_MD or local task ledger."
   exit 1
 fi
 
-COLLABORATION_MODE=$(grep 'collaboration_mode:' "$AI_MD" | sed 's/.*collaboration_mode: *//' | sed 's/[[:space:]]*$//' || true)
-INTEGRATION_BRANCH=$(grep 'integration_branch:' "$AI_MD" | sed 's/.*integration_branch: *//' | sed 's/[[:space:]]*$//' || true)
-RELEASE_BRANCH=$(grep 'release_branch:' "$AI_MD" | sed 's/.*release_branch: *//' | sed 's/[[:space:]]*$//' || true)
+if [ ! -f "$TASK_RESOLVER" ]; then
+  echo "FORGE: task resolver not found: $TASK_RESOLVER"
+  exit 1
+fi
+
+COLLABORATION_MODE=$(grep -m1 -E '^[[:space:]]*collaboration_mode:' "$AI_MD" | sed 's/^[[:space:]]*collaboration_mode: *//' | sed 's/[[:space:]]*$//' || true)
+INTEGRATION_BRANCH=$(grep -m1 -E '^[[:space:]]*integration_branch:' "$AI_MD" | sed 's/^[[:space:]]*integration_branch: *//' | sed 's/[[:space:]]*$//' || true)
+RELEASE_BRANCH=$(grep -m1 -E '^[[:space:]]*release_branch:' "$AI_MD" | sed 's/^[[:space:]]*release_branch: *//' | sed 's/[[:space:]]*$//' || true)
 [ -z "$INTEGRATION_BRANCH" ] && INTEGRATION_BRANCH="develop"
 [ -z "$RELEASE_BRANCH" ] && RELEASE_BRANCH="main"
 
@@ -81,26 +88,8 @@ if [ -z "$TASK_ID" ]; then
   exit 1
 fi
 
-TASK_JSON=$(python3 - "$TASKS_FILE" "$TASK_ID" <<'EOF'
-import json
-import sys
-import yaml
-
-tasks_file = sys.argv[1]
-task_id = sys.argv[2]
-
-with open(tasks_file) as f:
-    data = yaml.safe_load(f) or {}
-
-for task in data.get("tasks", []):
-    if str(task.get("id", "")) == task_id:
-        print(json.dumps(task))
-        sys.exit(0)
-
-sys.exit(1)
-EOF
-) || {
-  echo "FORGE: Task '$TASK_ID' not found in $TASKS_FILE."
+TASK_JSON=$(python3 "$TASK_RESOLVER" --task "$TASK_ID" --json 2>/dev/null) || {
+  echo "FORGE: Task '$TASK_ID' not found in local task ledger."
   exit 1
 }
 

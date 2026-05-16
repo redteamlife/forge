@@ -1,0 +1,9 @@
+memory:
+  - topic: decisions
+    file: docs/forge/memory/decisions.md
+  - topic: failures
+    file: docs/forge/memory/failures.md
+  - topic: conventions
+    file: docs/forge/memory/conventions.md
+  - topic: project-facts
+    file: docs/forge/memory/project-facts.md

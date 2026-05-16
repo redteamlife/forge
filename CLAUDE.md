@@ -1,11 +1,12 @@
 # FORGE Skill-Pack Repository
 
-@./skills/forge/SKILL.md
-
 This repository contains the canonical FORGE skill-pack implementation under `skills/forge/`.
 
 When working on the skill pack itself:
 
+- use installed FORGE skills explicitly for governed work; do not auto-load the whole skill pack
+- read `skills/forge/SKILL.md` only when root routing guidance is needed
+- read specific subskill files such as `skills/forge/bootstrap/SKILL.md` or `skills/forge/execute-task/SKILL.md` only for the current task
 - prefer updating the canonical files in `skills/forge/`
 - keep install docs and scripts at the repo root aligned with the canonical skill content
 - preserve explicit activation; do not turn FORGE into an always-on behavior by default

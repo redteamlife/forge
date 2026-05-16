@@ -1,0 +1,13 @@
+id: TASK-001
+title: "Replace with first bounded project task"
+status: todo
+priority: normal
+owner: unassigned
+description: "Replace this with one bounded implementation task."
+file_scope:
+  - docs/forge/TASKS.index.yaml
+  - docs/forge/tasks/TASK-001.yaml
+acceptance_criteria:
+  - "Task is specific enough to implement and verify."
+evidence: []
+history: []

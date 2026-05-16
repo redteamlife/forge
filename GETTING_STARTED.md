@@ -71,7 +71,7 @@ FORGE now works best when you choose an explicit bootstrap profile up front:
 
 Bootstrap also asks where tasks should be tracked:
 
-- `local`: `docs/forge/TASKS.yaml`
+- `local`: `docs/forge/TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `docs/forge/TASKS.yaml`
 - `github`: GitHub Issues, preferred when the repo has a GitHub remote and `gh` is authenticated
 - `gitlab`: GitLab Issues, preferred when the repo has a GitLab remote and `glab` is authenticated
 - `external`: Jira, Linear, or another tracker managed through MCP, CLI, or human workflow
@@ -95,13 +95,15 @@ FORGE may also record a `security_profile`:
 - `ci-security`: repo-fortress plus SAST, secret scanning, dependency/SCA, and findings visibility
 - `full-devsecops`: CI security plus CD pre-flight, DAST, SBOM, provenance, and cleanup evidence
 
+FORGE does not require a standalone `forge` shell command. Installed skills call bundled helpers by path, for example `<skill-root>/assets/scripts/forge_validate_context.py`, when deterministic validation is useful.
+
 ### Solo-simple
 
 Use this when you want the lightest useful FORGE loop:
 
 1. Tell the agent what the project is.
 2. Ask FORGE to bootstrap in `solo-simple`.
-3. Review `docs/forge/AI.md` and `docs/forge/TASKS.yaml`.
+3. Review `docs/forge/AI.md`, `docs/forge/CONTEXT.md`, and the configured task source.
 4. Tell the agent to start working tasks.
 
 Example:
@@ -193,7 +195,7 @@ FORGE should keep moving while preserving per-task checkpoints, commits, and har
 You do not need to read every generated file line by line before starting. Usually the highest-value review is:
 
 - `docs/forge/AI.md` for project mode and team settings
-- `docs/forge/TASKS.yaml` for whether the initial task list makes sense
+- the configured task source for whether the initial task list makes sense
 - `docs/forge/ARCHITECTURE.md` if framework, deployment, or content choices are important early
 - `docs/forge/TEAM.md` if multiple people or agents will be working in parallel
 - `docs/forge/cross-project/COORDINATION.yaml` only when the repo has explicitly opted into cross-project coordination
@@ -205,7 +207,7 @@ Once those look sane, you can start letting the skill drive task execution.
 In `solo-simple`:
 
 - the agent should finish one task
-- update `TASKS.yaml`
+- update the configured task source
 - create a Conventional Commit
 - stop before moving to the next task unless you explicitly allow continued execution
 

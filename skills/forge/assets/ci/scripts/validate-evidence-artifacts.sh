@@ -13,9 +13,9 @@ CI_ENFORCEMENT=""
 TASK_SOURCE="local"
 
 if [ -f "$AI_MD" ]; then
-  FORGE_MODE=$(grep 'FORGE_mode:' "$AI_MD" | sed 's/.*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
-  CI_ENFORCEMENT=$(grep 'ci_enforcement:' "$AI_MD" | sed 's/.*ci_enforcement: *//' | sed 's/[[:space:]]*$//')
-  TASK_SOURCE=$(grep 'task_source:' "$AI_MD" | sed 's/.*task_source: *//' | sed 's/[[:space:]]*$//')
+  FORGE_MODE=$(grep -m1 -E '^[[:space:]]*FORGE_mode:' "$AI_MD" | sed 's/^[[:space:]]*FORGE_mode: *//' | sed 's/[[:space:]]*$//')
+  CI_ENFORCEMENT=$(grep -m1 -E '^[[:space:]]*ci_enforcement:' "$AI_MD" | sed 's/^[[:space:]]*ci_enforcement: *//' | sed 's/[[:space:]]*$//')
+  TASK_SOURCE=$(grep -m1 -E '^[[:space:]]*task_source:' "$AI_MD" | sed 's/^[[:space:]]*task_source: *//' | sed 's/[[:space:]]*$//')
   [ -z "$TASK_SOURCE" ] && TASK_SOURCE="local"
 fi
 
@@ -30,7 +30,7 @@ TASK_STATE_CHANGED=0
 TASK_REFERENCED=0
 FAILED=0
 
-if echo "$CHANGED_FILES" | grep -q "^docs/forge/TASKS.yaml$"; then
+if echo "$CHANGED_FILES" | grep -qE "^docs/forge/(TASKS.yaml|TASKS.index.yaml|tasks/.*[.]ya?ml)$"; then
   TASK_STATE_CHANGED=1
 fi
 
@@ -59,9 +59,14 @@ if [ "$FORGE_MODE" != "Lightweight" ] && [ -n "$FORGE_MODE" ]; then
   check_artifact "docs/forge/MEMORY.md"
 fi
 
-# Strict and Full Discipline also require TASKS.yaml to be updated
+# Strict and Full Discipline also require the local task ledger to be updated
 if { [ "$FORGE_MODE" = "Strict" ] || [ "$FORGE_MODE" = "Full Discipline" ]; } && [ "$TASK_SOURCE" = "local" ]; then
-  check_artifact "docs/forge/TASKS.yaml"
+  if echo "$CHANGED_FILES" | grep -qE "^docs/forge/(TASKS.yaml|TASKS.index.yaml|tasks/.*[.]ya?ml)$"; then
+    echo "FORGE: local task ledger updated."
+  else
+    echo "FORGE: Required local task ledger update missing."
+    FAILED=1
+  fi
 fi
 
 if [ "$FAILED" -ne 0 ]; then

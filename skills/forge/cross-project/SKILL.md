@@ -55,7 +55,7 @@ When the user asks to initialize the current repo as the authority repo:
    Exclude `sister-repo-pointer.md` unless adding a peer or downstream pointer.
 4. Fill project-specific repo names, owner fields, and dates when known.
 5. Keep `COORDINATION.yaml` as the cross-project ledger, not a replacement for
-   `docs/forge/TASKS.yaml` or an issue tracker.
+   the task source or issue tracker.
 6. Add a short pointer in `docs/forge/AI.md` only when that file exists.
 7. Add `docs/forge/cross-project/README.md` to root agent-surface reading
    order only when those surfaces already exist.

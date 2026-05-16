@@ -73,7 +73,19 @@ def verify_required_files() -> None:
         SKILL_ROOT / "memory" / "SKILL.md",
         SKILL_ROOT / "cross-project" / "SKILL.md",
         SKILL_ROOT / "assets" / "templates" / "AI.md",
+        SKILL_ROOT / "assets" / "templates" / "CONTEXT.md",
+        SKILL_ROOT / "assets" / "templates" / "MEMORY.index.yaml",
         SKILL_ROOT / "assets" / "templates" / "SKILL-ANATOMY.md",
+        SKILL_ROOT / "assets" / "templates" / "TASKS.index.yaml",
+        SKILL_ROOT / "assets" / "templates" / "tasks" / "TASK-001.yaml",
+        SKILL_ROOT / "assets" / "templates" / "team" / "claiming.md",
+        SKILL_ROOT / "assets" / "templates" / "team" / "release.md",
+        SKILL_ROOT / "assets" / "templates" / "team" / "trackers.md",
+        SKILL_ROOT / "assets" / "templates" / "team" / "contracts.md",
+        SKILL_ROOT / "assets" / "templates" / "memory" / "decisions.md",
+        SKILL_ROOT / "assets" / "templates" / "memory" / "failures.md",
+        SKILL_ROOT / "assets" / "templates" / "memory" / "conventions.md",
+        SKILL_ROOT / "assets" / "templates" / "memory" / "project-facts.md",
         SKILL_ROOT / "assets" / "cross-project" / "templates" / "README.md",
         SKILL_ROOT / "assets" / "cross-project" / "templates" / "COORDINATION.yaml",
         SKILL_ROOT / "assets" / "cross-project" / "templates" / "contracts" / "README.md",
@@ -86,6 +98,10 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "agent-surfaces" / "AGENTS.md",
         SKILL_ROOT / "references" / "repo-flavors.md",
         SKILL_ROOT / "references" / "agent-flavors.md",
+        SKILL_ROOT / "references" / "team-claiming.md",
+        SKILL_ROOT / "references" / "team-release.md",
+        SKILL_ROOT / "references" / "team-trackers.md",
+        SKILL_ROOT / "references" / "team-contracts.md",
         SKILL_ROOT / "references" / "devsecops-gates.md",
         SKILL_ROOT / "references" / "application-docs.md",
         SKILL_ROOT / "references" / "cross-project.md",
@@ -97,10 +113,18 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "ci" / "hooks" / "pre-commit",
         SKILL_ROOT / "assets" / "ci" / "hooks" / "commit-msg",
         SKILL_ROOT / "assets" / "ci" / "hooks" / "pre-push",
+        SKILL_ROOT / "assets" / "ci" / "docs" / "commit-format.md",
+        SKILL_ROOT / "assets" / "ci" / "docs" / "validators.md",
+        SKILL_ROOT / "assets" / "ci" / "docs" / "governance-patterns.md",
         SKILL_ROOT / "assets" / "ci" / "workflows" / "forge-governance.yml",
         SKILL_ROOT / "assets" / "ci" / "scripts" / "verify-team-closeout.sh",
+        SKILL_ROOT / "assets" / "ci" / "scripts" / "forge_task_resolver.py",
         SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.sh",
         SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.ps1",
+        SKILL_ROOT / "assets" / "scripts" / "forge_context_budget.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_generate_agent_surfaces.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_migrate_context.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_validate_context.py",
     ]
     for path in required:
         ensure(path.exists(), f"Missing required file: {path}")
@@ -137,6 +161,24 @@ def verify_skill_anatomy() -> None:
         )
 
 
+def verify_size_budgets() -> None:
+    budgets = {
+        SKILL_ROOT / "SKILL.md": 3200,
+        SKILL_ROOT / "bootstrap" / "SKILL.md": 5000,
+        SKILL_ROOT / "execute-task" / "SKILL.md": 5200,
+        SKILL_ROOT / "assets" / "templates" / "AI.md": 3200,
+        SKILL_ROOT / "assets" / "templates" / "TEAM.md": 3200,
+        SKILL_ROOT / "assets" / "agent-surfaces" / "AGENTS.md": 1600,
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".cursor" / "rules" / "forge.mdc": 1500,
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".github" / "copilot-instructions.md": 1500,
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".windsurf" / "rules" / "forge.md": 1500,
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks.json": 800,
+    }
+    for path, limit in budgets.items():
+        size = path.stat().st_size
+        ensure(size <= limit, f"{path}: size {size} exceeds budget {limit}")
+
+
 def verify_shell_scripts() -> None:
     run(["bash", "-n", "install.sh", "uninstall.sh", "verify-install.sh"], cwd=ROOT)
     hooks_dir = SKILL_ROOT / "assets" / "ci" / "hooks"
@@ -149,6 +191,54 @@ def verify_shell_scripts() -> None:
     ci_scripts_dir = SKILL_ROOT / "assets" / "ci" / "scripts"
     for script in sorted(ci_scripts_dir.glob("*.sh")):
         run(["bash", "-n", str(script.relative_to(ROOT))], cwd=ROOT)
+
+
+def verify_python_scripts() -> None:
+    scripts_dir = SKILL_ROOT / "assets" / "scripts"
+    for script in sorted(scripts_dir.glob("*.py")):
+        run([sys.executable, "-m", "py_compile", str(script.relative_to(ROOT))], cwd=ROOT)
+    ci_scripts_dir = SKILL_ROOT / "assets" / "ci" / "scripts"
+    for script in sorted(ci_scripts_dir.glob("*.py")):
+        run([sys.executable, "-m", "py_compile", str(script.relative_to(ROOT))], cwd=ROOT)
+
+
+def verify_context_validation() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_validate_context.py"
+    with tempfile.TemporaryDirectory(prefix="forge-context-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = repo / "docs" / "forge"
+        forge_dir.mkdir(parents=True)
+        (forge_dir / "AI.md").write_text("agent_context_profile: lite\n", encoding="utf-8")
+        (forge_dir / "CONTEXT.md").write_text("context_profile: lite\n", encoding="utf-8")
+        (repo / "CLAUDE.md").write_text(
+            "# Repo Agent Guide\n\nRead docs/forge/AI.md and the selected task only.\n",
+            encoding="utf-8",
+        )
+        result = run([sys.executable, str(script), str(repo)], cwd=ROOT)
+        ensure("Context profile: lite" in result.stdout, "validate-context did not report lite profile")
+        ensure("Warnings:\n  - none" in result.stdout, "validate-context reported unexpected warnings")
+
+    with tempfile.TemporaryDirectory(prefix="forge-context-bomb-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = repo / "docs" / "forge"
+        forge_dir.mkdir(parents=True)
+        (forge_dir / "AI.md").write_text("agent_context_profile: lite\n", encoding="utf-8")
+        (forge_dir / "CONTEXT.md").write_text("context_profile: lite\n", encoding="utf-8")
+        (forge_dir / "MEMORY.md").write_text("# Memory\n", encoding="utf-8")
+        (forge_dir / "TEAM.md").write_text("# Team\n", encoding="utf-8")
+        (repo / "CLAUDE.md").write_text(
+            "@./docs/forge/AI.md\n@./docs/forge/MEMORY.md\n@./docs/forge/TEAM.md\n",
+            encoding="utf-8",
+        )
+        result = subprocess.run(
+            [sys.executable, str(script), str(repo)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        ensure(result.returncode != 0, "validate-context allowed lite include bomb")
+        ensure("includes more than one docs/forge file" in result.stdout, "missing include-bomb failure")
 
 
 def verify_install_flow() -> None:
@@ -167,7 +257,10 @@ def main() -> int:
         verify_required_files()
         verify_manifests()
         verify_skill_anatomy()
+        verify_size_budgets()
         verify_shell_scripts()
+        verify_python_scripts()
+        verify_context_validation()
         verify_install_flow()
     except CheckFailure as exc:
         print(f"FORGE verify failed: {exc}", file=sys.stderr)

@@ -5,10 +5,12 @@ FORGE should reduce drift and rework without becoming a large token tax.
 ## High-Value Rules
 
 - Load only the files required for the current step.
+- Use `docs/forge/CONTEXT.md` when present; otherwise default to conservative `lite` reads.
+- Prefer `TASKS.index.yaml` plus one selected task file over loading a large task ledger.
 - Prefer compact structured outputs over narrative explanations.
 - Do not re-read unchanged repo-local docs repeatedly in one execution pass.
 - Use the coordination branch only when claim or task-state transitions require it.
-- Read only the relevant sections of `SECURITY_CHECKLISTS.md`, not the whole file.
+- Read only relevant split security checklist files or sections; do not load all checklists by default.
 - Keep `MEMORY.md` entries short and high-signal.
 - Prefer fixed response shapes over free-form summaries.
 

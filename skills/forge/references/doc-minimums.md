@@ -7,7 +7,8 @@ This reference trims the original FORGE documentation model down to the smallest
 Required:
 
 - `docs/forge/AI.md`
-- `docs/forge/TASKS.yaml`
+- `docs/forge/CONTEXT.md`
+- task ledger: `TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `TASKS.yaml`
 
 Recommended:
 
@@ -15,9 +16,9 @@ Recommended:
 - `docs/forge/EVALUATION.md` when explicit gates matter
 - `docs/forge/MEMORY.md` when tasks recur across sessions
 - `docs/forge/TEAM.md` when more than one developer or agent may execute in the same repo
-- `docs/forge/SECURITY_CHECKLISTS.md` when security review should be checklist-driven
+- `docs/forge/security-checklists/` or compatibility `SECURITY_CHECKLISTS.md` when security review should be checklist-driven
 - `docs/forge/SETUP.md` when enforcement setup needs to be handed off clearly to humans
-- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to load FORGE
+- root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to route into FORGE
 
 Legacy optional files from older FORGE templates:
 
@@ -59,12 +60,13 @@ If the user asks for "full setup" or "the full experience", treat that as `team-
 When a project is shared by multiple developers, multiple IDE agents, or both, treat this as the minimum practical set:
 
 - `docs/forge/AI.md`
-- `docs/forge/TASKS.yaml`
+- `docs/forge/CONTEXT.md`
+- task ledger: `TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `TASKS.yaml`
 - `docs/forge/TEAM.md`
 - `docs/forge/ARCHITECTURE.md`
 - `docs/forge/EVALUATION.md`
 - `docs/forge/MEMORY.md`
-- `docs/forge/SECURITY_CHECKLISTS.md`
+- `docs/forge/security-checklists/` or compatibility `SECURITY_CHECKLISTS.md`
 - `docs/forge/SETUP.md`
 
 Additional expectations:
@@ -80,7 +82,8 @@ Additional expectations:
 When one human operator wants strong review and branch discipline without team claim coordination, use:
 
 - `docs/forge/AI.md`
-- `docs/forge/TASKS.yaml`
+- `docs/forge/CONTEXT.md`
+- task ledger: `TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `TASKS.yaml`
 - `docs/forge/ARCHITECTURE.md` when constraints matter
 - `docs/forge/EVALUATION.md` when review gates matter
 - `docs/forge/MEMORY.md` when lessons should persist
