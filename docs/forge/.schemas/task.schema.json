@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FORGE task",
+  "type": "object",
+  "required": ["id", "title", "status", "description"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^TASK-[0-9]+$" },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["todo", "incomplete", "claimed", "in_progress", "implemented", "integrated", "blocked", "complete"]
+    },
+    "priority": { "enum": ["low", "normal", "high", "critical"] },
+    "phase": { "type": "string" },
+    "owner_lane": { "type": "string" },
+    "owner": { "type": "string" },
+    "description": { "type": "string", "minLength": 1 },
+    "file_scope": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+    "tests": { "type": "array", "items": { "type": "string" } },
+    "contract_files": { "type": "array", "items": { "type": "string" } },
+    "requires_independent_review": { "type": "boolean" },
+    "issue_provider": { "enum": ["github", "gitlab", "external"] },
+    "issue_iid": { "type": "integer" },
+    "issue_url": { "type": "string" },
+    "task_type": { "type": "string" },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "history": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

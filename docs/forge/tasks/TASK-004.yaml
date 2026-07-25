@@ -1,6 +1,6 @@
 id: TASK-004
 title: "Governance-on-dev split: promote script and main guard"
-status: in_progress
+status: complete
 priority: high
 phase: foundation
 owner_lane: single
@@ -15,6 +15,12 @@ acceptance_criteria:
   - "scripts/forge-promote.sh squash-merges dev into main, strips docs/forge, refuses dirty trees, supports --dry-run and --tag."
   - "CI guard fails main push/PR when docs/forge is present."
   - "python3 verify-repo.py passes."
-evidence: []
+evidence:
+  - "commit feat(repo): adopt FORGE governance on dev with clean-main promotion"
+  - "forge_validate_context.py: lite, 509 tokens, no warnings"
+  - "validate-generated-docs.sh: passed (mode: Lightweight)"
+  - "verify-repo.py: passed"
+  - "forge-promote.sh --dry-run: docs/forge correctly excluded from promotion file list"
 history:
   - "2026-07-25: created at governance adoption; promote flow decided in session (squash promotion, option A)."
+  - "2026-07-25: promote script, main guard, and ledger landed; dry-run verified."
