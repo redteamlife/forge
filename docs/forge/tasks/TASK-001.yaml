@@ -1,0 +1,22 @@
+id: TASK-001
+title: "Narrative agent surfaces and scaffolding helpers"
+status: complete
+priority: normal
+phase: foundation
+owner_lane: single
+owner: taffy
+description: "Add narrative AGENTS.md front door, scoped Cursor rules with stack detection, contract-first scaffolds, quality CI workflow, and richer task/architecture/team templates."
+file_scope:
+  - skills/forge/assets/
+  - skills/forge/bootstrap/
+  - skills/forge/references/repo-flavors.md
+  - skills/forge/SKILL.md
+acceptance_criteria:
+  - "forge_generate_agent_surfaces.py emits narrative AGENTS.md and scoped Cursor rules."
+  - "forge_scaffold_contract.py scaffolds openapi/protobuf/graphql contract surfaces."
+  - "python3 verify-repo.py passes."
+evidence:
+  - "commit 7ce9684 feat(forge): add narrative surfaces and scaffolding helpers"
+  - "verify-repo.py pass recorded in session, 2026-07-25"
+history:
+  - "2026-07-25: backfilled into ledger at governance adoption; work predates docs/forge."

@@ -1,0 +1,33 @@
+tasks:
+  - id: TASK-001
+    title: "Narrative agent surfaces and scaffolding helpers"
+    status: complete
+    priority: normal
+    phase: foundation
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-001.yaml
+  - id: TASK-002
+    title: "Make security checklist scaffolds usable"
+    status: complete
+    priority: high
+    phase: hardening
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-002.yaml
+  - id: TASK-003
+    title: "Ship concrete DevSecOps assets per security profile"
+    status: complete
+    priority: high
+    phase: hardening
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-003.yaml
+  - id: TASK-004
+    title: "Governance-on-dev split: promote script and main guard"
+    status: in_progress
+    priority: high
+    phase: foundation
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-004.yaml

@@ -1,0 +1,25 @@
+id: TASK-002
+title: "Make security checklist scaffolds usable"
+status: complete
+priority: high
+phase: hardening
+owner_lane: single
+owner: taffy
+description: "Fix upstream-reported bootstrap defect: index-only SECURITY_CHECKLISTS.md pointing at a missing split directory. Make bootstrap copy/compose real checklists, strengthen the validator content-awareness, and align template/validator drift."
+file_scope:
+  - skills/forge/assets/templates/
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - skills/forge/bootstrap/
+  - skills/forge/references/doc-minimums.md
+  - skills/forge/security-review/SKILL.md
+  - verify-repo.py
+acceptance_criteria:
+  - "Validator rejects split layouts missing general.md, itemless checklist files, wrappers referencing a missing directory, and elevated profiles with no layout."
+  - "SETUP.md section validation is security_profile-aware."
+  - "ARCHITECTURE template heading matches validator (Overview); task templates document valid statuses."
+  - "verify-repo.py fixtures cover positive and negative cases and pass."
+evidence:
+  - "commit 1bbdfc4 fix(forge): make security checklist scaffolds usable"
+  - "verify-repo.py pass with new fixtures, 2026-07-25"
+history:
+  - "2026-07-25: backfilled into ledger at governance adoption."

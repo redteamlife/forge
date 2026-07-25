@@ -1,0 +1,25 @@
+id: TASK-003
+title: "Ship concrete DevSecOps assets per security profile"
+status: complete
+priority: high
+phase: hardening
+owner_lane: single
+owner: taffy
+description: "Fold DevSecOps course concepts into FORGE as copyable, profile-gated assets: Scorecard, CodeQL, Semgrep dual-scan, dependency review, OSV-Scanner, SBOM, ZAP baseline workflows; GitLab parity jobs; SECURITY.md/dependabot.yml/CODEOWNERS templates; per-profile setup docs."
+file_scope:
+  - skills/forge/assets/ci/workflows/security/
+  - skills/forge/assets/ci/gitlab/
+  - skills/forge/assets/ci-setup/
+  - skills/forge/assets/templates/
+  - skills/forge/references/devsecops-gates.md
+  - skills/forge/bootstrap/references/doc-minimums.md
+  - verify-repo.py
+acceptance_criteria:
+  - "Each security_profile tier maps to concrete copyable assets for GitHub and GitLab."
+  - "Setup docs state copy-exactly-this per profile and forbid recording unconfigured controls."
+  - "verify-repo.py YAML-parses all bundled CI assets and passes."
+evidence:
+  - "commit 0068e53 feat(forge): ship concrete DevSecOps assets per security profile"
+  - "verify-repo.py pass, 2026-07-25"
+history:
+  - "2026-07-25: backfilled into ledger at governance adoption. Concepts derived from DevSecOps Pro course (untracked reference PDF); all workflow content written independently."

@@ -1,0 +1,20 @@
+id: TASK-004
+title: "Governance-on-dev split: promote script and main guard"
+status: in_progress
+priority: high
+phase: foundation
+owner_lane: single
+owner: taffy
+description: "Adopt FORGE governance on dev while keeping main free of governance files and commits: bootstrap docs/forge on dev, add scripts/forge-promote.sh (squash merge dev->main that strips docs/forge, optional tag), and a CI guard failing any main push/PR containing docs/forge."
+file_scope:
+  - docs/forge/
+  - scripts/forge-promote.sh
+  - .github/workflows/main-branch-guard.yml
+acceptance_criteria:
+  - "docs/forge exists on dev with ledger backfilled for TASK-001..003."
+  - "scripts/forge-promote.sh squash-merges dev into main, strips docs/forge, refuses dirty trees, supports --dry-run and --tag."
+  - "CI guard fails main push/PR when docs/forge is present."
+  - "python3 verify-repo.py passes."
+evidence: []
+history:
+  - "2026-07-25: created at governance adoption; promote flow decided in session (squash promotion, option A)."
