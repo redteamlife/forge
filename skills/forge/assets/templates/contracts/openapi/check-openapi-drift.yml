@@ -1,0 +1,37 @@
+name: OpenAPI Drift
+
+on:
+  pull_request:
+    paths:
+      - "openapi.yaml"
+      - "src/**"
+      - "app/**"
+      - "backend/**"
+      - ".github/workflows/check-openapi-drift.yml"
+
+jobs:
+  check-openapi-drift:
+    name: Check openapi.yaml is in sync with the application
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Replace the steps below with whatever your framework needs to dump
+      # the live OpenAPI spec to stdout. The job fails if the committed
+      # `openapi.yaml` diverges from the live spec.
+      - name: Set up runtime
+        run: echo "TODO: install language/runtime needed to start the app"
+
+      - name: Dump live OpenAPI spec
+        run: |
+          # TODO: replace with your real dump command, for example:
+          #   python -m app.openapi_dump > live.openapi.yaml
+          #   npm run dump:openapi > live.openapi.yaml
+          echo "TODO: dump live spec" > live.openapi.yaml
+
+      - name: Diff committed spec against live spec
+        run: |
+          diff -u openapi.yaml live.openapi.yaml || {
+            echo "::error::openapi.yaml is out of date. Run 'make openapi' and commit the result."
+            exit 1
+          }

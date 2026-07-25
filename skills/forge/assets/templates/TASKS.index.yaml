@@ -3,6 +3,8 @@ tasks:
     title: "Replace with first bounded project task"
     status: todo
     priority: normal
+    phase: foundation
+    owner_lane: single
     owner: unassigned
     file_scope:
       - docs/forge/TASKS.index.yaml

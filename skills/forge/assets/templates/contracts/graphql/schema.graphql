@@ -1,0 +1,17 @@
+"""
+Contract source of truth for the {{PROJECT_NAME}} GraphQL surface.
+Generated clients must regenerate when this file changes; CI runs a drift
+check.
+"""
+
+type Query {
+  health: Health!
+}
+
+type Health {
+  status: HealthStatus!
+}
+
+enum HealthStatus {
+  OK
+}

@@ -27,6 +27,11 @@ Rules:
   the relevant contract in the same task, PR, or MR
 - if another active task owns the required contract file, stop for sequencing
 
+Scaffold a contract surface with
+`assets/scripts/forge_scaffold_contract.py --kind {openapi|protobuf|graphql}`.
+OpenAPI mode also drops a Makefile snippet and a drift-check workflow. See
+`bootstrap/references/scaffolding.md`.
+
 Contract-first is repo-local by default. When the contract owner and consumers
 span multiple repositories, use `forge-cross-project` in addition to this
 flavor rather than overloading `repo_flavor`.

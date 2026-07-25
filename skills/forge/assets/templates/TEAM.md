@@ -52,4 +52,19 @@ Use this file only when multiple developers or agents work in the same repositor
 - Record claim release metadata when a task reaches `integrated` or `complete`.
 - Record branch protection and CI setup status in `docs/forge/SETUP.md`.
 
+## Role Split (example)
+
+Replace this with the real split for your project. The key idea: name the
+**integration seam** so parallel lanes can work without stepping on each
+other.
+
+- **Lane A — Backend / Infra**: API, DB, scheduler, jobs, crypto, CI.
+- **Lane B — Frontend / UX**: UI, design system, live state, forms, charts.
+- **Integration seam**: `openapi.yaml` (or `schema.proto`, `schema.graphql`).
+  Lock contract changes there before touching either side; both lanes
+  regenerate from it.
+
+Record contract files in `docs/forge/ARCHITECTURE.md` under
+"Contract Artifacts" and on individual tasks under `contract_files`.
+
 Detailed optional procedures may live under `docs/forge/team/`.

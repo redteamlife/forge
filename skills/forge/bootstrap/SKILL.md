@@ -9,104 +9,57 @@ Purpose: initialize the smallest project-local FORGE contract with low default c
 
 ## Defaults
 
-- Default `agent_context_profile: lite` unless explicitly selected otherwise.
-- For enterprise, API, Bedrock, CI, non-interactive, or uncertain environments, use `lite`.
-- Generate `docs/forge/CONTEXT.md`.
-- Generate compact router-style `CLAUDE.md`, `AGENTS.md`, and always-on IDE rules.
-- Prefer split task and checklist layouts for new `lite` and `standard` projects.
+- Default `agent_context_profile: lite`. Use `lite` for enterprise, API, Bedrock, CI, non-interactive, or uncertain environments.
+- Generate `docs/forge/CONTEXT.md`, compact router-style `CLAUDE.md`/`AGENTS.md`, and always-on IDE rules by default.
+- For `solo-governed`/`team-full`, prefer the narrative `AGENTS.md` form (see `references/scaffolding.md`).
+- Prefer split task and checklist layouts for new `lite`/`standard` projects.
 - Keep FORGE explicit. Agent surfaces remind and route.
 
-Recognize these bootstrap options when the user asks for them in natural language or CLI-shaped text:
-
-- context profile: `lite`, `standard`, or `full`
-- no Claude includes
-- split tasks
-- split checklists
-- split memory
+Recognize these bootstrap options in natural language or CLI-shaped text: context profile (`lite`/`standard`/`full`), no Claude includes, split tasks, split checklists, split memory, narrative front door, contract-first scaffold, quality CI workflow. The last three route to `references/scaffolding.md`.
 
 FORGE does not require a shell CLI. Use the skill workflow and bundled scripts.
 
 ## Context Profiles
 
-`lite`:
-
-- no `@./docs/forge/` includes in `CLAUDE.md` or `AGENTS.md`
-- read `AI.md`, `CONTEXT.md`, compact task index, one selected task, and task-relevant source only
-- read `TEAM.md`, `ARCHITECTURE.md`, `MEMORY.md`, `SECURITY_CHECKLISTS.md`, `SETUP.md`, and `EVALUATION.md` only on demand
-
-`standard`:
-
-- may include only `@./docs/forge/AI.md`
-- all other FORGE docs remain on demand
-
-`full`:
-
-- may include multiple selected FORGE docs
-- label generated agent surfaces as high-context
+- `lite`: no `@./docs/forge/` includes in `CLAUDE.md` or `AGENTS.md`. Auto-read only `AI.md`, `CONTEXT.md`, task index, one selected task, and task-relevant source. Large docs are on demand.
+- `standard`: may include only `@./docs/forge/AI.md`; everything else on demand.
+- `full`: may include multiple selected FORGE docs; label surfaces high-context.
 
 ## Workflow
 
 1. Inspect repo shape, existing FORGE docs, existing agent surfaces, likely task source, and collaboration needs.
-2. Choose bootstrap profile: `solo-simple`, `solo-governed`, or `team-full`.
-3. Choose context profile. Default to `lite`.
-4. Choose `task_source`: `local`, `github`, `gitlab`, or `external`.
-5. Choose optional `repo_flavor` only when it changes behavior: `contract-first` or `tooling`.
-6. Choose `security_profile`: `baseline`, `repo-fortress`, `ci-security`, or `full-devsecops`.
-7. Generate only required docs and preserve project-specific existing content.
-8. Generate `docs/forge/CONTEXT.md` using `<skill-root>/assets/scripts/forge_context_budget.py` when available.
-9. Generate agent surfaces using `<skill-root>/assets/scripts/forge_generate_agent_surfaces.py` when available.
-10. Run `<skill-root>/assets/scripts/forge_validate_context.py <repo>` when available.
-11. For `solo-governed` and `team-full`, install FORGE hooks when the user wants local enforcement or the profile requires it.
-12. Print a compact closeout with changed files and next setup step.
+2. Choose bootstrap profile (`solo-simple`/`solo-governed`/`team-full`), context profile (default `lite`), `task_source` (`local`/`github`/`gitlab`/`external`), optional `repo_flavor` (`contract-first`/`tooling` only when it changes behavior), and `security_profile` (`baseline`/`repo-fortress`/`ci-security`/`full-devsecops`).
+3. Generate only required docs; preserve project-specific existing content.
+4. Generate `docs/forge/CONTEXT.md` (`forge_context_budget.py`) and agent surfaces (`forge_generate_agent_surfaces.py`). For `solo-governed`/`team-full`, follow `references/scaffolding.md` (narrative AGENTS.md + scoped Cursor rules).
+5. For `repo_flavor: contract-first`, scaffold the contract per `references/scaffolding.md`.
+6. For `team-full` with `ci_enforcement: enabled`, copy the quality workflow per `references/scaffolding.md`.
+7. Run `forge_validate_context.py <repo>`. For `solo-governed`/`team-full`, install FORGE hooks when the user wants local enforcement.
+8. Print a compact closeout with changed files and next setup step.
 
 ## Minimum Docs
 
-Always create or refresh:
+Always create or refresh: `docs/forge/AI.md`, `docs/forge/CONTEXT.md`, the task ledger (`TASKS.index.yaml` plus `docs/forge/tasks/` when split, otherwise `TASKS.yaml`), and the selected root agent surfaces.
 
-- `docs/forge/AI.md`
-- `docs/forge/CONTEXT.md`
-- task ledger: `TASKS.index.yaml` plus `docs/forge/tasks/` when split tasks are selected, otherwise `TASKS.yaml`
-- selected root agent surfaces
+Create only when relevant: `ARCHITECTURE.md` (design boundaries), `TEAM.md` (multi-actor), security checklists (split or `SECURITY_CHECKLISTS.md`), `MEMORY.index.yaml` plus `memory/` (or `MEMORY.md`), `EVALUATION.md` (gates), `SETUP.md` (enforcement/onboarding), `docs/` human-facing docs when `application_docs: true`, and `docs/forge/cross-project/` only on explicit request.
 
-Create only when relevant:
-
-- `ARCHITECTURE.md` for design boundaries, interfaces, deployment, or cross-module behavior
-- `TEAM.md` for multiple developers or agents, claims, branch policy, or reviewer routing
-- `security-checklists/` or `SECURITY_CHECKLISTS.md` for checklist-based security review
-- `MEMORY.index.yaml` plus `memory/`, or compatibility `MEMORY.md`, for reusable lessons
-- `EVALUATION.md` for explicit completion gates
-- `SETUP.md` for local hooks, hosted CI, branch protection, or onboarding
-- `docs/` human-facing application docs only when `application_docs: true`
-- `docs/forge/cross-project/` only on explicit cross-project requests
+See `references/doc-minimums.md` for full per-doc guidance.
 
 ## Agent Surfaces
 
 - `lite` `CLAUDE.md`: router text only; fail validation on include bombs.
 - `standard` `CLAUDE.md`: may include `@./docs/forge/AI.md` only.
-- `full` `CLAUDE.md`: may include selected bootstrapped docs and must say it is high-context.
-- `AGENTS.md`, Cursor, Copilot, Windsurf, and Codex hooks should follow the same profile logic.
-- Always-on surfaces should say what to read next; they should not inline project policy from large docs.
+- `full` `CLAUDE.md`: may include selected docs; surface must say it is high-context.
+- `AGENTS.md` may be narrative even when `CLAUDE.md` is a router; narrative must not include `@docs/forge/*` in lite mode.
+- Prefer scoped Cursor rule files over one large rule file (`references/scaffolding.md`).
+- Cursor, Copilot, Windsurf, and Codex hooks follow the same profile logic.
+- Always-on surfaces route; they do not inline policy from large docs.
 
 ## Hard Stops
 
-Stop when:
-
-- bootstrap would overwrite project-specific docs without a migration path
-- the user has not authorized team, CI, hook, or cross-project setup
-- the selected task source cannot be identified and the choice changes generated state
-- generated lite surfaces would auto-load large docs
-- validation reports a lite include bomb
+Stop when bootstrap would overwrite project-specific docs without a migration path, the user has not authorized team/CI/hook/cross-project setup, the selected task source cannot be identified and the choice changes generated state, generated lite surfaces would auto-load large docs, or validation reports a lite include bomb.
 
 ## Output
 
-Read references only when needed:
-
-- repo and doc minimums: `references/doc-minimums.md`
-- team behavior: `references/team-mode.md`
-- agent surfaces: `../references/agent-flavors.md`
-- repo flavors: `../references/repo-flavors.md`
-- DevSecOps gates: `../references/devsecops-gates.md`
-- application docs: `../references/application-docs.md`
-- cross-project coordination: `../references/cross-project.md`
+Read references only when needed: `references/doc-minimums.md` (doc minimums), `references/scaffolding.md` (narrative AGENTS.md, contract-first, quality CI), `references/team-mode.md` (team behavior), `../references/agent-flavors.md`, `../references/repo-flavors.md`, `../references/devsecops-gates.md`, `../references/application-docs.md`, `../references/cross-project.md`.
 
 Use `<skill-root>/assets/scripts/forge_migrate_context.py` for older projects when practical.

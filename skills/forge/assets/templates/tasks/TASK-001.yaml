@@ -2,12 +2,26 @@ id: TASK-001
 title: "Replace with first bounded project task"
 status: todo
 priority: normal
+# Phase groups related work for sequencing. Examples:
+#   foundation, contracts, core-api, frontend, integration, hardening
+phase: foundation
+# Owner lane is the workstream this task belongs to. In solo projects
+# leave as `single`. In multi-actor projects use lanes such as
+# `backend`, `frontend`, `infra`, `security`, `docs`.
+owner_lane: single
 owner: unassigned
 description: "Replace this with one bounded implementation task."
 file_scope:
   - docs/forge/TASKS.index.yaml
   - docs/forge/tasks/TASK-001.yaml
+# Acceptance criteria should be specific, observable, and testable.
+# Two or three concrete lines is usually right.
 acceptance_criteria:
-  - "Task is specific enough to implement and verify."
+  - "Replace with a specific, observable outcome."
+  - "Replace with a second observable outcome."
+# Optional pointers to the tests that will verify the task. Mirror the task
+# id in the test filename for traceability.
+tests:
+  - "tests/test_TASK-001.py"
 evidence: []
 history: []

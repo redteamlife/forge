@@ -1,0 +1,23 @@
+---
+description: "Project security guardrails (always on)"
+alwaysApply: true
+---
+
+Security guardrails for this project. Always apply.
+
+- Never log secrets, credentials, session tokens, API keys, raw hashes,
+  recovered passwords, or other sensitive payloads.
+- Never disable transport security (TLS/mTLS, signature checks) outside of
+  the explicit dev compose / dev profile.
+- Treat all uploaded files, rules, wordlists, and user content as
+  untrusted: enforce size caps, validate types, and reject path traversal.
+- Never invoke subprocesses with `shell=True` or string-concatenated
+  commands; always pass an argv list and validate arguments.
+- Pin external binary versions (hashcat, ffmpeg, etc.) by digest or tag
+  when correctness depends on the binary version.
+- Sensitive data at rest must be encrypted with a project-approved
+  primitive; do not invent crypto.
+- Surface authn/authz failures the same way for unknown vs wrong-credential
+  cases to avoid enumeration.
+- Stop and ask before adding a new outbound network call from a
+  privileged context.
