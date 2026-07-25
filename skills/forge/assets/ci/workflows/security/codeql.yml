@@ -1,0 +1,44 @@
+# FORGE security workflow — CodeQL SAST (security_profile: ci-security+)
+# Copy to .github/workflows/codeql.yml and set the language matrix.
+# Optional tuning lives in .github/codeql/codeql-config.yml (see codeql-config.yml
+# next to this file): exclude paths, filter queries, add query packs.
+# Enforce at the merge gate: ruleset/branch protection -> "Require code scanning results".
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: CodeQL analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # Set to the repo's languages, e.g. python, javascript-typescript, go, java-kotlin.
+        language: [python]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Uncomment once a config file exists:
+          # config-file: ./.github/codeql/codeql-config.yml
+          # Prefer high-signal queries first; widen only after triage capacity exists.
+          queries: security-extended
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

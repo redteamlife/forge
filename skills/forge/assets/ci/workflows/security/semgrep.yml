@@ -1,0 +1,56 @@
+# FORGE security workflow — Semgrep SAST (security_profile: ci-security+)
+# Copy to .github/workflows/semgrep.yml.
+# Strategy (dual-scan):
+#   1. PR scans: fast, high-confidence rulesets on changed code only.
+#   2. Scheduled full scans: comprehensive ruleset over the whole repo, SARIF
+#      uploaded to the Security tab.
+#   3. Enforce at the merge gate: ruleset -> "Require code scanning results".
+# SEMGREP_APP_TOKEN is only needed for the Semgrep AppSec Platform; the CE
+# rulesets below run without an account.
+name: Semgrep
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "15 5 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep-pr:
+    name: Semgrep PR scan
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep ci
+        env:
+          SEMGREP_RULES: >
+            p/cwe-top-25
+            p/owasp-top-ten
+
+  semgrep-full:
+    name: Semgrep full scan
+    if: (github.event_name == 'schedule' || github.event_name == 'push') && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep ci --sarif --output semgrep.sarif || true
+        env:
+          SEMGREP_RULES: p/default
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        if: always()

@@ -1,0 +1,20 @@
+# FORGE template — copy to .github/CODEOWNERS (GitHub) or CODEOWNERS (GitLab).
+# Security use case: require subject-matter-expert approval on high-risk paths.
+# Pair with branch protection "Require review from Code Owners" (Scorecard Tier 4).
+# Derive paths from docs/forge/ARCHITECTURE.md Trust Boundaries; keep entries few
+# and high-signal. Last matching entry wins.
+
+# Default owners (optional — omit to require owners only on sensitive paths):
+# * @{{OWNER}}
+
+# Security-sensitive paths — auth, crypto, secrets handling:
+# /src/auth/           @{{SECURITY_REVIEWER}}
+# /src/crypto/         @{{SECURITY_REVIEWER}}
+# /src/secrets/        @{{SECURITY_REVIEWER}}
+
+# Infrastructure and CI — supply-chain control points:
+# /.github/workflows/  @{{SECURITY_REVIEWER}}
+# /Dockerfile          @{{SECURITY_REVIEWER}}
+
+# FORGE governance surface:
+# /docs/forge/         @{{MAINTAINER}}

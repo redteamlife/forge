@@ -1,0 +1,53 @@
+# FORGE GitLab security jobs — include from .gitlab-ci.yml:
+#   include:
+#     - local: ci/gitlab/security.gitlab-ci.yml
+# GitLab parity for the GitHub security workflows:
+#   repo-fortress+  -> protected branches + approval rules (Settings, not CI)
+#   ci-security+    -> built-in SAST, secret detection, dependency scanning, Semgrep dual-scan
+#   full-devsecops  -> DAST and CycloneDX SBOM (dependency scanning emits one)
+# Built-in templates honor SAST_EXCLUDED_PATHS / SECRET_DETECTION_EXCLUDED_PATHS.
+# Ultimate-tier templates degrade gracefully; Semgrep CE jobs below work on any tier.
+
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  # Ultimate tier:
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  # full-devsecops, deployable web services only (set DAST_WEBSITE):
+  # - template: DAST.gitlab-ci.yml
+
+# Semgrep dual-scan strategy (works on all tiers, no account required).
+semgrep-mr:
+  stage: test
+  image: semgrep/semgrep
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  variables:
+    SEMGREP_RULES: p/cwe-top-25 p/owasp-top-ten
+  script:
+    - semgrep ci
+
+semgrep-full:
+  stage: test
+  image: semgrep/semgrep
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  variables:
+    SEMGREP_RULES: p/default
+  script:
+    - semgrep ci --gitlab-sast --output gl-sast-semgrep.json || true
+  artifacts:
+    reports:
+      sast: gl-sast-semgrep.json
+
+# full-devsecops: CycloneDX SBOM for repos not on Ultimate dependency scanning.
+sbom-cyclonedx:
+  stage: test
+  image: anchore/syft:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - /syft scan dir:. -o cyclonedx-json=sbom.cdx.json
+  artifacts:
+    paths: [sbom.cdx.json]

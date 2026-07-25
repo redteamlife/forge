@@ -2,3 +2,4 @@
 .tmp/manual-tests/
 __pycache__/
 skills/forge-workspace/
+*.pdf

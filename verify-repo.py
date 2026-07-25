@@ -179,6 +179,23 @@ def verify_size_budgets() -> None:
         ensure(size <= limit, f"{path}: size {size} exceeds budget {limit}")
 
 
+def verify_yaml_assets() -> None:
+    import yaml
+
+    yaml_files = sorted((SKILL_ROOT / "assets" / "ci").rglob("*.yml")) + sorted(
+        (SKILL_ROOT / "assets" / "ci").rglob("*.yaml")
+    )
+    ensure(
+        any("security" in str(p) for p in yaml_files),
+        "assets/ci is missing the security workflow assets",
+    )
+    for path in yaml_files:
+        try:
+            yaml.safe_load(path.read_text())
+        except yaml.YAMLError as exc:
+            raise CheckFailure(f"{path}: invalid YAML: {exc}") from exc
+
+
 def verify_shell_scripts() -> None:
     run(["bash", "-n", "install.sh", "uninstall.sh", "verify-install.sh"], cwd=ROOT)
     hooks_dir = SKILL_ROOT / "assets" / "ci" / "hooks"
@@ -413,6 +430,7 @@ def main() -> int:
         verify_manifests()
         verify_skill_anatomy()
         verify_size_budgets()
+        verify_yaml_assets()
         verify_shell_scripts()
         verify_python_scripts()
         verify_context_validation()

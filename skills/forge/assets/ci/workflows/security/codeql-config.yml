@@ -1,0 +1,21 @@
+# FORGE example CodeQL config — copy to .github/codeql/codeql-config.yml and
+# reference it from the codeql.yml workflow (config-file input).
+# Phase-1 goal: high-confidence, high-severity findings only; widen as triage
+# capacity grows. Document every exclusion here so review can audit suppressions.
+name: FORGE CodeQL config
+
+paths-ignore:
+  - tests
+  - docs
+  - "**/*.md"
+
+# Filter to precise, severe results first (query metadata: precision/security-severity).
+query-filters:
+  - exclude:
+      precision: [low, medium]
+  - exclude:
+      problem.severity: [recommendation]
+
+# Add community or org query packs when needed:
+# packs:
+#   - codeql/python-queries

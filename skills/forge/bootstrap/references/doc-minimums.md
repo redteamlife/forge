@@ -57,6 +57,8 @@ When checklist-driven security review is enabled (any bootstrap that creates a c
 - write the `SECURITY_CHECKLISTS.md` index template only alongside the split directory, never by itself
 - if the project prefers a single monolithic `SECURITY_CHECKLISTS.md`, compose it from the same assets with real `- [ ]` items (General plus relevant surfaces); never leave an index with no split directory and no items
 
+For `repo-fortress`, `ci-security`, and `full-devsecops`, also offer the matching provider assets (workflows under `<skill-root>/assets/ci/workflows/security/` or `assets/ci/gitlab/security.gitlab-ci.yml`, plus `SECURITY.md`/`dependabot.yml`/`CODEOWNERS` templates) per `assets/ci-setup/github.md` or `assets/ci-setup/gitlab.md`. Copy only what the profile calls for; record enabled controls in `SETUP.md` and never record a control that is not actually on.
+
 Repair and refresh:
 
 - if an existing repo has `SECURITY_CHECKLISTS.md` referencing a missing `security-checklists/` directory (an index-only scaffold), repair by copying `general.md` plus relevant surface checklists into `docs/forge/security-checklists/`

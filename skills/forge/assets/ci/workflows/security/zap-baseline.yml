@@ -1,0 +1,30 @@
+# FORGE security workflow — ZAP baseline DAST (security_profile: full-devsecops)
+# Copy to .github/workflows/zap-baseline.yml and set TARGET_URL.
+# Passive baseline scan of a deployed/staging instance — safe-by-default, no
+# active attacks. Authenticated and full active scans are project-specific:
+# document their context setup in docs/forge/SETUP.md before enabling.
+# Do not point this at infrastructure you do not own or operate.
+name: ZAP Baseline Scan
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+    env:
+      # Staging or preview URL the repo is authorized to scan.
+      TARGET_URL: "https://staging.example.com"
+    steps:
+      - uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ env.TARGET_URL }}
+          # Rules file lets you downgrade/ignore noisy alerts with reasons:
+          # rules_file_name: .zap/rules.tsv
+          allow_issue_writing: true

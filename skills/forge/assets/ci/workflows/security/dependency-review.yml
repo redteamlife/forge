@@ -1,0 +1,27 @@
+# FORGE security workflow — Dependency Review (security_profile: ci-security+)
+# Copy to .github/workflows/dependency-review.yml.
+# Blocks PRs that introduce known-vulnerable or policy-violating dependencies.
+# Requires the dependency graph (Settings -> Security -> Code security).
+name: Dependency Review
+
+on: [pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          # Fail the PR when introduced vulnerabilities meet this severity.
+          fail-on-severity: high
+          # Optional license policy — pick allow OR deny, not both:
+          # allow-licenses: MIT, Apache-2.0, BSD-3-Clause
+          # deny-licenses: GPL-3.0, LGPL-2.0
+          # Optional: only block runtime-scope vulnerabilities.
+          # fail-on-scopes: runtime
+          # Optional: accept specific advisories after documented triage.
+          # allow-ghsas: GHSA-xxxx-xxxx-xxxx
