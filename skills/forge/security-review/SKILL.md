@@ -24,9 +24,9 @@ Use this skill after implementation and before completion.
 1. Read `docs/forge/CONTEXT.md` if present, then `docs/forge/AI.md`.
 2. Read the selected task from `docs/forge/TASKS.index.yaml`, `docs/forge/tasks/`, `docs/forge/TASKS.yaml`, or the configured issue tracker.
 3. Select checklist inputs:
-   - prefer relevant files in `docs/forge/security-checklists/`
-   - if relevance is unclear, start with `docs/forge/security-checklists/general.md`
-   - fall back to relevant sections of `docs/forge/SECURITY_CHECKLISTS.md`
+   - prefer relevant files in `docs/forge/security-checklists/`, starting with `general.md`
+   - fall back to `docs/forge/SECURITY_CHECKLISTS.md` only when it contains real `- [ ]` items
+   - if neither layout has usable items, use `general.md` plus relevant surface checklists from the installed skill pack's `assets/security-checklists/`, and flag the project scaffold for repair via `forge-bootstrap`
 4. Apply only the sections relevant to the active change surface.
 5. If the change adds or modifies automation for GitHub, GitLab, Jira, Linear, or another tracker, review token scope and assignee semantics.
 6. If the change touches repository settings, CI, CD, dependency management, build artifacts, or deployment, apply the matching DevSecOps checklist sections.

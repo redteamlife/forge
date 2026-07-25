@@ -17,8 +17,6 @@ Purpose: initialize the smallest project-local FORGE contract with low default c
 
 Recognize these bootstrap options in natural language or CLI-shaped text: context profile (`lite`/`standard`/`full`), no Claude includes, split tasks, split checklists, split memory, narrative front door, contract-first scaffold, quality CI workflow. The last three route to `references/scaffolding.md`.
 
-FORGE does not require a shell CLI. Use the skill workflow and bundled scripts.
-
 ## Context Profiles
 
 - `lite`: no `@./docs/forge/` includes in `CLAUDE.md` or `AGENTS.md`. Auto-read only `AI.md`, `CONTEXT.md`, task index, one selected task, and task-relevant source. Large docs are on demand.
@@ -40,9 +38,7 @@ FORGE does not require a shell CLI. Use the skill workflow and bundled scripts.
 
 Always create or refresh: `docs/forge/AI.md`, `docs/forge/CONTEXT.md`, the task ledger (`TASKS.index.yaml` plus `docs/forge/tasks/` when split, otherwise `TASKS.yaml`), and the selected root agent surfaces.
 
-Create only when relevant: `ARCHITECTURE.md` (design boundaries), `TEAM.md` (multi-actor), security checklists (split or `SECURITY_CHECKLISTS.md`), `MEMORY.index.yaml` plus `memory/` (or `MEMORY.md`), `EVALUATION.md` (gates), `SETUP.md` (enforcement/onboarding), `docs/` human-facing docs when `application_docs: true`, and `docs/forge/cross-project/` only on explicit request.
-
-See `references/doc-minimums.md` for full per-doc guidance.
+Create only when relevant: `ARCHITECTURE.md` (design boundaries), `TEAM.md` (multi-actor), security checklists (copy `general.md` plus relevant surfaces from `<skill-root>/assets/security-checklists/`, or compose a monolithic file with real items — never an empty index; repair index-only scaffolds on refresh per `references/doc-minimums.md`), `MEMORY.index.yaml` plus `memory/` (or `MEMORY.md`), `EVALUATION.md` (gates), `SETUP.md` (enforcement/onboarding), `docs/` human-facing docs when `application_docs: true`, and `docs/forge/cross-project/` only on explicit request.
 
 ## Agent Surfaces
 

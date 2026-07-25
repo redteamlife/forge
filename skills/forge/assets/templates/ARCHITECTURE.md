@@ -1,6 +1,6 @@
 # Architecture
 
-## Summary
+## Overview
 
 Replace this paragraph with one or two sentences describing the system shape:
 the major components, what they own, and how they communicate.

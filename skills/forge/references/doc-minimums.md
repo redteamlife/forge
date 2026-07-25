@@ -16,7 +16,7 @@ Recommended:
 - `docs/forge/EVALUATION.md` when explicit gates matter
 - `docs/forge/MEMORY.md` when tasks recur across sessions
 - `docs/forge/TEAM.md` when more than one developer or agent may execute in the same repo
-- `docs/forge/security-checklists/` or compatibility `SECURITY_CHECKLISTS.md` when security review should be checklist-driven
+- `docs/forge/security-checklists/` (must include `general.md`) or a monolithic `SECURITY_CHECKLISTS.md` with real items when security review should be checklist-driven; never an index file alone
 - `docs/forge/SETUP.md` when enforcement setup needs to be handed off clearly to humans
 - root `AGENTS.md` and `CLAUDE.md` when the repo should remind agents how to route into FORGE
 

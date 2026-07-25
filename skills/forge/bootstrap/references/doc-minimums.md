@@ -47,6 +47,22 @@ Additional expectations:
 - do not use wildcard branch patterns such as `task/*` as `integration_branch`
 - do not merge into `release_branch` without explicit human instruction
 
+## Security Checklists
+
+When checklist-driven security review is enabled (any bootstrap that creates a checklist surface, and always for `repo-fortress`, `ci-security`, or `full-devsecops`):
+
+- prefer the split layout `docs/forge/security-checklists/` for new `lite` and `standard` projects
+- always copy `general.md` from `<skill-root>/assets/security-checklists/`
+- copy only the surface checklists relevant to the project (for example `api.md`, `frontend.md`, `data-storage.md`); copying the full modular set is acceptable for multi-surface applications because agents load only task-relevant files
+- write the `SECURITY_CHECKLISTS.md` index template only alongside the split directory, never by itself
+- if the project prefers a single monolithic `SECURITY_CHECKLISTS.md`, compose it from the same assets with real `- [ ]` items (General plus relevant surfaces); never leave an index with no split directory and no items
+
+Repair and refresh:
+
+- if an existing repo has `SECURITY_CHECKLISTS.md` referencing a missing `security-checklists/` directory (an index-only scaffold), repair by copying `general.md` plus relevant surface checklists into `docs/forge/security-checklists/`
+- preserve project-specific checklist additions and local security decisions; never overwrite them silently
+- report exactly which checklist files were added or left untouched in the closeout
+
 ## Team Default
 
 Add these from the start when multiple developers or agents will work in parallel:

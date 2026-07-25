@@ -241,6 +241,161 @@ def verify_context_validation() -> None:
         ensure("includes more than one docs/forge file" in result.stdout, "missing include-bomb failure")
 
 
+def _write_generated_docs_fixture(
+    repo: Path,
+    forge_mode: str = "Lightweight",
+    security_profile: str = "baseline",
+    setup_sections: list[str] | None = None,
+) -> Path:
+    forge_dir = repo / "docs" / "forge"
+    (forge_dir / "tasks").mkdir(parents=True)
+    (forge_dir / "AI.md").write_text(
+        "# AI Execution Configuration\n\n"
+        "```FORGE-config\n"
+        f"FORGE_mode: {forge_mode}\n"
+        "execution_mode: manual\n"
+        "collaboration_mode: solo\n"
+        f"security_profile: {security_profile}\n"
+        "```\n\n"
+        "## Purpose\n\nFixture repo.\n\n"
+        "## Constraints\n\nNone.\n",
+        encoding="utf-8",
+    )
+    (forge_dir / "TASKS.index.yaml").write_text(
+        "tasks:\n"
+        "  - id: TASK-001\n"
+        '    title: "Fixture task"\n'
+        "    status: todo\n"
+        "    task_file: docs/forge/tasks/TASK-001.yaml\n",
+        encoding="utf-8",
+    )
+    (forge_dir / "tasks" / "TASK-001.yaml").write_text(
+        "id: TASK-001\nstatus: todo\n", encoding="utf-8"
+    )
+    if forge_mode != "Lightweight":
+        (forge_dir / "ARCHITECTURE.md").write_text(
+            "# Architecture\n\n## Overview\n\nFixture overview.\n", encoding="utf-8"
+        )
+        (forge_dir / "TEST_STRATEGY.md").write_text("# Test Strategy\n\nUnit tests.\n", encoding="utf-8")
+        (forge_dir / "EVALUATION.md").write_text(
+            "# Evaluation\n\n## Definition of Done\n\nTests pass.\n", encoding="utf-8"
+        )
+        (forge_dir / "MEMORY.md").write_text("# Memory\n\nNo lessons yet.\n", encoding="utf-8")
+    if setup_sections is not None:
+        body = "# FORGE Setup\n\n"
+        for section in setup_sections:
+            body += f"## {section}\n\nRecorded.\n\n"
+        (forge_dir / "SETUP.md").write_text(body, encoding="utf-8")
+    return forge_dir
+
+
+def _run_generated_docs_validator(repo: Path) -> subprocess.CompletedProcess[str]:
+    script = SKILL_ROOT / "assets" / "ci" / "scripts" / "validate-generated-docs.sh"
+    return subprocess.run(
+        ["bash", str(script)], cwd=repo, text=True, capture_output=True, check=False
+    )
+
+
+def verify_generated_docs_validation() -> None:
+    template = (SKILL_ROOT / "assets" / "templates" / "ARCHITECTURE.md").read_text()
+    ensure("## Overview" in template, "ARCHITECTURE.md template heading drifted from validator's '## Overview'")
+    wrapper_template = (SKILL_ROOT / "assets" / "templates" / "SECURITY_CHECKLISTS.md").read_text()
+    ensure(
+        "security-checklists/" in wrapper_template,
+        "SECURITY_CHECKLISTS.md template no longer routes to the split directory",
+    )
+
+    general_asset = (SKILL_ROOT / "assets" / "security-checklists" / "general.md").read_text()
+
+    always_setup = ["Local Hooks", "CI Enforcement", "Team Closeout", "Release Reconciliation"]
+
+    # solo-simple / Lightweight baseline with no checklist surface: valid.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-lite-") as temp_dir:
+        repo = Path(temp_dir)
+        _write_generated_docs_fixture(repo)
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"Lightweight baseline fixture failed:\n{result.stdout}{result.stderr}")
+
+    # Non-Lightweight with valid split checklist layout and baseline SETUP
+    # (no Branch Protection section): valid.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-split-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = _write_generated_docs_fixture(
+            repo, forge_mode="Standard", setup_sections=always_setup
+        )
+        checklist_dir = forge_dir / "security-checklists"
+        checklist_dir.mkdir()
+        (checklist_dir / "general.md").write_text(general_asset, encoding="utf-8")
+        (forge_dir / "SECURITY_CHECKLISTS.md").write_text(
+            (SKILL_ROOT / "assets" / "templates" / "SECURITY_CHECKLISTS.md").read_text(),
+            encoding="utf-8",
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"valid split checklist fixture failed:\n{result.stdout}{result.stderr}")
+
+        # Split directory missing general.md: invalid.
+        (checklist_dir / "general.md").unlink()
+        (checklist_dir / "api.md").write_text("- [ ] item\n", encoding="utf-8")
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "split layout missing general.md passed validation")
+        ensure("missing the mandatory general.md" in result.stdout, "missing-general.md failure not reported")
+
+        # general.md without checklist items: invalid.
+        (checklist_dir / "general.md").write_text("# General\n\nSee elsewhere.\n", encoding="utf-8")
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "general.md without checklist items passed validation")
+        ensure("no checklist items" in result.stdout, "empty-general.md failure not reported")
+
+    # Index-only compatibility wrapper referencing a missing split dir: invalid.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-index-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = _write_generated_docs_fixture(repo, forge_mode="Standard")
+        (forge_dir / "SECURITY_CHECKLISTS.md").write_text(
+            (SKILL_ROOT / "assets" / "templates" / "SECURITY_CHECKLISTS.md").read_text(),
+            encoding="utf-8",
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "index-only SECURITY_CHECKLISTS.md wrapper passed validation")
+        ensure(
+            "does not exist" in result.stdout,
+            "index-only wrapper failure not reported",
+        )
+
+        # Monolithic wrapper with real items: valid.
+        (forge_dir / "SECURITY_CHECKLISTS.md").write_text(
+            "# Security Checklists\n\n## General\n\n" + general_asset, encoding="utf-8"
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"valid monolithic checklist fixture failed:\n{result.stdout}{result.stderr}")
+
+    # repo-fortress: requires a checklist layout and Branch Protection in SETUP.md.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-fortress-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = _write_generated_docs_fixture(
+            repo,
+            security_profile="repo-fortress",
+            setup_sections=always_setup,
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "repo-fortress with no checklist layout passed validation")
+        ensure("no security checklist layout" in result.stdout, "missing-layout failure not reported")
+
+        checklist_dir = forge_dir / "security-checklists"
+        checklist_dir.mkdir()
+        (checklist_dir / "general.md").write_text(general_asset, encoding="utf-8")
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "repo-fortress SETUP.md without Branch Protection passed validation")
+        ensure("Branch Protection" in result.stdout, "Branch Protection failure not reported")
+
+        setup = forge_dir / "SETUP.md"
+        setup.write_text(
+            setup.read_text() + "## Branch Protection\n\nMain protected: yes.\n",
+            encoding="utf-8",
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"valid repo-fortress fixture failed:\n{result.stdout}{result.stderr}")
+
+
 def verify_install_flow() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-verify-") as temp_dir:
         env = os.environ.copy()
@@ -261,6 +416,7 @@ def main() -> int:
         verify_shell_scripts()
         verify_python_scripts()
         verify_context_validation()
+        verify_generated_docs_validation()
         verify_install_flow()
     except CheckFailure as exc:
         print(f"FORGE verify failed: {exc}", file=sys.stderr)
