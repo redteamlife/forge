@@ -19,7 +19,7 @@ acceptance_criteria:
   - "Setup docs state copy-exactly-this per profile and forbid recording unconfigured controls."
   - "verify-repo.py YAML-parses all bundled CI assets and passes."
 evidence:
-  - "commit 0068e53 feat(forge): ship concrete DevSecOps assets per security profile"
+  - "commit 4fc5427 feat(forge): ship concrete DevSecOps assets per security profile"
   - "verify-repo.py pass, 2026-07-25"
 history:
   - "2026-07-25: backfilled into ledger at governance adoption. Concepts derived from DevSecOps Pro course (untracked reference PDF); all workflow content written independently."
