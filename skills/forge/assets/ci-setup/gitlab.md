@@ -25,7 +25,7 @@ Use this when the project is hosted on GitLab and `ci_enforcement` should be ena
 GitLab equivalents for the profile-gated GitHub assets. Include the skill's `assets/ci/gitlab/security.gitlab-ci.yml` (copied with the `ci/` tree) from `.gitlab-ci.yml` and keep only the jobs the profile calls for. Record what was enabled in `docs/forge/SETUP.md`.
 
 - `repo-fortress`: protected branches + merge request approval rules (below); `SECURITY.md` template with a confidential-issue or email reporting path; `CODEOWNERS` at repo root plus "Require approval from code owners" on protected branches.
-- `ci-security` (adds): built-in SAST and secret-detection templates (all tiers) and/or the Semgrep dual-scan jobs; dependency scanning (Ultimate) or the OSV/Semgrep jobs as the non-Ultimate fallback; enable push rules for secrets.
+- `ci-security` (adds): built-in SAST and secret-detection templates (all tiers) and/or the Semgrep dual-scan jobs; dependency scanning (Ultimate) or, on other tiers, the Semgrep jobs plus an `osv-scanner` job you add per its GitLab docs; enable push rules for secrets.
 - `full-devsecops` (adds): the `sbom-cyclonedx` job; DAST template only for deployable web services with an authorized staging URL; scheduled pipeline for full scans (CI/CD -> Schedules).
 
 ## Protected Branches And Merge Rules

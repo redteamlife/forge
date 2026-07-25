@@ -36,7 +36,7 @@ Use this file only when multiple developers or agents work in the same repositor
 - If active tasks overlap materially in `file_scope`, resequence or split them.
 - Shared interface files belong in `contract_files`.
 
-## Integration And Release
+## Integration Flow
 
 - Feature branches open PRs/MRs into the integration branch.
 - `implemented`: task branch is committed and ready for review.
@@ -45,10 +45,13 @@ Use this file only when multiple developers or agents work in the same repositor
 - Do not target the release branch directly from task branches.
 - Delete merged task branches unless project policy keeps them briefly.
 
-## Evidence
+## Review And Merge
 
 - Complete critique, required security review, and evaluation before merge.
 - Record reviewer and validation evidence in `docs/forge/EVALUATION.md`.
+
+## Task Closeout
+
 - Record claim release metadata when a task reaches `integrated` or `complete`.
 - Record branch protection and CI setup status in `docs/forge/SETUP.md`.
 

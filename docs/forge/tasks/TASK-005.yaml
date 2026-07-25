@@ -1,0 +1,35 @@
+id: TASK-005
+title: "Full repo consistency pass"
+status: complete
+priority: high
+phase: hardening
+owner_lane: single
+owner: taffy
+description: "Three-way audit (root docs vs pack, skill cross-references, asset/template coherence) plus philosophy review; fix all confirmed defects."
+file_scope:
+  - skills/forge/
+  - philosophy/
+  - README.md
+  - AGENTS.md
+  - CLAUDE.md
+  - install.ps1
+  - verify-install.sh
+  - verify-repo.py
+  - .github/workflows/verify-forge-skills.yml
+acceptance_criteria:
+  - "No broken reference paths in subskill SKILL.md files."
+  - "TEAM.md template provides every section the validator requires."
+  - "Validator no longer requires docs the doc model says not to generate."
+  - "Status vocabulary (incl. todo) consistent across both ledger validators and templates."
+  - "Install/verify file lists cover all new canonical assets."
+  - "python3 verify-repo.py passes."
+evidence:
+  - "fixed: ../references/ paths in plan, build, critique, evaluation, cross-project SKILL.md"
+  - "fixed: TEAM.md sections Integration Flow / Review And Merge / Task Closeout"
+  - "fixed: validator drops TEST_STRATEGY.md and legacy Strict files; legacy ledger accepts todo"
+  - "fixed: org policy strict artifact -> TASKS.index.yaml; gitlab.md OSV wording"
+  - "fixed: verify-install.sh, install.ps1, verify-repo.py required lists; CI filter includes CLAUDE.md"
+  - "docs: README governance/dogfooding + DevSecOps asset notes; philosophy ledger/checklist naming; AGENTS/CLAUDE governance rule"
+  - "verify-repo.py + validate-generated-docs.sh pass, 2026-07-25"
+history:
+  - "2026-07-25: audit via three parallel review agents; all confirmed findings fixed same-day."

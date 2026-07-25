@@ -12,3 +12,4 @@ When working on the skill pack itself:
 - preserve explicit activation; do not turn FORGE into an always-on behavior by default
 - keep working responses terse and implementation-focused; avoid conversational filler and repeated context recap
 - keep workflow and CI references aligned with `.github/workflows/verify-forge-skills.yml`
+- repo governance lives on `dev` only: `docs/forge/` must never reach `main`; promote via `scripts/forge-promote.sh` (squash + strip), enforced by `.github/workflows/main-branch-guard.yml`

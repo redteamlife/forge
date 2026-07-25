@@ -100,7 +100,7 @@ What it should do:
 3. Identify the merge commit or accepted commit range.
 4. Create a local intake branch from the current private dev branch.
 5. Cherry-pick or merge the accepted public change into private dev.
-6. Create or append a task in `docs/forge/TASKS.yaml`, such as `intake-public-pr-123`.
+6. Create or append a task in the task ledger (`docs/forge/TASKS.index.yaml` plus `docs/forge/tasks/`, or legacy `TASKS.yaml`), such as `intake-public-pr-123`.
 7. Record provenance in commit trailers and optionally `MEMORY.md`.
 
 Example commit trailers:

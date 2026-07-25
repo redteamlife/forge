@@ -59,7 +59,7 @@ When multiple developers or agents work in parallel:
 
 Default to terse, implementation-focused responses:
 
-- working update: `Status: <done/doing/blocker>. Next: <next step>.`
+- working update: `Status: <ok/doing/blocker>. Next: <next step>.`
 - task closeout: `Done: <result>. Changed: <files or areas>. Next: <next step or none>.`
 - blocker: `Blocked: <fact>. Need: <decision or missing prerequisite>.`
 

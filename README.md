@@ -67,8 +67,8 @@ Use the forge skill to start working on tasks, do not stop until done.
 
 Via `npx skills add`, FORGE follows the shared Agent Skills ecosystem used by Vercel's skills tooling. Vercel documents support for 18+ AI agents, including Claude Code, GitHub Copilot, Cursor, Cline, and many others, and the CLI compatibility table also includes Codex. See:
 
-- https://vercel.com/docs/agent-resources/skills
-- https://github.com/vercel-labs/skills
+- <https://vercel.com/docs/agent-resources/skills>
+- <https://github.com/vercel-labs/skills>
 
 The manual install scripts in this repo currently provide explicit target helpers for:
 
@@ -88,8 +88,10 @@ See [GETTING_STARTED.md](./GETTING_STARTED.md) for the fuller flow and [MIGRATIO
   - `skills/forge/assets/scripts/` - bundled deterministic helpers for hooks, context budgets, context migration, agent surfaces, and validation
 - `install.sh`, `install.ps1`, `uninstall.sh`, `uninstall.ps1` - install helpers
 - `verify-install.sh`, `verify-repo.py` - verification helpers
-- `scripts/` - tool-development scaffolding (`forge-tool-init`, `forge-publish`, `forge-sync-public`)
+- `scripts/` - tool-development scaffolding (`forge-tool-init`, `forge-publish`, `forge-sync-public`) and this repo's own `forge-promote.sh`
 - `philosophy/` - design rationale and background material
+
+This repo dogfoods FORGE: governance state (`docs/forge/`) lives only on the `dev` branch. Promotion to `main` is one squash commit per release via `scripts/forge-promote.sh`, which strips `docs/forge/`; `.github/workflows/main-branch-guard.yml` enforces that `main` never contains governance files. If you want the same pattern in your own repo, copy that script and workflow.
 
 Reusable agent/editor onboarding files live in `skills/forge/assets/agent-surfaces/`.
 Repo-specific operational files such as GitHub workflows stay at the root where the platform expects them.
@@ -135,6 +137,8 @@ multi-repo project needs that layer.
 - `repo-fortress`: branch protection, CODEOWNERS, security policy, and risk visibility
 - `ci-security`: repo-fortress plus SAST, secret scanning, dependency/SCA, and findings visibility
 - `full-devsecops`: CI security plus CD pre-flight, DAST, SBOM, provenance, and cleanup evidence
+
+Each tier above `baseline` ships concrete, copyable implementations: GitHub workflows under `skills/forge/assets/ci/workflows/security/` (OpenSSF Scorecard, CodeQL, Semgrep dual-scan, dependency review, OSV-Scanner, SBOM, ZAP baseline), GitLab jobs in `skills/forge/assets/ci/gitlab/security.gitlab-ci.yml`, and `SECURITY.md`/`dependabot.yml`/`CODEOWNERS` templates. Setup guidance per provider lives in `skills/forge/assets/ci-setup/`. FORGE only records a control as configured when it is actually enabled.
 
 `application_docs: true` enables a separate human-facing `docs/` tree alongside `docs/forge/`. It generates a profile-aware subset of overview, architecture, threat model, developer guide, interfaces, deployment, runbook, and ADR templates with maintenance triggers wired into execute, critique, and evaluation. Default is `false`.
 

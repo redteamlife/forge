@@ -12,7 +12,7 @@ FORGE-governed work.
 
 1. Read `docs/forge/CONTEXT.md` if present, then `docs/forge/AI.md` if present.
 2. Identify the authoritative task source: local `TASKS.index.yaml` plus task files, legacy `TASKS.yaml`, GitHub Issues, GitLab Issues, or external tracker.
-3. Use `references/lifecycle-map.md` only when lifecycle routing is ambiguous.
+3. Use `../references/lifecycle-map.md` only when lifecycle routing is ambiguous.
 4. Shape tasks with bounded scope, file scope, dependencies, contract files,
    and review requirements.
 5. Do not implement unless the user explicitly switches to build or

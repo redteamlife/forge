@@ -31,3 +31,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-004.yaml
+  - id: TASK-005
+    title: "Full repo consistency pass"
+    status: complete
+    priority: high
+    phase: hardening
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-005.yaml

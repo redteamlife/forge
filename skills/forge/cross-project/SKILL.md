@@ -38,9 +38,9 @@ declare cross-project coordination.
 
 ## Read On Demand
 
-- `references/cross-project.md`
+- `../references/cross-project.md`
 
-Use templates from `assets/cross-project/templates/` when creating or
+Use templates from `../assets/cross-project/templates/` when creating or
 refreshing cross-project docs.
 
 ## Workflows
@@ -49,9 +49,9 @@ refreshing cross-project docs.
 
 When the user asks to initialize the current repo as the authority repo:
 
-1. Read `references/cross-project.md`.
+1. Read `../references/cross-project.md`.
 2. Create `docs/forge/cross-project/`.
-3. Copy the authority-repo templates from `assets/cross-project/templates/`.
+3. Copy the authority-repo templates from `../assets/cross-project/templates/`.
    Exclude `sister-repo-pointer.md` unless adding a peer or downstream pointer.
 4. Fill project-specific repo names, owner fields, and dates when known.
 5. Keep `COORDINATION.yaml` as the cross-project ledger, not a replacement for

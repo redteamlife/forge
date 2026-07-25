@@ -28,7 +28,7 @@ tasks:
     # plan_ref: PLAN.md#T-001
     # mr_url:
     # pr_url:
-    # valid status values in team mode: incomplete|claimed|in_progress|implemented|integrated|blocked|complete
+    # valid statuses: todo|incomplete|claimed|in_progress|implemented|integrated|blocked|complete (terminal: complete)
     # implemented = committed on the task branch and ready for integration review
     # integrated = accepted on the integration branch; active claim released
     # complete = accepted on the release branch or otherwise formally accepted

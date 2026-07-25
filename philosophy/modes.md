@@ -6,8 +6,8 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 
 | Mode | Required Documents | Appropriate Use |
 | --- | --- | --- |
-| Lightweight | `AI.md`, `TASKS.yaml` | Low-risk changes, early setup, small refactors |
-| Mid | + `ARCHITECTURE.md`, `EVALUATION.md`, `MEMORY.md`, `SECURITY_CHECKLISTS.md` | Most product engineering, moderate-risk features |
+| Lightweight | `AI.md`, task ledger (`TASKS.index.yaml` + `tasks/`, or legacy `TASKS.yaml`) | Low-risk changes, early setup, small refactors |
+| Mid | + `ARCHITECTURE.md`, `EVALUATION.md`, `MEMORY.md`, security checklists (`security-checklists/` split dir, or compatibility `SECURITY_CHECKLISTS.md`) | Most product engineering, moderate-risk features |
 | Strict | + stronger review, architecture, and planning artifacts as the project needs them | Security-sensitive systems, audit requirements |
 | Full Discipline | All Strict documents + org governance artifacts | Regulated environments, high-impact production systems |
 
@@ -16,7 +16,7 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 ### Required Documentation
 
 - `AI.md`
-- `TASKS.yaml`
+- task ledger: `TASKS.index.yaml` plus `tasks/`, or legacy `TASKS.yaml`
 
 ### Enforcement Profile
 
@@ -36,11 +36,11 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 ### Required Documentation
 
 - `AI.md`
-- `TASKS.yaml`
+- task ledger: `TASKS.index.yaml` plus `tasks/`, or legacy `TASKS.yaml`
 - `ARCHITECTURE.md`
 - `EVALUATION.md`
 - `MEMORY.md`
-- `SECURITY_CHECKLISTS.md`
+- security checklists: `security-checklists/` split directory (must include `general.md`), or compatibility `SECURITY_CHECKLISTS.md`
 
 ### Enforcement Profile
 
@@ -61,11 +61,11 @@ FORGE modes define the minimum documentation requirements, enforcement strength,
 
 - `AI.md`
 - `ARCHITECTURE.md`
-- `TASKS.yaml`
+- task ledger: `TASKS.index.yaml` plus `tasks/`, or legacy `TASKS.yaml`
 - `EVALUATION.md`
 - `MEMORY.md`
 - `TEAM.md` when multiple people or agents share the repo
-- `SECURITY_CHECKLISTS.md`
+- security checklists: `security-checklists/` split directory (must include `general.md`), or compatibility `SECURITY_CHECKLISTS.md`
 - `SETUP.md` when hooks, CI, branch protection, or release handoff need to be tracked
 - human-facing application docs when `application_docs: true`
 - cross-project coordination docs when the repo explicitly opts into `forge-cross-project`

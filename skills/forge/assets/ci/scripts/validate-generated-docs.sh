@@ -112,7 +112,6 @@ fi
 if [ "$FORGE_MODE" != "Lightweight" ] && [ -n "$FORGE_MODE" ]; then
   REQUIRED_FILES+=(
     "$FORGE_DIR/ARCHITECTURE.md"
-    "$FORGE_DIR/TEST_STRATEGY.md"
     "$FORGE_DIR/EVALUATION.md"
     "$FORGE_DIR/MEMORY.md"
   )
@@ -121,14 +120,10 @@ if [ "$FORGE_MODE" != "Lightweight" ] && [ -n "$FORGE_MODE" ]; then
   fi
 fi
 
-# Strict and above
-if [ "$FORGE_MODE" = "Strict" ] || [ "$FORGE_MODE" = "Full Discipline" ]; then
-  REQUIRED_FILES+=(
-    "$FORGE_DIR/ARCHITECTURE_EXPLORATION.md"
-    "$FORGE_DIR/REVIEW_GUIDE.md"
-    "$FORGE_DIR/ROADMAP.md"
-  )
-fi
+# Legacy Strict-era files (ARCHITECTURE_EXPLORATION.md, REVIEW_GUIDE.md,
+# ROADMAP.md, TEST_STRATEGY.md) are optional: doc-minimums says do not
+# generate them by default, so they are validated only for placeholders when
+# present (below), never required.
 
 # Team collaboration requires explicit coordination docs.
 if [ "$COLLABORATION_MODE" = "team" ]; then
@@ -326,8 +321,8 @@ for task in tasks:
     if not desc or str(desc).strip() == "":
         print(f"FORGE: Task '{tid}' is missing a 'description'.")
         failed = True
-    if status not in ("incomplete", "claimed", "in_progress", "implemented", "integrated", "blocked", "complete"):
-        print(f"FORGE: Task '{tid}' has invalid status '{status}'. Must be one of incomplete, claimed, in_progress, implemented, integrated, blocked, complete.")
+    if status not in ("todo", "incomplete", "claimed", "in_progress", "implemented", "integrated", "blocked", "complete"):
+        print(f"FORGE: Task '{tid}' has invalid status '{status}'. Must be one of todo, incomplete, claimed, in_progress, implemented, integrated, blocked, complete.")
         failed = True
 
 if failed:
