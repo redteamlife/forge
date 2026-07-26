@@ -555,8 +555,13 @@ def verify_promote_flow() -> None:
     promote = SKILL_ROOT / "assets" / "scripts" / "forge-promote.sh"
 
     def run_promote(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        env = os.environ.copy()
+        env.update({
+            "GIT_AUTHOR_NAME": "forge-test", "GIT_AUTHOR_EMAIL": "t@t",
+            "GIT_COMMITTER_NAME": "forge-test", "GIT_COMMITTER_EMAIL": "t@t",
+        })
         return subprocess.run(["bash", str(promote), *args], cwd=repo,
-                              text=True, capture_output=True, check=False)
+                              text=True, capture_output=True, check=False, env=env)
 
     with tempfile.TemporaryDirectory(prefix="forge-promote-") as temp_dir:
         repo = Path(temp_dir)
