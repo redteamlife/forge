@@ -1,19 +1,49 @@
 #!/bin/bash
 # FORGE pre-push hook
 # Validates:
-#   1. docs/forge directory is never pushed to main branch
+#   1. Dev-only governance paths are never pushed to the release branch.
+#      Path set: `dev_only_paths` in docs/forge/AI.md (comma-separated; entries
+#      ending in / are prefixes, others exact files). Default: docs/forge/
+#      Release branch: `release_branch` in the same config. Default: main.
 #
 # Install: cp ci/hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
 
 REMOTE_NAME="$1"
 REMOTE_URL="$2"
 
+forge_config_value() {
+  local file="docs/forge/AI.md" field="$1"
+  [ -f "$file" ] || return 0
+  grep -m1 -E "^[[:space:]]*${field}:" "$file" 2>/dev/null \
+    | sed "s/^[[:space:]]*${field}:[[:space:]]*//" | sed 's/[[:space:]]*$//'
+}
+
+forge_dev_only_pattern() {
+  local raw pattern="" entry escaped
+  raw=$(forge_config_value "dev_only_paths")
+  [ -n "$raw" ] || raw="docs/forge/"
+  while IFS= read -r entry; do
+    entry=$(echo "$entry" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    [ -n "$entry" ] || continue
+    escaped=$(printf '%s' "$entry" | sed 's/[.[\*^$()+?{|]/\\&/g')
+    case "$entry" in
+      */) pattern="${pattern}^${escaped}|" ;;
+      *)  pattern="${pattern}^${escaped}\$|" ;;
+    esac
+  done < <(printf '%s\n' "$raw" | tr ',' '\n')
+  echo "${pattern%|}"
+}
+
+RELEASE_BRANCH=$(forge_config_value "release_branch")
+RELEASE_BRANCH="${RELEASE_BRANCH:-main}"
+PATTERN=$(forge_dev_only_pattern)
+
 # Read push details from stdin
 while read LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA
 do
 
-  # Only enforce rule when pushing to main
-  if [[ "$REMOTE_REF" == "refs/heads/main" ]]; then
+  # Only enforce the rule when pushing to the release branch.
+  if [[ "$REMOTE_REF" == "refs/heads/$RELEASE_BRANCH" ]]; then
 
     # If branch is new, compare against empty tree
     if [ "$REMOTE_SHA" = "0000000000000000000000000000000000000000" ]; then
@@ -22,28 +52,27 @@ do
       RANGE="$REMOTE_SHA..$LOCAL_SHA"
     fi
 
-    # Check for forbidden path
-    FORGE_FILES=$(git diff --name-only $RANGE | grep "^docs/forge/")
+    # Check for forbidden paths
+    FORGE_FILES=$(git diff --name-only $RANGE | grep -E "$PATTERN")
 
     if [ -n "$FORGE_FILES" ]; then
       echo ""
-      echo "FORGE: Push rejected - docs/forge cannot be pushed to main."
+      echo "FORGE: Push rejected - dev-only governance paths cannot reach $RELEASE_BRANCH."
       echo ""
-      echo "  The docs/forge directory contains AI governance artifacts"
-      echo "  intended only for development workflows."
+      echo "  These paths (dev_only_paths in docs/forge/AI.md; default docs/forge/)"
+      echo "  are governance artifacts intended only for development branches."
       echo ""
       echo "  Detected files:"
       echo "$FORGE_FILES"
       echo ""
       echo "  Resolution options:"
       echo ""
-      echo "    1. Remove the directory from the commit:"
-      echo "         git rm -r docs/forge"
+      echo "    1. Remove the paths from the commit:"
+      echo "         git rm -r <path>"
       echo ""
-      echo "    2. Keep it only on dev branches"
+      echo "    2. Keep them only on dev branches"
       echo ""
-      echo "    3. Rebase and remove before pushing:"
-      echo "         git rebase -i main"
+      echo "    3. Promote via the clean-main flow (forge-promote), which strips them"
       echo ""
       exit 1
     fi

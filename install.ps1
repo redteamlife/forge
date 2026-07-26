@@ -57,6 +57,7 @@ foreach ($AgentName in $Agent) {
   $TargetDir = Join-Path $TargetRoot "forge"
   $Required = @(
     "SKILL.md",
+    "VERSION",
     "bootstrap\SKILL.md",
     "plan\SKILL.md",
     "build\SKILL.md",
@@ -90,7 +91,9 @@ foreach ($AgentName in $Agent) {
     "assets\ci\workflows\forge-quality.yml",
     "assets\ci\workflows\security\scorecard.yml",
     "assets\ci\gitlab\security.gitlab-ci.yml",
+    "assets\ci\workflows\release-branch-guard.yml",
     "assets\ci\scripts\validate-generated-docs.sh",
+    "assets\scripts\forge-promote.sh",
     "assets\scripts\forge_context_budget.py",
     "assets\scripts\forge_generate_agent_surfaces.py",
     "assets\scripts\forge_scaffold_contract.py",

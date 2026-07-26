@@ -347,7 +347,7 @@ if grep -q 'FORGE-config' "$AI_MD"; then
     echo "FORGE: FORGE-config block in AI.md is missing execution_mode."
     FAILED=1
   fi
-  for field in coordination_branch integration_branch release_branch; do
+  for field in coordination_branch integration_branch release_branch dev_only_paths; do
     if has_config_field "$AI_MD" "$field"; then
       FIELD_VALUE=$(get_config_value "$AI_MD" "$field")
       if [ -z "$FIELD_VALUE" ]; then

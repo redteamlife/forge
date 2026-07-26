@@ -47,6 +47,17 @@ Additional expectations:
 - do not use wildcard branch patterns such as `task/*` as `integration_branch`
 - do not merge into `release_branch` without explicit human instruction
 
+### Clean-Main Variant (solo-governed or team-full)
+
+Use when the release branch must stay free of FORGE governance files. Applies design decisions from the canonical clean-main model:
+
+- set `dev_only_paths: docs/forge/` (extend with generated surfaces only if the project explicitly wants them off the release branch; the default is to keep surfaces there — they degrade gracefully via the generated fallback line)
+- set `integration_branch` to the working branch (usually `dev`) and `release_branch` to the protected branch (usually `main`); this is the one solo case where `integration_branch` differs from `release_branch`
+- offer to create the integration branch if it does not exist
+- copy `<skill-root>/assets/scripts/forge-promote.sh` into `scripts/` and `<skill-root>/assets/ci/workflows/release-branch-guard.yml` into `.github/workflows/` (adjust the branch name and mirror any extended `dev_only_paths` in the workflow env — the release branch cannot read AI.md, so that duplication is by design; note it in the closeout)
+- promotion is always `forge-promote.sh` (tree snapshot that strips `dev_only_paths`); never merge the integration branch into the release branch directly, and never commit to the release branch
+- record the promotion model in `docs/forge/SETUP.md` under Release Reconciliation
+
 ## Security Checklists
 
 When checklist-driven security review is enabled (any bootstrap that creates a checklist surface, and always for `repo-fortress`, `ci-security`, or `full-devsecops`):

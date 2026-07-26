@@ -20,6 +20,10 @@ out FORGE-governed work.
    project policy requires it.
 8. Do not merge or promote into `release_branch` without explicit permission in
    governed solo or team workflows.
+9. When `dev_only_paths` is configured (clean-main model), promote with
+   `<skill-root>/assets/scripts/forge-promote.sh -m "release: <summary>" [--tag vX.Y.Z]`
+   from the integration branch — never merge into `release_branch` directly.
+   The script snapshots the integration tree and strips `dev_only_paths`.
 
 ## Hard Stops
 

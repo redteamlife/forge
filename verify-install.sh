@@ -60,6 +60,7 @@ for agent in "${AGENTS[@]}"; do
 
   REQUIRED=(
     "$TARGET_DIR/SKILL.md"
+    "$TARGET_DIR/VERSION"
     "$TARGET_DIR/bootstrap/SKILL.md"
     "$TARGET_DIR/plan/SKILL.md"
     "$TARGET_DIR/build/SKILL.md"
@@ -107,6 +108,7 @@ for agent in "${AGENTS[@]}"; do
     "$TARGET_DIR/assets/ci/workflows/security/sbom.yml"
     "$TARGET_DIR/assets/ci/workflows/security/zap-baseline.yml"
     "$TARGET_DIR/assets/ci/gitlab/security.gitlab-ci.yml"
+    "$TARGET_DIR/assets/ci/workflows/release-branch-guard.yml"
     "$TARGET_DIR/assets/ci/scripts/forge_task_resolver.py"
     "$TARGET_DIR/assets/ci/scripts/validate-generated-docs.sh"
     "$TARGET_DIR/assets/templates/AGENTS.narrative.md"
@@ -121,6 +123,7 @@ for agent in "${AGENTS[@]}"; do
     "$TARGET_DIR/bootstrap/references/scaffolding.md"
     "$TARGET_DIR/assets/scripts/install-forge-hooks.sh"
     "$TARGET_DIR/assets/scripts/install-forge-hooks.ps1"
+    "$TARGET_DIR/assets/scripts/forge-promote.sh"
     "$TARGET_DIR/assets/scripts/forge_context_budget.py"
     "$TARGET_DIR/assets/scripts/forge_generate_agent_surfaces.py"
     "$TARGET_DIR/assets/scripts/forge_scaffold_contract.py"

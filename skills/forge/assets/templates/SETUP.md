@@ -108,6 +108,8 @@ Section gating order (each level adds the section above):
 
 ## Release Reconciliation
 
+- Promotion model: direct merge / clean-main (`forge-promote.sh` strips `dev_only_paths`) / n/a
+
 - Release promotion process documented: yes/no
 - Who confirms promotion into the release branch:
 - How tasks are reconciled from `integrated` to `complete`:

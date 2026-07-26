@@ -125,6 +125,31 @@ DEFAULTS = {
 }
 
 
+def config_value(repo: Path, field: str) -> str:
+    """Read a flat FORGE-config value from docs/forge/AI.md, '' if absent."""
+    ai_md = repo / "docs" / "forge" / "AI.md"
+    if not ai_md.is_file():
+        return ""
+    for line in ai_md.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith(f"{field}:"):
+            return stripped.split(":", 1)[1].strip()
+    return ""
+
+
+def clean_main_fallback(repo: Path) -> str:
+    """Clean-main repos strip docs/forge/ from the release branch; generated
+    surfaces must not dangle there (design TASK-006 D2)."""
+    if not config_value(repo, "dev_only_paths"):
+        return ""
+    integration = config_value(repo, "integration_branch") or "dev"
+    return (
+        "\nIf `docs/forge/` is absent, this is the release branch of a "
+        "clean-main FORGE repo: switch to `" + integration + "` for governed "
+        "work, or ask before making governed changes.\n"
+    )
+
+
 def narrative_text(values: dict[str, str]) -> str:
     template = NARRATIVE_TEMPLATE.read_text(encoding="utf-8")
     for key, default in DEFAULTS.items():
@@ -209,8 +234,11 @@ def main() -> int:
             return briefing  # type: ignore[return-value]
         return router
 
+    fallback = clean_main_fallback(repo)
     for name in ("CLAUDE.md", "AGENTS.md"):
         text = pick(name)
+        if fallback and fallback.strip() not in text:
+            text = text.rstrip("\n") + "\n" + fallback
         path = repo / name
         if path.exists() and not args.force:
             print(f"FORGE: exists, not overwritten: {path}")

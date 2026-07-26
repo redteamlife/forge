@@ -56,6 +56,24 @@ def verify_skill_frontmatter_yaml() -> None:
                f"{skill_file}: frontmatter must define name and description")
 
 
+def verify_version_sync() -> None:
+    import re
+
+    version = (SKILL_ROOT / "VERSION").read_text().strip()
+    ensure(re.fullmatch(r"\d+\.\d+\.\d+", version) is not None,
+           f"skills/forge/VERSION is not a semver: '{version}'")
+    ai_md = (SKILL_ROOT / "assets" / "templates" / "AI.md").read_text()
+    m = re.search(r"^forge_version:\s*(\S+)$", ai_md, re.MULTILINE)
+    ensure(m is not None, "templates/AI.md is missing forge_version")
+    ensure(m.group(1) == version,
+           f"VERSION ({version}) != templates/AI.md forge_version ({m.group(1)})")
+    changelog = (ROOT / "CHANGELOG.md").read_text()
+    m = re.search(r"^## \[(\d+\.\d+\.\d+)\]", changelog, re.MULTILINE)
+    ensure(m is not None, "CHANGELOG.md has no released version entry")
+    ensure(m.group(1) == version,
+           f"VERSION ({version}) != newest CHANGELOG entry ({m.group(1)})")
+
+
 def verify_skill_names() -> None:
     for skill_file in sorted(SKILL_ROOT.rglob("SKILL.md")):
         parent = skill_file.parent.name
@@ -144,6 +162,8 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "sbom.yml",
         SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "zap-baseline.yml",
         SKILL_ROOT / "assets" / "ci" / "gitlab" / "security.gitlab-ci.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "release-branch-guard.yml",
+        SKILL_ROOT / "assets" / "scripts" / "forge-promote.sh",
         SKILL_ROOT / "assets" / "ci" / "scripts" / "verify-team-closeout.sh",
         SKILL_ROOT / "assets" / "ci" / "scripts" / "forge_task_resolver.py",
         SKILL_ROOT / "assets" / "ci" / "scripts" / "validate-generated-docs.sh",
@@ -455,6 +475,155 @@ def verify_generated_docs_validation() -> None:
         ensure(result.returncode == 0, f"valid repo-fortress fixture failed:\n{result.stdout}{result.stderr}")
 
 
+def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    env.update({
+        "GIT_AUTHOR_NAME": "forge-test", "GIT_AUTHOR_EMAIL": "t@t",
+        "GIT_COMMITTER_NAME": "forge-test", "GIT_COMMITTER_EMAIL": "t@t",
+    })
+    return subprocess.run(["git", "-C", str(repo), *args],
+                          text=True, capture_output=True, check=False, env=env)
+
+
+def verify_dev_only_guards() -> None:
+    block_script = SKILL_ROOT / "assets" / "ci" / "scripts" / "block-forge-in-main.sh"
+    pre_push = SKILL_ROOT / "assets" / "ci" / "hooks" / "pre-push"
+
+    with tempfile.TemporaryDirectory(prefix="forge-guard-") as temp_dir:
+        repo = Path(temp_dir)
+        _git(repo, "init", "-q", "-b", "main")
+        forge_dir = repo / "docs" / "forge"
+        forge_dir.mkdir(parents=True)
+        (repo / "app.py").write_text("print('hi')\n")
+        (forge_dir / "AI.md").write_text(
+            "```FORGE-config\nrelease_branch: main\n"
+            "dev_only_paths: docs/forge/, CLAUDE.md\n```\n"
+        )
+        (repo / "CLAUDE.md").write_text("router\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "base")
+        base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+        # Simulate a PR branch that adds governance + surface + app changes.
+        _git(repo, "checkout", "-q", "-b", "feature")
+        (forge_dir / "TASKS.index.yaml").write_text("tasks: []\n")
+        (repo / "CLAUDE.md").write_text("router v2\n")
+        (repo / "app.py").write_text("print('v2')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "feature work")
+        feat_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+        _git(repo, "update-ref", "refs/remotes/origin/main", base_sha)
+
+        env = os.environ.copy()
+        env["GITHUB_BASE_REF"] = "main"
+        result = subprocess.run(["bash", str(block_script)], cwd=repo,
+                                text=True, capture_output=True, check=False, env=env)
+        ensure(result.returncode != 0, "block script allowed dev-only paths into main")
+        ensure("CLAUDE.md" in result.stdout and "docs/forge/TASKS.index.yaml" in result.stdout,
+               f"block script did not report extended dev-only set:\n{result.stdout}")
+
+        # pre-push: pushing feature to release branch must be rejected.
+        push_line = f"refs/heads/feature {feat_sha} refs/heads/main {base_sha}\n"
+        result = subprocess.run(["bash", str(pre_push), "origin", "url"], cwd=repo,
+                                input=push_line, text=True, capture_output=True, check=False)
+        ensure(result.returncode != 0, "pre-push allowed dev-only paths to main")
+
+        # Clean promotion commit (app change only) must pass both guards.
+        _git(repo, "checkout", "-q", "main")
+        (repo / "app.py").write_text("print('promoted')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "promo")
+        promo_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+        result = subprocess.run(["bash", str(block_script)], cwd=repo,
+                                text=True, capture_output=True, check=False, env=env)
+        ensure(result.returncode == 0, f"block script rejected a clean promotion:\n{result.stdout}")
+        push_line = f"refs/heads/main {promo_sha} refs/heads/main {base_sha}\n"
+        result = subprocess.run(["bash", str(pre_push), "origin", "url"], cwd=repo,
+                                input=push_line, text=True, capture_output=True, check=False)
+        ensure(result.returncode == 0, f"pre-push rejected a clean promotion:\n{result.stdout}{result.stderr}")
+
+        # Default set (no config): docs/forge/ blocked, CLAUDE.md allowed.
+        (forge_dir / "AI.md").write_text("```FORGE-config\nrelease_branch: main\n```\n")
+        _git(repo, "checkout", "-q", "feature")
+        result = subprocess.run(["bash", str(block_script)], cwd=repo,
+                                text=True, capture_output=True, check=False, env=env)
+        ensure(result.returncode != 0, "block script allowed docs/forge with default set")
+        ensure("CLAUDE.md" not in result.stdout.replace("docs/forge/AI.md", ""),
+               "default set wrongly blocked CLAUDE.md")
+
+
+def verify_promote_flow() -> None:
+    promote = SKILL_ROOT / "assets" / "scripts" / "forge-promote.sh"
+
+    def run_promote(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(["bash", str(promote), *args], cwd=repo,
+                              text=True, capture_output=True, check=False)
+
+    with tempfile.TemporaryDirectory(prefix="forge-promote-") as temp_dir:
+        repo = Path(temp_dir)
+        _git(repo, "init", "-q", "-b", "dev")
+        forge_dir = repo / "docs" / "forge"
+        forge_dir.mkdir(parents=True)
+        (forge_dir / "AI.md").write_text(
+            "```FORGE-config\nrelease_branch: main\nintegration_branch: dev\n"
+            "dev_only_paths: docs/forge/, CLAUDE.md\n```\n"
+        )
+        (repo / "CLAUDE.md").write_text("router\n")
+        (repo / "app.py").write_text("print('v1')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "base")
+        _git(repo, "branch", "main")
+
+        result = run_promote(repo, "-m", "release: v1")
+        ensure(result.returncode == 0, f"first promotion failed:\n{result.stdout}{result.stderr}")
+        main_files = _git(repo, "ls-tree", "-r", "--name-only", "main").stdout.split()
+        ensure("app.py" in main_files, "promotion dropped app files")
+        ensure(not any(f.startswith("docs/forge") or f == "CLAUDE.md" for f in main_files),
+               f"promotion leaked dev-only paths: {main_files}")
+
+        # Regression (squash merge-base bug): edit the SAME line twice across
+        # two promotions — snapshot promotion must never conflict.
+        (repo / "app.py").write_text("print('v2')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "v2")
+        result = run_promote(repo, "-m", "release: v2")
+        ensure(result.returncode == 0, f"second promotion failed:\n{result.stdout}{result.stderr}")
+        (repo / "app.py").write_text("print('v3')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "v3")
+        result = run_promote(repo, "-m", "release: v3", "--tag", "v3.0.0")
+        ensure(result.returncode == 0, f"third promotion (same-line edit) failed:\n{result.stdout}{result.stderr}")
+        ensure(_git(repo, "rev-parse", "v3.0.0").returncode == 0, "promotion --tag did not create tag")
+        content = _git(repo, "show", "main:app.py").stdout
+        ensure("v3" in content, "promotion did not carry latest content")
+        ensure(_git(repo, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip() == "dev",
+               "promotion did not return to the starting branch")
+
+        # No-op promotion.
+        result = run_promote(repo, "-m", "release: noop")
+        ensure(result.returncode == 0 and "Nothing to promote" in result.stdout,
+               f"no-op promotion misbehaved:\n{result.stdout}{result.stderr}")
+
+
+def verify_surface_fallback() -> None:
+    generator = SKILL_ROOT / "assets" / "scripts" / "forge_generate_agent_surfaces.py"
+    marker = "release branch of a clean-main FORGE repo"
+    with tempfile.TemporaryDirectory(prefix="forge-surface-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = repo / "docs" / "forge"
+        forge_dir.mkdir(parents=True)
+        (forge_dir / "AI.md").write_text(
+            "```FORGE-config\ndev_only_paths: docs/forge/\nintegration_branch: dev\n```\n"
+        )
+        run([sys.executable, str(generator), str(repo), "--force"], cwd=ROOT)
+        text = (repo / "CLAUDE.md").read_text()
+        ensure(marker in text, "clean-main fallback missing from generated surface")
+
+        (forge_dir / "AI.md").write_text("```FORGE-config\nrelease_branch: main\n```\n")
+        run([sys.executable, str(generator), str(repo), "--force"], cwd=ROOT)
+        text = (repo / "CLAUDE.md").read_text()
+        ensure(marker not in text, "fallback wrongly emitted without dev_only_paths")
+
+
 def verify_install_flow() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-verify-") as temp_dir:
         env = os.environ.copy()
@@ -468,6 +637,7 @@ def verify_install_flow() -> None:
 def main() -> int:
     try:
         verify_skill_frontmatter_yaml()
+        verify_version_sync()
         verify_skill_names()
         verify_required_files()
         verify_manifests()
@@ -478,6 +648,9 @@ def main() -> int:
         verify_python_scripts()
         verify_context_validation()
         verify_generated_docs_validation()
+        verify_dev_only_guards()
+        verify_promote_flow()
+        verify_surface_fallback()
         verify_install_flow()
     except CheckFailure as exc:
         print(f"FORGE verify failed: {exc}", file=sys.stderr)

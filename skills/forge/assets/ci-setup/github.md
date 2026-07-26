@@ -11,6 +11,7 @@ Use this when the project is hosted on GitHub and `ci_enforcement` should be ena
 
 - Run `bash <skill-root>/assets/scripts/install-forge-hooks.sh` (or `powershell -File <skill-root>/assets/scripts/install-forge-hooks.ps1` on Windows) against the target repo to install `pre-commit`, `commit-msg`, and `pre-push` hooks idempotently from the skill's bundled `assets/ci/hooks/`.
 - Or install manually: copy `ci/hooks/pre-commit` into `.git/hooks/pre-commit` and `ci/hooks/commit-msg` into `.git/hooks/commit-msg` (and optionally `pre-push`) after the `ci/` directory is in place.
+- Alternative: `git config core.hooksPath ci/hooks` makes the committed hooks authoritative so updates travel with the repo. Trade-offs: still one `git config` per clone, and it disables everything in `.git/hooks/`. Either way, hooks are advisory — CI (the governance workflow plus `release-branch-guard.yml` for clean-main repos) is the durable backstop.
 
 ## Task Source
 
