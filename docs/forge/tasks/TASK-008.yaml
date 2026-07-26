@@ -1,6 +1,6 @@
 id: TASK-008
 title: "Promote script, release-branch guard, surface fallback"
-status: todo
+status: complete
 priority: high
 phase: clean-main
 owner_lane: single
@@ -16,6 +16,8 @@ acceptance_criteria:
   - "Promotion is tree-snapshot (read-tree), never squash-merge; refuses dirty trees; --dry-run and --tag supported."
   - "Guard workflow fails release-branch push/PR containing dev-only paths."
   - "Generated surfaces include the clean-main fallback line only when dev_only_paths is configured."
-evidence: []
+evidence:
+  - "verify-repo.py verify_promote_flow: strip works, three same-line promotions without conflict, --tag, no-op detection, returns to start branch"
+  - "verify-repo.py verify_surface_fallback: fallback present iff dev_only_paths configured"
 history:
   - "2026-07-25: created per design TASK-006 (D2, D3)."

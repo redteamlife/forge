@@ -1,0 +1,39 @@
+# FORGE clean-main guard — copy to .github/workflows/release-branch-guard.yml.
+# Fails any push/PR to the release branch that contains dev-only governance
+# paths. Pair with forge-promote.sh, which strips them during promotion.
+#
+# The release branch has no docs/forge/AI.md (stripped by design), so this
+# workflow cannot read dev_only_paths from its own tree. It enforces the
+# DEV_ONLY_PATHS list below — if your project extends dev_only_paths beyond
+# docs/forge/, mirror the additions here (one documented duplication).
+# Update the branch name below if your release branch is not `main`.
+name: Release Branch Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  no-governance-files:
+    runs-on: ubuntu-latest
+    env:
+      # Space-separated; keep in sync with dev_only_paths in docs/forge/AI.md.
+      DEV_ONLY_PATHS: "docs/forge"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if dev-only paths exist on the release branch
+        run: |
+          violations=""
+          for p in $DEV_ONLY_PATHS; do
+            if [ -e "$p" ]; then
+              violations="$violations $p"
+            fi
+          done
+          if [ -n "$violations" ]; then
+            echo "::error::Dev-only governance paths must not land on the release branch:$violations"
+            echo "Promote via forge-promote.sh, which strips them."
+            exit 1
+          fi
+          echo "OK: no dev-only governance paths present."
