@@ -9,7 +9,9 @@ task_source: local
 agent_context_profile: lite
 security_profile: baseline
 solo_branch_flow: task-branches
+integration_branch: dev
 release_branch: main
+dev_only_paths: docs/forge/
 response_style: terse
 ci_enforcement: disabled
 application_docs: false

@@ -4,6 +4,13 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added the clean-main model as a first-class flow: optional `dev_only_paths` in FORGE-config drives the release-branch guards (`block-forge-in-main.sh`, `pre-push`), the new snapshot-based `assets/scripts/forge-promote.sh`, and the new `release-branch-guard.yml` workflow asset; bootstrap asks governed profiles whether the release branch stays free of governance files and documents the solo `integration_branch: dev` variant.
+- Added a clean-main fallback line to generated agent surfaces so routers never dangle on a release branch with `docs/forge/` stripped; surface exclusion from the release branch is opt-in via `dev_only_paths`, not the default.
+- Added `skills/forge/VERSION` for version discoverability, with a verify-repo check keeping it in sync with the generated `forge_version` and the newest CHANGELOG entry.
+- Documented `git config core.hooksPath ci/hooks` as an optional hook-installation mode with its trade-offs; CI remains the durable backstop.
+
 ## [1.7.0] - 2026-07-25
 
 ### Added
