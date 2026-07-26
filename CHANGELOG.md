@@ -4,6 +4,30 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-07-25
+
+### Added
+
+- Added narrative `AGENTS.md` agent surface with scoped Cursor rules and stack detection (`forge_generate_agent_surfaces.py --narrative --scoped-rules`).
+- Added contract-first scaffolding (`forge_scaffold_contract.py`) with OpenAPI, protobuf, and GraphQL starter templates plus an OpenAPI drift-check workflow.
+- Added profile-gated DevSecOps assets: GitHub workflows for OpenSSF Scorecard, CodeQL (with tuning config), Semgrep dual-scan, dependency review, OSV-Scanner, SBOM generation/analysis, and ZAP baseline under `assets/ci/workflows/security/`; GitLab parity jobs in `assets/ci/gitlab/security.gitlab-ci.yml`; `SECURITY.md`, `dependabot.yml`, and `CODEOWNERS` templates; per-profile setup guidance in `assets/ci-setup/`.
+- Added a quality CI workflow (`forge-quality.yml`) for team-full with CI enforcement.
+- Added regression fixtures in `verify-repo.py` for generated-docs validation (checklist layouts, profile-aware SETUP checks) and YAML parsing of all bundled CI assets.
+
+### Fixed
+
+- Bootstrap can no longer produce an index-only `SECURITY_CHECKLISTS.md` pointing at a missing `security-checklists/` directory: bootstrap must copy `general.md` plus relevant surface checklists (or compose a monolithic file with real items), the compatibility template is now a router valid only with the split directory, and existing index-only scaffolds are repaired on refresh.
+- `validate-generated-docs.sh` now rejects unusable checklist layouts (missing `general.md`, itemless checklist files, wrappers referencing a missing directory, elevated `security_profile` with no layout), validates `SETUP.md` sections per `security_profile`, accepts `todo` in the legacy ledger, and no longer requires `TEST_STRATEGY.md` or legacy Strict-era files that doc minimums say not to generate.
+- Aligned `ARCHITECTURE.md` (`## Overview`) and `TEAM.md` (Integration Flow, Review And Merge, Task Closeout) templates with validator expectations.
+- `AI.md` template no longer defaults solo profiles to team branch topology; coordination/integration branches are commented out with per-profile guidance, and task templates document the valid status set with `complete` as the only terminal status.
+- Repaired broken reference paths in the plan, build, critique, evaluation, and cross-project skills; synchronized install/verify file lists across `verify-repo.py`, `verify-install.sh`, and `install.ps1`.
+
+### Changed
+
+- Bumped the default generated `forge_version` to `1.7.0`.
+- Sharpened the root skill trigger description within its size budget.
+- Existing repos with an incomplete checklist scaffold repair by re-running `forge-bootstrap` (refresh); the security-review skill also falls back to the installed pack's checklists and flags the scaffold when project-local checklists are unusable.
+
 ## [1.6.0] - 2026-05-15
 
 ### Added
