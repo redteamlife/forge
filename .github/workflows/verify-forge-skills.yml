@@ -47,5 +47,8 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install verification dependencies
+        run: python3 -m pip install --quiet pyyaml
+
       - name: Verify FORGE skill pack
         run: python3 verify-repo.py
