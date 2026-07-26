@@ -1,0 +1,23 @@
+id: TASK-009
+title: "Bootstrap clean-main flow, VERSION, docs"
+status: todo
+priority: high
+phase: clean-main
+owner_lane: single
+owner: taffy
+description: "Implement design D5/D6/D7: bootstrap asks the clean-main question for governed profiles and scaffolds the branch model; doc-minimums clean-main variant; AI.md template comment update; SETUP.md promotion model; skills/forge/VERSION with verify-repo drift check; hooksPath documented as option in ci-setup docs."
+file_scope:
+  - skills/forge/bootstrap/SKILL.md
+  - skills/forge/bootstrap/references/doc-minimums.md
+  - skills/forge/assets/templates/AI.md
+  - skills/forge/assets/templates/SETUP.md
+  - skills/forge/assets/ci-setup/
+  - skills/forge/VERSION
+  - verify-repo.py
+acceptance_criteria:
+  - "Solo-governed clean-main variant documented: task branches -> integration branch -> promoted release branch."
+  - "VERSION matches templates/AI.md forge_version and newest CHANGELOG entry, enforced by verify-repo.py."
+  - "hooksPath option documented with trade-offs; default install path unchanged."
+evidence: []
+history:
+  - "2026-07-25: created per design TASK-006 (D5, D6, D7)."

@@ -455,6 +455,82 @@ def verify_generated_docs_validation() -> None:
         ensure(result.returncode == 0, f"valid repo-fortress fixture failed:\n{result.stdout}{result.stderr}")
 
 
+def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    env.update({
+        "GIT_AUTHOR_NAME": "forge-test", "GIT_AUTHOR_EMAIL": "t@t",
+        "GIT_COMMITTER_NAME": "forge-test", "GIT_COMMITTER_EMAIL": "t@t",
+    })
+    return subprocess.run(["git", "-C", str(repo), *args],
+                          text=True, capture_output=True, check=False, env=env)
+
+
+def verify_dev_only_guards() -> None:
+    block_script = SKILL_ROOT / "assets" / "ci" / "scripts" / "block-forge-in-main.sh"
+    pre_push = SKILL_ROOT / "assets" / "ci" / "hooks" / "pre-push"
+
+    with tempfile.TemporaryDirectory(prefix="forge-guard-") as temp_dir:
+        repo = Path(temp_dir)
+        _git(repo, "init", "-q", "-b", "main")
+        forge_dir = repo / "docs" / "forge"
+        forge_dir.mkdir(parents=True)
+        (repo / "app.py").write_text("print('hi')\n")
+        (forge_dir / "AI.md").write_text(
+            "```FORGE-config\nrelease_branch: main\n"
+            "dev_only_paths: docs/forge/, CLAUDE.md\n```\n"
+        )
+        (repo / "CLAUDE.md").write_text("router\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "base")
+        base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+        # Simulate a PR branch that adds governance + surface + app changes.
+        _git(repo, "checkout", "-q", "-b", "feature")
+        (forge_dir / "TASKS.index.yaml").write_text("tasks: []\n")
+        (repo / "CLAUDE.md").write_text("router v2\n")
+        (repo / "app.py").write_text("print('v2')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "feature work")
+        feat_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+        _git(repo, "update-ref", "refs/remotes/origin/main", base_sha)
+
+        env = os.environ.copy()
+        env["GITHUB_BASE_REF"] = "main"
+        result = subprocess.run(["bash", str(block_script)], cwd=repo,
+                                text=True, capture_output=True, check=False, env=env)
+        ensure(result.returncode != 0, "block script allowed dev-only paths into main")
+        ensure("CLAUDE.md" in result.stdout and "docs/forge/TASKS.index.yaml" in result.stdout,
+               f"block script did not report extended dev-only set:\n{result.stdout}")
+
+        # pre-push: pushing feature to release branch must be rejected.
+        push_line = f"refs/heads/feature {feat_sha} refs/heads/main {base_sha}\n"
+        result = subprocess.run(["bash", str(pre_push), "origin", "url"], cwd=repo,
+                                input=push_line, text=True, capture_output=True, check=False)
+        ensure(result.returncode != 0, "pre-push allowed dev-only paths to main")
+
+        # Clean promotion commit (app change only) must pass both guards.
+        _git(repo, "checkout", "-q", "main")
+        (repo / "app.py").write_text("print('promoted')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "promo")
+        promo_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+        result = subprocess.run(["bash", str(block_script)], cwd=repo,
+                                text=True, capture_output=True, check=False, env=env)
+        ensure(result.returncode == 0, f"block script rejected a clean promotion:\n{result.stdout}")
+        push_line = f"refs/heads/main {promo_sha} refs/heads/main {base_sha}\n"
+        result = subprocess.run(["bash", str(pre_push), "origin", "url"], cwd=repo,
+                                input=push_line, text=True, capture_output=True, check=False)
+        ensure(result.returncode == 0, f"pre-push rejected a clean promotion:\n{result.stdout}{result.stderr}")
+
+        # Default set (no config): docs/forge/ blocked, CLAUDE.md allowed.
+        (forge_dir / "AI.md").write_text("```FORGE-config\nrelease_branch: main\n```\n")
+        _git(repo, "checkout", "-q", "feature")
+        result = subprocess.run(["bash", str(block_script)], cwd=repo,
+                                text=True, capture_output=True, check=False, env=env)
+        ensure(result.returncode != 0, "block script allowed docs/forge with default set")
+        ensure("CLAUDE.md" not in result.stdout.replace("docs/forge/AI.md", ""),
+               "default set wrongly blocked CLAUDE.md")
+
+
 def verify_install_flow() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-verify-") as temp_dir:
         env = os.environ.copy()
@@ -478,6 +554,7 @@ def main() -> int:
         verify_python_scripts()
         verify_context_validation()
         verify_generated_docs_validation()
+        verify_dev_only_guards()
         verify_install_flow()
     except CheckFailure as exc:
         print(f"FORGE verify failed: {exc}", file=sys.stderr)

@@ -1,0 +1,21 @@
+id: TASK-008
+title: "Promote script, release-branch guard, surface fallback"
+status: todo
+priority: high
+phase: clean-main
+owner_lane: single
+owner: taffy
+description: "Implement design D2/D3: generalized snapshot-based forge-promote.sh pack asset reading branches and dev_only_paths from AI.md; release-branch-guard.yml workflow asset; forge-ship clean-main step; clean-main fallback line in generated agent surfaces."
+file_scope:
+  - skills/forge/assets/scripts/forge-promote.sh
+  - skills/forge/assets/ci/workflows/release-branch-guard.yml
+  - skills/forge/ship/SKILL.md
+  - skills/forge/assets/scripts/forge_generate_agent_surfaces.py
+  - verify-repo.py
+acceptance_criteria:
+  - "Promotion is tree-snapshot (read-tree), never squash-merge; refuses dirty trees; --dry-run and --tag supported."
+  - "Guard workflow fails release-branch push/PR containing dev-only paths."
+  - "Generated surfaces include the clean-main fallback line only when dev_only_paths is configured."
+evidence: []
+history:
+  - "2026-07-25: created per design TASK-006 (D2, D3)."

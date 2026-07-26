@@ -47,3 +47,27 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-006.yaml
+  - id: TASK-007
+    title: "dev_only_paths config and consumer rewiring"
+    status: complete
+    priority: high
+    phase: clean-main
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-007.yaml
+  - id: TASK-008
+    title: "Promote script, release-branch guard, surface fallback"
+    status: todo
+    priority: high
+    phase: clean-main
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-008.yaml
+  - id: TASK-009
+    title: "Bootstrap clean-main flow, VERSION, docs"
+    status: todo
+    priority: high
+    phase: clean-main
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-009.yaml

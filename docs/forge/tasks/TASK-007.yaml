@@ -1,0 +1,24 @@
+id: TASK-007
+title: "dev_only_paths config and consumer rewiring"
+status: complete
+priority: high
+phase: clean-main
+owner_lane: single
+owner: taffy
+description: "Implement design D1/D4: optional dev_only_paths field in FORGE-config; block-forge-in-main.sh and pre-push hook derive their guard set (and release branch) from AI.md instead of hardcoding docs/forge/ and main; validator accepts the field; functional fixtures."
+file_scope:
+  - skills/forge/assets/ci/scripts/block-forge-in-main.sh
+  - skills/forge/assets/ci/hooks/pre-push
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - skills/forge/assets/templates/AI.md
+  - verify-repo.py
+acceptance_criteria:
+  - "Guards default to docs/forge/ and release branch main when config is absent (backward compatible)."
+  - "dev_only_paths entries ending in / are prefixes; others exact file matches."
+  - "verify-repo.py functional fixtures: guard fails on dev-only path in diff, passes when clean, honors extended set."
+evidence:
+  - "verify-repo.py verify_dev_only_guards: extended set blocks CLAUDE.md + docs/forge, clean promotion passes, default set blocks only docs/forge"
+  - "bug found+fixed during fixture run: while-read dropped last comma entry (missing trailing newline)"
+history:
+  - "2026-07-25: started per design TASK-006 (D1, D4)."
+  - "2026-07-25: implemented; guards read dev_only_paths + release_branch from AI.md."
