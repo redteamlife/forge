@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+// Contract source of truth for the {{PROJECT_NAME}} service surface.
+// Generated stubs must regenerate when this file changes; CI runs a drift
+// check.
+
+package projectname.v1;
+
+option go_package = "example.com/projectname/api/v1;apiv1";
+
+service Health {
+  rpc Check (HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  enum Status {
+    UNKNOWN = 0;
+    OK = 1;
+  }
+  Status status = 1;
+}

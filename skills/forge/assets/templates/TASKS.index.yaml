@@ -1,8 +1,12 @@
 tasks:
   - id: TASK-001
     title: "Replace with first bounded project task"
+    # valid statuses: todo|incomplete|claimed|in_progress|implemented|integrated|blocked|complete
+    # terminal status is `complete` (never `done`)
     status: todo
     priority: normal
+    phase: foundation
+    owner_lane: single
     owner: unassigned
     file_scope:
       - docs/forge/TASKS.index.yaml

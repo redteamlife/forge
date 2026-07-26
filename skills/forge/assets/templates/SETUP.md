@@ -57,6 +57,9 @@ Section gating order (each level adds the section above):
 - Required FORGE checks enabled: yes/no
 - CODEOWNERS or reviewer routing configured: yes/no
 - Security policy / responsible disclosure documented: yes/no
+- Private vulnerability reporting enabled: yes/no/n/a
+- OpenSSF Scorecard workflow enabled: yes/no/n/a
+- Scorecard score / branch-protection tier:
 - Risk or security dashboard owner:
 - Coordination branch protected: yes/no
 - Coordination branch name:

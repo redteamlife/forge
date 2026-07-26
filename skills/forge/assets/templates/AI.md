@@ -1,16 +1,21 @@
 # AI Execution Configuration
 
 ```FORGE-config
-forge_version: 1.6.0
+forge_version: 1.7.0
 FORGE_mode: Lightweight
 execution_mode: manual
 collaboration_mode: solo
 task_source: local
 agent_context_profile: lite
 security_profile: baseline
+# solo_branch_flow by bootstrap profile:
+#   solo-simple   -> direct
+#   solo-governed -> task-branches (human-controlled merge to release_branch)
 solo_branch_flow: direct
-coordination_branch: forge-state
-integration_branch: develop
+# coordination_branch and integration_branch are team-full concepts.
+# Omit them for solo profiles; solo integration is the release branch.
+# coordination_branch: forge-state
+# integration_branch: develop
 release_branch: main
 response_style: terse
 ci_enforcement: disabled

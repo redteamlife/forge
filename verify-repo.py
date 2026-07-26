@@ -117,12 +117,37 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "ci" / "docs" / "validators.md",
         SKILL_ROOT / "assets" / "ci" / "docs" / "governance-patterns.md",
         SKILL_ROOT / "assets" / "ci" / "workflows" / "forge-governance.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "forge-quality.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "scorecard.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "codeql.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "codeql-config.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "semgrep.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "dependency-review.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "osv-scanner.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "sbom.yml",
+        SKILL_ROOT / "assets" / "ci" / "workflows" / "security" / "zap-baseline.yml",
+        SKILL_ROOT / "assets" / "ci" / "gitlab" / "security.gitlab-ci.yml",
         SKILL_ROOT / "assets" / "ci" / "scripts" / "verify-team-closeout.sh",
         SKILL_ROOT / "assets" / "ci" / "scripts" / "forge_task_resolver.py",
+        SKILL_ROOT / "assets" / "ci" / "scripts" / "validate-generated-docs.sh",
+        SKILL_ROOT / "assets" / "templates" / "AGENTS.narrative.md",
+        SKILL_ROOT / "assets" / "templates" / "SECURITY.md",
+        SKILL_ROOT / "assets" / "templates" / "dependabot.yml",
+        SKILL_ROOT / "assets" / "templates" / "CODEOWNERS",
+        SKILL_ROOT / "assets" / "templates" / "contracts" / "openapi" / "openapi.yaml",
+        SKILL_ROOT / "assets" / "templates" / "contracts" / "protobuf" / "api.proto",
+        SKILL_ROOT / "assets" / "templates" / "contracts" / "graphql" / "schema.graphql",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".cursor" / "rules-scoped" / "project-conventions.mdc",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".cursor" / "rules-scoped" / "security.mdc",
+        SKILL_ROOT / "assets" / "security-checklists" / "general.md",
+        SKILL_ROOT / "bootstrap" / "references" / "scaffolding.md",
+        SKILL_ROOT / "bootstrap" / "references" / "doc-minimums.md",
+        SKILL_ROOT / "bootstrap" / "references" / "team-mode.md",
         SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.sh",
         SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.ps1",
         SKILL_ROOT / "assets" / "scripts" / "forge_context_budget.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_generate_agent_surfaces.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_scaffold_contract.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_migrate_context.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_validate_context.py",
     ]
@@ -177,6 +202,23 @@ def verify_size_budgets() -> None:
     for path, limit in budgets.items():
         size = path.stat().st_size
         ensure(size <= limit, f"{path}: size {size} exceeds budget {limit}")
+
+
+def verify_yaml_assets() -> None:
+    import yaml
+
+    yaml_files = sorted((SKILL_ROOT / "assets" / "ci").rglob("*.yml")) + sorted(
+        (SKILL_ROOT / "assets" / "ci").rglob("*.yaml")
+    )
+    ensure(
+        any("security" in str(p) for p in yaml_files),
+        "assets/ci is missing the security workflow assets",
+    )
+    for path in yaml_files:
+        try:
+            yaml.safe_load(path.read_text())
+        except yaml.YAMLError as exc:
+            raise CheckFailure(f"{path}: invalid YAML: {exc}") from exc
 
 
 def verify_shell_scripts() -> None:
@@ -241,6 +283,161 @@ def verify_context_validation() -> None:
         ensure("includes more than one docs/forge file" in result.stdout, "missing include-bomb failure")
 
 
+def _write_generated_docs_fixture(
+    repo: Path,
+    forge_mode: str = "Lightweight",
+    security_profile: str = "baseline",
+    setup_sections: list[str] | None = None,
+) -> Path:
+    forge_dir = repo / "docs" / "forge"
+    (forge_dir / "tasks").mkdir(parents=True)
+    (forge_dir / "AI.md").write_text(
+        "# AI Execution Configuration\n\n"
+        "```FORGE-config\n"
+        f"FORGE_mode: {forge_mode}\n"
+        "execution_mode: manual\n"
+        "collaboration_mode: solo\n"
+        f"security_profile: {security_profile}\n"
+        "```\n\n"
+        "## Purpose\n\nFixture repo.\n\n"
+        "## Constraints\n\nNone.\n",
+        encoding="utf-8",
+    )
+    (forge_dir / "TASKS.index.yaml").write_text(
+        "tasks:\n"
+        "  - id: TASK-001\n"
+        '    title: "Fixture task"\n'
+        "    status: todo\n"
+        "    task_file: docs/forge/tasks/TASK-001.yaml\n",
+        encoding="utf-8",
+    )
+    (forge_dir / "tasks" / "TASK-001.yaml").write_text(
+        "id: TASK-001\nstatus: todo\n", encoding="utf-8"
+    )
+    if forge_mode != "Lightweight":
+        (forge_dir / "ARCHITECTURE.md").write_text(
+            "# Architecture\n\n## Overview\n\nFixture overview.\n", encoding="utf-8"
+        )
+        (forge_dir / "TEST_STRATEGY.md").write_text("# Test Strategy\n\nUnit tests.\n", encoding="utf-8")
+        (forge_dir / "EVALUATION.md").write_text(
+            "# Evaluation\n\n## Definition of Done\n\nTests pass.\n", encoding="utf-8"
+        )
+        (forge_dir / "MEMORY.md").write_text("# Memory\n\nNo lessons yet.\n", encoding="utf-8")
+    if setup_sections is not None:
+        body = "# FORGE Setup\n\n"
+        for section in setup_sections:
+            body += f"## {section}\n\nRecorded.\n\n"
+        (forge_dir / "SETUP.md").write_text(body, encoding="utf-8")
+    return forge_dir
+
+
+def _run_generated_docs_validator(repo: Path) -> subprocess.CompletedProcess[str]:
+    script = SKILL_ROOT / "assets" / "ci" / "scripts" / "validate-generated-docs.sh"
+    return subprocess.run(
+        ["bash", str(script)], cwd=repo, text=True, capture_output=True, check=False
+    )
+
+
+def verify_generated_docs_validation() -> None:
+    template = (SKILL_ROOT / "assets" / "templates" / "ARCHITECTURE.md").read_text()
+    ensure("## Overview" in template, "ARCHITECTURE.md template heading drifted from validator's '## Overview'")
+    wrapper_template = (SKILL_ROOT / "assets" / "templates" / "SECURITY_CHECKLISTS.md").read_text()
+    ensure(
+        "security-checklists/" in wrapper_template,
+        "SECURITY_CHECKLISTS.md template no longer routes to the split directory",
+    )
+
+    general_asset = (SKILL_ROOT / "assets" / "security-checklists" / "general.md").read_text()
+
+    always_setup = ["Local Hooks", "CI Enforcement", "Team Closeout", "Release Reconciliation"]
+
+    # solo-simple / Lightweight baseline with no checklist surface: valid.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-lite-") as temp_dir:
+        repo = Path(temp_dir)
+        _write_generated_docs_fixture(repo)
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"Lightweight baseline fixture failed:\n{result.stdout}{result.stderr}")
+
+    # Non-Lightweight with valid split checklist layout and baseline SETUP
+    # (no Branch Protection section): valid.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-split-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = _write_generated_docs_fixture(
+            repo, forge_mode="Standard", setup_sections=always_setup
+        )
+        checklist_dir = forge_dir / "security-checklists"
+        checklist_dir.mkdir()
+        (checklist_dir / "general.md").write_text(general_asset, encoding="utf-8")
+        (forge_dir / "SECURITY_CHECKLISTS.md").write_text(
+            (SKILL_ROOT / "assets" / "templates" / "SECURITY_CHECKLISTS.md").read_text(),
+            encoding="utf-8",
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"valid split checklist fixture failed:\n{result.stdout}{result.stderr}")
+
+        # Split directory missing general.md: invalid.
+        (checklist_dir / "general.md").unlink()
+        (checklist_dir / "api.md").write_text("- [ ] item\n", encoding="utf-8")
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "split layout missing general.md passed validation")
+        ensure("missing the mandatory general.md" in result.stdout, "missing-general.md failure not reported")
+
+        # general.md without checklist items: invalid.
+        (checklist_dir / "general.md").write_text("# General\n\nSee elsewhere.\n", encoding="utf-8")
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "general.md without checklist items passed validation")
+        ensure("no checklist items" in result.stdout, "empty-general.md failure not reported")
+
+    # Index-only compatibility wrapper referencing a missing split dir: invalid.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-index-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = _write_generated_docs_fixture(repo, forge_mode="Standard")
+        (forge_dir / "SECURITY_CHECKLISTS.md").write_text(
+            (SKILL_ROOT / "assets" / "templates" / "SECURITY_CHECKLISTS.md").read_text(),
+            encoding="utf-8",
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "index-only SECURITY_CHECKLISTS.md wrapper passed validation")
+        ensure(
+            "does not exist" in result.stdout,
+            "index-only wrapper failure not reported",
+        )
+
+        # Monolithic wrapper with real items: valid.
+        (forge_dir / "SECURITY_CHECKLISTS.md").write_text(
+            "# Security Checklists\n\n## General\n\n" + general_asset, encoding="utf-8"
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"valid monolithic checklist fixture failed:\n{result.stdout}{result.stderr}")
+
+    # repo-fortress: requires a checklist layout and Branch Protection in SETUP.md.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-fortress-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = _write_generated_docs_fixture(
+            repo,
+            security_profile="repo-fortress",
+            setup_sections=always_setup,
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "repo-fortress with no checklist layout passed validation")
+        ensure("no security checklist layout" in result.stdout, "missing-layout failure not reported")
+
+        checklist_dir = forge_dir / "security-checklists"
+        checklist_dir.mkdir()
+        (checklist_dir / "general.md").write_text(general_asset, encoding="utf-8")
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "repo-fortress SETUP.md without Branch Protection passed validation")
+        ensure("Branch Protection" in result.stdout, "Branch Protection failure not reported")
+
+        setup = forge_dir / "SETUP.md"
+        setup.write_text(
+            setup.read_text() + "## Branch Protection\n\nMain protected: yes.\n",
+            encoding="utf-8",
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"valid repo-fortress fixture failed:\n{result.stdout}{result.stderr}")
+
+
 def verify_install_flow() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-verify-") as temp_dir:
         env = os.environ.copy()
@@ -258,9 +455,11 @@ def main() -> int:
         verify_manifests()
         verify_skill_anatomy()
         verify_size_budgets()
+        verify_yaml_assets()
         verify_shell_scripts()
         verify_python_scripts()
         verify_context_validation()
+        verify_generated_docs_validation()
         verify_install_flow()
     except CheckFailure as exc:
         print(f"FORGE verify failed: {exc}", file=sys.stderr)

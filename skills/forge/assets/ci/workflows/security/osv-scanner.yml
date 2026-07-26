@@ -1,0 +1,28 @@
+# FORGE security workflow — OSV-Scanner SCA (security_profile: ci-security+)
+# Copy to .github/workflows/osv-scanner.yml.
+# PR scans report only newly introduced vulnerabilities; scheduled/push full
+# scans report everything to the Security tab. Ignores and package overrides
+# belong in osv-scanner.toml at the repo root, with a reason per entry.
+name: OSV-Scanner
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "30 12 * * 1"
+
+permissions:
+  actions: read
+  security-events: write
+  contents: read
+
+jobs:
+  scan-pr:
+    if: github.event_name == 'pull_request'
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.0.0"
+
+  scan-full:
+    if: github.event_name == 'schedule' || github.event_name == 'push'
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.0.0"

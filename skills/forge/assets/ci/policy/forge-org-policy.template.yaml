@@ -32,4 +32,6 @@ forge_policy:
 
   # Additional artifacts required for Strict and Full Discipline.
   strict_required_artifacts:
-    - docs/forge/TASKS.yaml
+    # Task ledger: split layout preferred; legacy single-file accepted.
+    - docs/forge/TASKS.index.yaml
+

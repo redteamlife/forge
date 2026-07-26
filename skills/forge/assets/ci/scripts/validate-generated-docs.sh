@@ -100,17 +100,18 @@ fi
 AI_MD="$FORGE_DIR/AI.md"
 FORGE_MODE=""
 COLLABORATION_MODE=""
+SECURITY_PROFILE=""
 
 if [ -f "$AI_MD" ]; then
   FORGE_MODE=$(get_config_value "$AI_MD" "FORGE_mode")
   COLLABORATION_MODE=$(get_config_value "$AI_MD" "collaboration_mode")
+  SECURITY_PROFILE=$(get_config_value "$AI_MD" "security_profile")
 fi
 
 # Mid and above require additional files
 if [ "$FORGE_MODE" != "Lightweight" ] && [ -n "$FORGE_MODE" ]; then
   REQUIRED_FILES+=(
     "$FORGE_DIR/ARCHITECTURE.md"
-    "$FORGE_DIR/TEST_STRATEGY.md"
     "$FORGE_DIR/EVALUATION.md"
     "$FORGE_DIR/MEMORY.md"
   )
@@ -119,14 +120,10 @@ if [ "$FORGE_MODE" != "Lightweight" ] && [ -n "$FORGE_MODE" ]; then
   fi
 fi
 
-# Strict and above
-if [ "$FORGE_MODE" = "Strict" ] || [ "$FORGE_MODE" = "Full Discipline" ]; then
-  REQUIRED_FILES+=(
-    "$FORGE_DIR/ARCHITECTURE_EXPLORATION.md"
-    "$FORGE_DIR/REVIEW_GUIDE.md"
-    "$FORGE_DIR/ROADMAP.md"
-  )
-fi
+# Legacy Strict-era files (ARCHITECTURE_EXPLORATION.md, REVIEW_GUIDE.md,
+# ROADMAP.md, TEST_STRATEGY.md) are optional: doc-minimums says do not
+# generate them by default, so they are validated only for placeholders when
+# present (below), never required.
 
 # Team collaboration requires explicit coordination docs.
 if [ "$COLLABORATION_MODE" = "team" ]; then
@@ -185,12 +182,67 @@ if [ -f "$FORGE_DIR/TEAM.md" ]; then
   check_section_nonempty "$FORGE_DIR/TEAM.md" "Review And Merge"
 fi
 
+# SETUP.md sections are gated by security_profile (see the SETUP template):
+# always: Local Hooks, CI Enforcement, Team Closeout, Release Reconciliation
+# repo-fortress and above: Branch Protection
+# ci-security and above: CI Security, Supply Chain
+# full-devsecops: Continuous Delivery Security
 if [ -f "$FORGE_DIR/SETUP.md" ]; then
   check_section_nonempty "$FORGE_DIR/SETUP.md" "Local Hooks"
   check_section_nonempty "$FORGE_DIR/SETUP.md" "CI Enforcement"
-  check_section_nonempty "$FORGE_DIR/SETUP.md" "Branch Protection"
   check_section_nonempty "$FORGE_DIR/SETUP.md" "Team Closeout"
   check_section_nonempty "$FORGE_DIR/SETUP.md" "Release Reconciliation"
+  case "$SECURITY_PROFILE" in
+    repo-fortress|ci-security|full-devsecops)
+      check_section_nonempty "$FORGE_DIR/SETUP.md" "Branch Protection"
+      ;;
+  esac
+  case "$SECURITY_PROFILE" in
+    ci-security|full-devsecops)
+      check_section_nonempty "$FORGE_DIR/SETUP.md" "CI Security"
+      check_section_nonempty "$FORGE_DIR/SETUP.md" "Supply Chain"
+      ;;
+  esac
+  if [ "$SECURITY_PROFILE" = "full-devsecops" ]; then
+    check_section_nonempty "$FORGE_DIR/SETUP.md" "Continuous Delivery Security"
+  fi
+fi
+
+# -----------------------------------------------------------------------
+# Check security checklist layout is usable, not an index-only scaffold
+# -----------------------------------------------------------------------
+
+has_checklist_items() {
+  grep -qE '^[[:space:]]*- \[[ xX]\]' "$1" 2>/dev/null
+}
+
+CHECKLIST_DIR="$FORGE_DIR/security-checklists"
+CHECKLIST_FILE="$FORGE_DIR/SECURITY_CHECKLISTS.md"
+
+if [ -d "$CHECKLIST_DIR" ]; then
+  if [ ! -f "$CHECKLIST_DIR/general.md" ]; then
+    echo "FORGE: $CHECKLIST_DIR exists but is missing the mandatory general.md baseline checklist."
+    FAILED=1
+  elif ! has_checklist_items "$CHECKLIST_DIR/general.md"; then
+    echo "FORGE: $CHECKLIST_DIR/general.md contains no checklist items ('- [ ]')."
+    FAILED=1
+  fi
+elif [ -f "$CHECKLIST_FILE" ]; then
+  if grep -q 'security-checklists/' "$CHECKLIST_FILE"; then
+    echo "FORGE: $CHECKLIST_FILE references docs/forge/security-checklists/ but that directory does not exist."
+    echo "  Repair via forge-bootstrap: copy general.md plus relevant surface checklists from the skill pack's assets/security-checklists/."
+    FAILED=1
+  elif ! has_checklist_items "$CHECKLIST_FILE"; then
+    echo "FORGE: $CHECKLIST_FILE contains no checklist items ('- [ ]'); an index-only or empty checklist file is not a usable security-review surface."
+    FAILED=1
+  fi
+else
+  case "$SECURITY_PROFILE" in
+    repo-fortress|ci-security|full-devsecops)
+      echo "FORGE: security_profile is '$SECURITY_PROFILE' but no security checklist layout exists (docs/forge/security-checklists/ or SECURITY_CHECKLISTS.md)."
+      FAILED=1
+      ;;
+  esac
 fi
 
 # -----------------------------------------------------------------------
@@ -269,8 +321,8 @@ for task in tasks:
     if not desc or str(desc).strip() == "":
         print(f"FORGE: Task '{tid}' is missing a 'description'.")
         failed = True
-    if status not in ("incomplete", "claimed", "in_progress", "implemented", "integrated", "blocked", "complete"):
-        print(f"FORGE: Task '{tid}' has invalid status '{status}'. Must be one of incomplete, claimed, in_progress, implemented, integrated, blocked, complete.")
+    if status not in ("todo", "incomplete", "claimed", "in_progress", "implemented", "integrated", "blocked", "complete"):
+        print(f"FORGE: Task '{tid}' has invalid status '{status}'. Must be one of todo, incomplete, claimed, in_progress, implemented, integrated, blocked, complete.")
         failed = True
 
 if failed:

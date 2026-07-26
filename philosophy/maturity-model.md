@@ -7,7 +7,7 @@ This maturity model describes progressive adoption of disciplined agentic engine
 | Level | Name | Key Characteristic |
 | --- | --- | --- |
 | 0 | Ad Hoc Prompting | Unstructured, high variability |
-| 1 | Structured Docs | `AI.md`, `TASKS.yaml`, explicit task tracking |
+| 1 | Structured Docs | `AI.md`, task ledger, explicit task tracking |
 | 2 | Architecture Discipline | Trade-offs, trust boundaries documented |
 | 3 | Evaluation Gates | Explicit completion gates, security review |
 | 4 | Controlled Batch Execution | Bounded multi-task with per-task enforcement |
@@ -40,7 +40,7 @@ This maturity model describes progressive adoption of disciplined agentic engine
 ### Characteristics
 
 - Core project documentation exists and is referenced during execution.
-- Task tracking is explicit (for example, via `TASKS.yaml`).
+- Task tracking is explicit (for example, via `TASKS.index.yaml` plus `tasks/`, or legacy `TASKS.yaml`).
 - AI-facing instructions are documented in `AI.md`.
 - Definition of scope and constraints begins to stabilize.
 

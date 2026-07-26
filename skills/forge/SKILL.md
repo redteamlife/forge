@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Turn AI coding from chaotic one-shot prompting into a reliable engineering workflow. FORGE gives you clear task boundaries, safer commits, review gates, and team-ready coordination so agents can ship real work without losing control of the project.
+description: Governed workflow for AI-assisted coding on a real repo. Triggers: bounded tasks, file scope, task ledgers, claim-before-implement, evidence trails, critique/review/security gates, or multi-agent/multi-repo coordination. Use on any mention of "FORGE", `docs/forge/`, or governed development, or when agents drift outside scope. Not for one-off edits or unstructured review.
 ---
 
 # FORGE
@@ -59,7 +59,7 @@ When multiple developers or agents work in parallel:
 
 Default to terse, implementation-focused responses:
 
-- working update: `Status: <done/doing/blocker>. Next: <next step>.`
+- working update: `Status: <ok/doing/blocker>. Next: <next step>.`
 - task closeout: `Done: <result>. Changed: <files or areas>. Next: <next step or none>.`
 - blocker: `Blocked: <fact>. Need: <decision or missing prerequisite>.`
 

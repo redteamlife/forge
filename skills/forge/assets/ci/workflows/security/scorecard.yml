@@ -1,0 +1,41 @@
+# FORGE security workflow — OpenSSF Scorecard (security_profile: repo-fortress+)
+# Copy to .github/workflows/scorecard.yml.
+# Scores repo hardening (branch protection, reviews, dependency update automation,
+# token permissions) and uploads results to the Security tab. Record the score and
+# badge in docs/forge/SETUP.md under Branch Protection.
+# Public repos only; for private repos run the Scorecard CLI or Docker image instead.
+name: OpenSSF Scorecard
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: "30 4 * * 1"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@v2.4.1
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # publish_results enables the scorecard.dev badge and REST API.
+          publish_results: true
+
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif

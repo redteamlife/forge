@@ -1,0 +1,23 @@
+---
+description: "JS/TS frontend conventions"
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+alwaysApply: false
+---
+
+Frontend conventions for this project.
+
+- TypeScript strict mode; no `any` without a written justification.
+- Prefer function components and hooks; avoid class components.
+- Server state goes through your data-fetching layer (TanStack Query, RTK
+  Query, SWR, etc.); do not fetch directly inside components.
+- Use the design-system primitives (shadcn, MUI, Chakra, etc.) instead of
+  inline styles; keep styling in the configured system (Tailwind classes,
+  CSS modules, etc.).
+- Generated API client code is read-only; regenerate from the contract
+  (OpenAPI/GraphQL) instead of hand-editing.
+- Never log auth tokens, session cookies, or PII to the browser console in
+  production builds.

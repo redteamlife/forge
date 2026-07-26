@@ -1,0 +1,41 @@
+# FORGE security workflow — SBOM generation + analysis (security_profile: full-devsecops)
+# Copy to .github/workflows/sbom.yml.
+# Loop: generate (syft -> CycloneDX) -> analyze (osv-scanner --sbom) -> store
+# as a build artifact. Attach the SBOM to releases when policy or customers
+# require one.
+name: SBOM
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          upload-artifact: false
+
+      - name: Scan SBOM for known vulnerabilities
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.0
+        with:
+          scan-args: --sbom=sbom.cdx.json
+        continue-on-error: true
+
+      - name: Store SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json

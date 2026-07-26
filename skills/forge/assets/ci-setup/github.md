@@ -20,7 +20,25 @@ Use this when the project is hosted on GitHub and `ci_enforcement` should be ena
 - Use a human account or user-scoped token for assignment when assignee means engineer ownership.
 - Link each PR to the issue it closes or advances.
 
+## Security Profile Assets
+
+Copy only the assets the configured `security_profile` calls for, from the skill's `assets/ci/workflows/security/` into `.github/workflows/` (templates from `assets/templates/`). Record what was enabled in `docs/forge/SETUP.md`; never record a control as configured if the file was copied but the feature is off.
+
+- `repo-fortress`: `scorecard.yml`; `SECURITY.md` template plus enable private vulnerability reporting (Settings -> Code security); `CODEOWNERS` template for security-sensitive paths derived from ARCHITECTURE.md Trust Boundaries.
+- `ci-security` (adds): `codeql.yml` (with `codeql-config.yml`) or `semgrep.yml` — pick per project, both is usually noise; `dependency-review.yml`; `dependabot.yml` template; enable secret scanning + push protection.
+- `full-devsecops` (adds): `osv-scanner.yml`, `sbom.yml`; `zap-baseline.yml` only for deployable web services with a staging URL the project is authorized to scan.
+
+Enforcement: after scans produce results, add them as required via ruleset "Require code scanning results" so unresolved findings block PRs.
+
 ## Branch Protection
+
+Prefer repository rulesets over classic branch protection rules: they target branches and tags, support path/size-based push blocking, bypass permissions, and org-level management. Use the OpenSSF Scorecard tiers as the maturity ladder and record the current tier in `docs/forge/SETUP.md`:
+
+1. prevent force pushes and branch deletion
+2. require 1 approving review; require branches up to date; require approval of latest push
+3. require at least 1 status check
+4. require 2 approving reviews; require Code Owners review
+5. dismiss stale reviews on new commits; include administrators
 
 For the integration branch:
 

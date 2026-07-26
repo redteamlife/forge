@@ -1,0 +1,17 @@
+---
+description: "Go backend conventions"
+globs:
+  - "**/*.go"
+alwaysApply: false
+---
+
+Go backend conventions for this project.
+
+- Format with `gofmt`/`goimports`; lint with `golangci-lint`.
+- Errors are values: always check or explicitly discard with `_`.
+- Use context.Context as the first parameter for cancellable operations.
+- Never `panic` from request handlers; recover and surface a typed error.
+- Use the standard `log/slog` package or the configured structured logger.
+- Treat any path or query coming from user input as untrusted; validate
+  before use.
+- Never log secrets, raw credentials, tokens, or sensitive payloads.

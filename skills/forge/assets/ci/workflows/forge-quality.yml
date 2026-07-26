@@ -1,0 +1,57 @@
+name: FORGE Quality
+
+# Lint + test + contract-drift gate for team-full projects with
+# `ci_enforcement: enabled`. Replace the placeholder steps with the real
+# commands for your stack. Keep the jobs themselves so CI fails closed
+# when lint, tests, or the contract spec drift.
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run linters
+        run: |
+          # TODO: replace with your real lint commands. Examples:
+          #   ruff check .
+          #   pnpm lint
+          #   golangci-lint run ./...
+          echo "TODO: configure lint"
+          exit 0
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: |
+          # TODO: replace with your real test commands. Examples:
+          #   pytest -q
+          #   pnpm test --run
+          #   go test ./...
+          echo "TODO: configure tests"
+          exit 0
+
+  contract-drift:
+    name: Contract Drift
+    runs-on: ubuntu-latest
+    # Remove this job when the repo has no shared interface contract
+    # (OpenAPI, protobuf, GraphQL schema, etc.).
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check committed contract is in sync with the app
+        run: |
+          # TODO: replace with the real drift check. Examples:
+          #   make check-openapi
+          #   buf breaking --against '.git#branch=main'
+          #   pnpm graphql:check
+          echo "TODO: configure contract drift check"
+          exit 0

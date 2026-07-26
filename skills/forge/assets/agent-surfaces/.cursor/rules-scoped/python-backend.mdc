@@ -1,0 +1,18 @@
+---
+description: "Python backend conventions"
+globs:
+  - "**/*.py"
+alwaysApply: false
+---
+
+Python backend conventions for this project.
+
+- Format with `ruff format` (or `black`); lint with `ruff`.
+- Type-annotate public functions; prefer `from __future__ import annotations`.
+- Use async-only DB sessions when the app is async.
+- Validate inputs with Pydantic v2 (or your project's schema lib) at edges.
+- Use structured logging via the configured logger; never `print` from
+  application code.
+- Never call `subprocess.run(..., shell=True)`; always pass an argv list.
+- Treat any path coming from user input as untrusted; reject path traversal.
+- Never log secrets, raw credentials, tokens, or sensitive payloads.
