@@ -56,6 +56,24 @@ def verify_skill_frontmatter_yaml() -> None:
                f"{skill_file}: frontmatter must define name and description")
 
 
+def verify_version_sync() -> None:
+    import re
+
+    version = (SKILL_ROOT / "VERSION").read_text().strip()
+    ensure(re.fullmatch(r"\d+\.\d+\.\d+", version) is not None,
+           f"skills/forge/VERSION is not a semver: '{version}'")
+    ai_md = (SKILL_ROOT / "assets" / "templates" / "AI.md").read_text()
+    m = re.search(r"^forge_version:\s*(\S+)$", ai_md, re.MULTILINE)
+    ensure(m is not None, "templates/AI.md is missing forge_version")
+    ensure(m.group(1) == version,
+           f"VERSION ({version}) != templates/AI.md forge_version ({m.group(1)})")
+    changelog = (ROOT / "CHANGELOG.md").read_text()
+    m = re.search(r"^## \[(\d+\.\d+\.\d+)\]", changelog, re.MULTILINE)
+    ensure(m is not None, "CHANGELOG.md has no released version entry")
+    ensure(m.group(1) == version,
+           f"VERSION ({version}) != newest CHANGELOG entry ({m.group(1)})")
+
+
 def verify_skill_names() -> None:
     for skill_file in sorted(SKILL_ROOT.rglob("SKILL.md")):
         parent = skill_file.parent.name
@@ -619,6 +637,7 @@ def verify_install_flow() -> None:
 def main() -> int:
     try:
         verify_skill_frontmatter_yaml()
+        verify_version_sync()
         verify_skill_names()
         verify_required_files()
         verify_manifests()

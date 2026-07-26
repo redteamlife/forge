@@ -12,8 +12,9 @@ security_profile: baseline
 #   solo-simple   -> direct
 #   solo-governed -> task-branches (human-controlled merge to release_branch)
 solo_branch_flow: direct
-# coordination_branch and integration_branch are team-full concepts.
-# Omit them for solo profiles; solo integration is the release branch.
+# coordination_branch and integration_branch are team-full concepts. Omit for
+# solo profiles — except clean-main solo, where integration_branch is the
+# working branch (usually dev) and release_branch stays clean.
 # dev_only_paths: comma-separated paths that must never reach release_branch
 # (clean-main model). Entries ending in / are prefixes. Default when absent:
 # docs/forge/. Guards (pre-push, block-forge-in-main) and forge-promote read it.

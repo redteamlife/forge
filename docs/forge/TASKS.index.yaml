@@ -65,7 +65,7 @@ tasks:
     task_file: docs/forge/tasks/TASK-008.yaml
   - id: TASK-009
     title: "Bootstrap clean-main flow, VERSION, docs"
-    status: todo
+    status: complete
     priority: high
     phase: clean-main
     owner_lane: single

@@ -1,6 +1,6 @@
 id: TASK-009
 title: "Bootstrap clean-main flow, VERSION, docs"
-status: todo
+status: complete
 priority: high
 phase: clean-main
 owner_lane: single
@@ -18,6 +18,11 @@ acceptance_criteria:
   - "Solo-governed clean-main variant documented: task branches -> integration branch -> promoted release branch."
   - "VERSION matches templates/AI.md forge_version and newest CHANGELOG entry, enforced by verify-repo.py."
   - "hooksPath option documented with trade-offs; default install path unchanged."
-evidence: []
+evidence:
+  - "bootstrap SKILL.md: clean-main question (step 3) within 5000-byte budget (4996)"
+  - "doc-minimums: Clean-Main Variant subsection; AI.md/SETUP.md templates updated"
+  - "skills/forge/VERSION added; verify_version_sync enforces VERSION == AI.md forge_version == newest CHANGELOG entry"
+  - "hooksPath alternative documented with trade-offs in ci-setup/github.md"
+  - "verify-repo.py + install list sync pass"
 history:
   - "2026-07-25: created per design TASK-006 (D5, D6, D7)."
