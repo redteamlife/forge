@@ -39,6 +39,23 @@ def read_json(path: Path) -> object:
     return json.loads(path.read_text())
 
 
+def verify_skill_frontmatter_yaml() -> None:
+    """Frontmatter must parse under strict YAML: installer CLIs (e.g. Vercel
+    skills) reject e.g. unquoted scalars containing ': '."""
+    import yaml
+
+    for skill_file in sorted(SKILL_ROOT.rglob("SKILL.md")):
+        text = skill_file.read_text()
+        parts = text.split("---", 2)
+        ensure(len(parts) >= 3, f"{skill_file}: missing frontmatter block")
+        try:
+            data = yaml.safe_load(parts[1])
+        except yaml.YAMLError as exc:
+            raise CheckFailure(f"{skill_file}: frontmatter is not strict YAML: {exc}") from exc
+        ensure(isinstance(data, dict) and "name" in data and "description" in data,
+               f"{skill_file}: frontmatter must define name and description")
+
+
 def verify_skill_names() -> None:
     for skill_file in sorted(SKILL_ROOT.rglob("SKILL.md")):
         parent = skill_file.parent.name
@@ -450,6 +467,7 @@ def verify_install_flow() -> None:
 
 def main() -> int:
     try:
+        verify_skill_frontmatter_yaml()
         verify_skill_names()
         verify_required_files()
         verify_manifests()

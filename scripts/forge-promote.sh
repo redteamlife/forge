@@ -5,9 +5,10 @@
 # Usage:
 #   ./scripts/forge-promote.sh -m "release: <summary>" [--tag vX.Y.Z] [--dry-run]
 #
-# Flow: squash-merge dev into main, remove docs/forge from the staged tree,
-# commit, optionally tag. Dev keeps the full detailed history; main reads as
-# one clean commit per promotion.
+# Flow: set main's tree to an exact snapshot of dev (main is fully derived
+# from dev — never merge, so repeated promotions cannot conflict), remove
+# docs/forge, commit, optionally tag. Dev keeps the full detailed history;
+# main reads as one clean commit per promotion.
 
 set -euo pipefail
 
@@ -50,15 +51,16 @@ if $DRY_RUN; then
 fi
 
 cleanup() {
-  # On failure, abort any half-done squash and return to the starting branch.
-  git merge --abort 2>/dev/null || true
+  # On failure, discard the half-done snapshot and return to the starting branch.
   git reset --hard HEAD 2>/dev/null || true
   git checkout "$START_BRANCH" 2>/dev/null || true
 }
 trap cleanup ERR
 
 git checkout "$MAIN_BRANCH"
-git merge --squash "$DEV_BRANCH"
+# Snapshot promotion: set index and worktree to dev's exact tree. No merge,
+# so repeated promotions cannot conflict regardless of divergence.
+git read-tree -u --reset "$DEV_BRANCH"
 
 for path in "${STRIP_PATHS[@]}"; do
   if git ls-files --cached --error-unmatch "$path" >/dev/null 2>&1 || [[ -e "$path" ]]; then

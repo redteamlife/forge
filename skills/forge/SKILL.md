@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Governed workflow for AI-assisted coding on a real repo. Triggers: bounded tasks, file scope, task ledgers, claim-before-implement, evidence trails, critique/review/security gates, or multi-agent/multi-repo coordination. Use on any mention of "FORGE", `docs/forge/`, or governed development, or when agents drift outside scope. Not for one-off edits or unstructured review.
+description: 'Governed workflow for AI-assisted coding on a real repo. Triggers: bounded tasks, file scope, task ledgers, claim-before-implement, evidence trails, critique/review/security gates, or multi-agent/multi-repo coordination. Use on any mention of "FORGE", `docs/forge/`, or governed development, or when agents drift outside scope. Not for one-off edits or unstructured review.'
 ---
 
 # FORGE
