@@ -4,6 +4,18 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-07-26
+
+### Fixed
+
+- `validate-generated-docs.sh` now fails when a `dev_only_paths` entry is missing from the release-branch-guard workflow's `DEV_ONLY_PATHS` env, converting the documented duplication into a drift check.
+- `forge-promote.sh` creates an unborn release branch on first promotion (the normal clean-main starting state) and refuses to promote over a release HEAD that lacks the new `Promoted-From` trailer — i.e. direct commits on the release branch — unless `--force` is passed.
+
+### Changed
+
+- Bumped the default generated `forge_version` to `1.8.1`.
+- Design notes: agent-surface `docs/forge/` links intentionally dangle on a default clean-main release branch (the generated fallback line explains the state); `AI.md` documents common surface-path candidates for `dev_only_paths`.
+
 ## [1.8.0] - 2026-07-25
 
 ### Added

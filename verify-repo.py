@@ -447,6 +447,30 @@ def verify_generated_docs_validation() -> None:
         result = _run_generated_docs_validator(repo)
         ensure(result.returncode == 0, f"valid monolithic checklist fixture failed:\n{result.stdout}{result.stderr}")
 
+    # Clean-main drift check: guard workflow env must mirror extended dev_only_paths.
+    with tempfile.TemporaryDirectory(prefix="forge-docs-drift-") as temp_dir:
+        repo = Path(temp_dir)
+        forge_dir = _write_generated_docs_fixture(repo)
+        ai = forge_dir / "AI.md"
+        ai.write_text(ai.read_text().replace(
+            "security_profile: baseline",
+            "security_profile: baseline\ndev_only_paths: docs/forge/, CLAUDE.md",
+        ))
+        wf = repo / ".github" / "workflows"
+        wf.mkdir(parents=True)
+        (wf / "release-branch-guard.yml").write_text(
+            'env:\n  DEV_ONLY_PATHS: "docs/forge"\n'
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode != 0, "guard-env drift (missing CLAUDE.md) passed validation")
+        ensure("missing from DEV_ONLY_PATHS" in result.stdout, "drift failure not reported")
+
+        (wf / "release-branch-guard.yml").write_text(
+            'env:\n  DEV_ONLY_PATHS: "docs/forge CLAUDE.md"\n'
+        )
+        result = _run_generated_docs_validator(repo)
+        ensure(result.returncode == 0, f"synced guard env failed validation:\n{result.stdout}")
+
     # repo-fortress: requires a checklist layout and Branch Protection in SETUP.md.
     with tempfile.TemporaryDirectory(prefix="forge-docs-fortress-") as temp_dir:
         repo = Path(temp_dir)
@@ -576,10 +600,13 @@ def verify_promote_flow() -> None:
         (repo / "app.py").write_text("print('v1')\n")
         _git(repo, "add", "-A")
         _git(repo, "commit", "-q", "-m", "base")
-        _git(repo, "branch", "main")
 
+        # First promotion creates the unborn release branch.
         result = run_promote(repo, "-m", "release: v1")
-        ensure(result.returncode == 0, f"first promotion failed:\n{result.stdout}{result.stderr}")
+        ensure(result.returncode == 0, f"first promotion (unborn main) failed:\n{result.stdout}{result.stderr}")
+        trailer = _git(repo, "log", "-1",
+                       "--format=%(trailers:key=Promoted-From,valueonly)", "main").stdout.strip()
+        ensure(len(trailer) == 40, f"promotion commit missing Promoted-From trailer: '{trailer}'")
         main_files = _git(repo, "ls-tree", "-r", "--name-only", "main").stdout.split()
         ensure("app.py" in main_files, "promotion dropped app files")
         ensure(not any(f.startswith("docs/forge") or f == "CLAUDE.md" for f in main_files),
@@ -607,6 +634,22 @@ def verify_promote_flow() -> None:
         result = run_promote(repo, "-m", "release: noop")
         ensure(result.returncode == 0 and "Nothing to promote" in result.stdout,
                f"no-op promotion misbehaved:\n{result.stdout}{result.stderr}")
+
+        # Divergence guard: a direct commit on the release branch (no
+        # Promoted-From trailer) must refuse without --force.
+        _git(repo, "checkout", "-q", "main")
+        (repo / "hotfix.txt").write_text("oops\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "direct hotfix on main")
+        _git(repo, "checkout", "-q", "dev")
+        (repo / "app.py").write_text("print('v4')\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "v4")
+        result = run_promote(repo, "-m", "release: v4")
+        ensure(result.returncode != 0 and "Promoted-From" in result.stderr,
+               f"divergence guard did not refuse direct-commit release HEAD:\n{result.stdout}{result.stderr}")
+        result = run_promote(repo, "-m", "release: v4", "--force")
+        ensure(result.returncode == 0, f"--force promotion failed:\n{result.stdout}{result.stderr}")
 
 
 def verify_surface_fallback() -> None:

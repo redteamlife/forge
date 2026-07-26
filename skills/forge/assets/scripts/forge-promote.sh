@@ -8,7 +8,13 @@
 #   dev_only_paths      (default: docs/forge/; comma-separated, trailing / = prefix)
 #
 # Usage:
-#   forge-promote.sh -m "release: <summary>" [--tag vX.Y.Z] [--dry-run]
+#   forge-promote.sh -m "release: <summary>" [--tag vX.Y.Z] [--dry-run] [--force]
+#
+# Safety: promotion commits carry a `Promoted-From: <sha>` trailer. If the
+# release branch HEAD lacks the trailer (someone committed to it directly),
+# promotion refuses unless --force — a snapshot would clobber that work.
+# An unborn release branch is created on first promotion (normal clean-main
+# starting state).
 #
 # Promotion is a tree SNAPSHOT (git read-tree), never a squash merge: squash
 # reuses the original merge-base forever, so a second edit to the same line
@@ -27,12 +33,14 @@ config_value() {
 MESSAGE=""
 TAG=""
 DRY_RUN=false
+FORCE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -m|--message) MESSAGE="$2"; shift 2 ;;
     --tag)        TAG="$2"; shift 2 ;;
     --dry-run)    DRY_RUN=true; shift ;;
+    --force)      FORCE=true; shift ;;
     *) echo "ERROR: Unknown argument: $1" >&2; exit 1 ;;
   esac
 done
@@ -73,13 +81,35 @@ if $DRY_RUN; then
   exit 0
 fi
 
+RELEASE_EXISTS=true
+git rev-parse --verify -q "refs/heads/$RELEASE_BRANCH" >/dev/null || RELEASE_EXISTS=false
+
+# Divergence guard: a release HEAD without the promotion trailer means direct
+# commits landed there; a snapshot would silently clobber them.
+if $RELEASE_EXISTS && ! $FORCE; then
+  if ! git log -1 --format='%(trailers:key=Promoted-From,valueonly)' "$RELEASE_BRANCH" | grep -q .; then
+    echo "ERROR: $RELEASE_BRANCH HEAD has no 'Promoted-From' trailer." >&2
+    echo "  It may contain direct commits a snapshot would overwrite." >&2
+    echo "  Inspect 'git log $RELEASE_BRANCH', then re-run with --force to proceed." >&2
+    exit 1
+  fi
+fi
+
+DEV_SHA="$(git rev-parse "$DEV_BRANCH")"
+
 cleanup() {
   git reset --hard HEAD 2>/dev/null || true
   git checkout "$START_BRANCH" 2>/dev/null || true
 }
 trap cleanup ERR
 
-git checkout "$RELEASE_BRANCH"
+if $RELEASE_EXISTS; then
+  git checkout "$RELEASE_BRANCH"
+else
+  # First promotion: release branch is intentionally unborn until now.
+  git checkout --orphan "$RELEASE_BRANCH"
+  git rm -rf -q --cached . 2>/dev/null || true
+fi
 # Snapshot: index and worktree become the integration branch's exact tree.
 git read-tree -u --reset "$DEV_BRANCH"
 
@@ -96,7 +126,7 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
-git commit -m "$MESSAGE"
+git commit -m "$MESSAGE" -m "Promoted-From: $DEV_SHA"
 
 if [[ -n "$TAG" ]]; then
   git tag -a "$TAG" -m "$MESSAGE"

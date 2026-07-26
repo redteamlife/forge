@@ -1,7 +1,7 @@
 # AI Execution Configuration
 
 ```FORGE-config
-forge_version: 1.8.0
+forge_version: 1.8.1
 FORGE_mode: Lightweight
 execution_mode: manual
 collaboration_mode: solo
@@ -18,6 +18,8 @@ solo_branch_flow: direct
 # dev_only_paths: comma-separated paths that must never reach release_branch
 # (clean-main model). Entries ending in / are prefixes. Default when absent:
 # docs/forge/. Guards (pre-push, block-forge-in-main) and forge-promote read it.
+# Common additions when surfaces should stay off the release branch:
+#   CLAUDE.md, AGENTS.md, .cursor/rules/, .github/copilot-instructions.md
 # dev_only_paths: docs/forge/
 # coordination_branch: forge-state
 # integration_branch: develop
