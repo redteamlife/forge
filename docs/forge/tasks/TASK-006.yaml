@@ -1,0 +1,19 @@
+id: TASK-006
+title: "Design: first-class clean-main model"
+status: complete
+priority: high
+phase: design
+owner_lane: single
+owner: taffy
+description: "Design response to downstream 1.7.0 bootstrap report: canonical dev_only_paths config, graceful agent-surface degradation (exclusion opt-in, not default), promote script + release-branch-guard as pack assets, first-class solo-governed integration branch, VERSION discoverability, hooksPath documented as option."
+file_scope:
+  - docs/forge/designs/TASK-006-clean-main-model.md
+  - docs/forge/TASKS.index.yaml
+acceptance_criteria:
+  - "Design doc records decisions D1-D7 with rationale and rejected alternatives."
+  - "Implementation split into bounded follow-up tasks (TASK-007..009) targeting 1.8.0."
+evidence:
+  - "docs/forge/designs/TASK-006-clean-main-model.md"
+  - "downstream report reviewed point-by-point in session 2026-07-25; one disagreement recorded (surface exclusion default)"
+history:
+  - "2026-07-25: design written; implementation deferred pending review/feedback to downstream project."
