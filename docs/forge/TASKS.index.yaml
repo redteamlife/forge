@@ -71,3 +71,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-009.yaml
+  - id: TASK-010
+    title: "Clean-main hardening from downstream 1.8.0 review"
+    status: complete
+    priority: high
+    phase: clean-main
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-010.yaml

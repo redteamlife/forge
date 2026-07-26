@@ -1,0 +1,25 @@
+id: TASK-010
+title: "Clean-main hardening from downstream 1.8.0 review"
+status: complete
+priority: high
+phase: clean-main
+owner_lane: single
+owner: taffy
+description: "Close the D4 duplication as a failing check; harden forge-promote.sh for unborn release branches and direct-commit divergence (Promoted-From trailer, --force); amend design doc; document common dev_only_paths surface candidates."
+file_scope:
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - skills/forge/assets/scripts/forge-promote.sh
+  - skills/forge/assets/templates/AI.md
+  - docs/forge/designs/TASK-006-clean-main-model.md
+  - scripts/forge-promote.sh
+  - verify-repo.py
+acceptance_criteria:
+  - "validate-generated-docs.sh fails when a dev_only_paths entry is missing from the guard workflow's DEV_ONLY_PATHS env."
+  - "First promotion creates an unborn release branch; fixture covers it."
+  - "Direct commit on release HEAD (no Promoted-From trailer) refuses without --force; fixture covers refuse and --force paths."
+  - "Design doc records the D4 amendment, D3 edge cases (including why reachability is not a usable divergence test), and the D2 dangling-links residual."
+evidence:
+  - "verify-repo.py: drift fixtures (mismatch fails, synced passes), unborn-branch promotion, trailer presence, divergence refuse + --force"
+  - "downstream mechanism correction recorded: reachability-based divergence check would refuse every promotion; trailer-based guard used instead"
+history:
+  - "2026-07-26: implemented from downstream review of 1.8.0; ships in 1.8.1."

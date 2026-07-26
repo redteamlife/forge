@@ -209,6 +209,33 @@ if [ -f "$FORGE_DIR/SETUP.md" ]; then
 fi
 
 # -----------------------------------------------------------------------
+# Clean-main: release-branch-guard workflow env must mirror dev_only_paths
+# (the guard runs on the release branch, which has no AI.md by design, so
+# the workflow carries a copy — drift between the two is a failing check)
+# -----------------------------------------------------------------------
+
+DEV_ONLY_PATHS_VALUE=$(get_config_value "$AI_MD" "dev_only_paths")
+GUARD_WORKFLOW=".github/workflows/release-branch-guard.yml"
+if [ -n "$DEV_ONLY_PATHS_VALUE" ] && [ -f "$GUARD_WORKFLOW" ]; then
+  GUARD_LIST=$(grep -m1 -E '^[[:space:]]*DEV_ONLY_PATHS:' "$GUARD_WORKFLOW" \
+    | sed 's/^[[:space:]]*DEV_ONLY_PATHS:[[:space:]]*//' | tr -d '"')
+  for entry in $(echo "$DEV_ONLY_PATHS_VALUE" | tr ',' '\n'); do
+    entry=$(echo "$entry" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//; s|/*$||')
+    [ -n "$entry" ] || continue
+    found=0
+    for g in $GUARD_LIST; do
+      g=$(echo "$g" | sed 's|/*$||')
+      [ "$g" = "$entry" ] && found=1 && break
+    done
+    if [ "$found" -eq 0 ]; then
+      echo "FORGE: dev_only_paths entry '$entry' is missing from DEV_ONLY_PATHS in $GUARD_WORKFLOW."
+      echo "  The release-branch guard cannot read AI.md (stripped by design); keep its env list in sync."
+      FAILED=1
+    fi
+  done
+fi
+
+# -----------------------------------------------------------------------
 # Check security checklist layout is usable, not an index-only scaffold
 # -----------------------------------------------------------------------
 

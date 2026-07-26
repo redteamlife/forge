@@ -43,6 +43,10 @@ fixed at generation time:
   governed changes."
 - The line is emitted only when the config indicates the clean-main model (D4),
   keeping non-clean-main surfaces unchanged.
+- Residual (accepted): on a default clean-main repo the surface's `docs/forge/`
+  links still dangle on the release branch by design — the fallback line
+  explains the state rather than fixing the links. Exclusion via
+  `dev_only_paths` is the remedy for projects that care.
 
 ### D3. Ship promote tooling and the main guard as pack assets
 
@@ -51,8 +55,16 @@ fixed at generation time:
     squash-merge — squash reuses the original merge-base and conflicts on the
     second edit to the same line (hit in this repo, promotion 3).
   - Reads `release_branch`, `integration_branch`, and `dev_only_paths` from
-    `docs/forge/AI.md` on the integration branch; flags: `-m`, `--tag`, `--dry-run`.
+    `docs/forge/AI.md` on the integration branch; flags: `-m`, `--tag`,
+    `--dry-run`, `--force`.
   - Refuses dirty trees; trap-based rollback to the starting branch on failure.
+  - Creates an unborn release branch on first promotion (normal clean-main
+    starting state).
+  - Divergence guard: promotion commits carry a `Promoted-From: <sha>` trailer;
+    if the release HEAD lacks it (direct commit landed there), promotion
+    refuses without `--force`. Note: "commits unreachable from integration"
+    is NOT a usable divergence test — every promotion commit is unreachable
+    from integration by construction. (Amended per downstream review.)
 - `assets/ci/workflows/release-branch-guard.yml`: generalized `main-branch-guard.yml`;
   fails any push/PR to the release branch containing a dev-only path.
 - `forge-ship` SKILL.md gains a short "clean-main promotion" step routing to the
@@ -67,9 +79,11 @@ grep with paths derived from `dev_only_paths`:
   (always the integration branch — fine).
 - CI guard on the release branch: `docs/forge/AI.md` is stripped there by design,
   so the guard cannot read config from its own tree. Rule: if `docs/forge/AI.md`
-  is absent, enforce the default set (`docs/forge/`); the workflow asset documents
-  that projects extending `dev_only_paths` should mirror the list in the workflow
-  env block (one documented duplication, flagged by bootstrap closeout).
+  is absent, enforce the default set (`docs/forge/`); the workflow carries a
+  mirrored env list. Drift between the two is a FAILING CHECK (same discipline
+  as D6): `validate-generated-docs.sh` — which runs on the integration branch,
+  where both files exist — asserts every `dev_only_paths` entry appears in the
+  workflow's `DEV_ONLY_PATHS` env. (Amended per downstream review of 1.8.0.)
 
 ### D5. Solo-governed + integration branch becomes first-class
 
