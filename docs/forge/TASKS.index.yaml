@@ -167,3 +167,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-021.yaml
+  - id: TASK-026
+    title: "Bootstrap presents a setup interview with option menus"
+    status: complete
+    priority: high
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-026.yaml

@@ -1,0 +1,24 @@
+id: TASK-026
+title: "Bootstrap presents a setup interview with option menus"
+status: complete
+priority: high
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Bootstrap silently auto-picked profile/context/task_source/security/activation because step 2 said 'Choose'. Replace with an elicitation step that presents each choice as a menu of available options with one-line descriptions and the recommended default marked (users may not know the options); detect-first, confirm the FORGE-config, skip only when config supplied or defaults requested. Clean-main folded into the interview."
+file_scope:
+  - skills/forge/bootstrap/SKILL.md
+  - skills/forge/bootstrap/references/setup-interview.md
+  - verify-repo.py
+acceptance_criteria:
+  - "Bootstrap step 2 elicits setup via option menus, not open-ended questions or silent defaults."
+  - "setup-interview.md catalogs every choice with options, descriptions, and defaults."
+  - "bootstrap SKILL.md stays within its 5000-byte budget."
+evidence:
+  - "bootstrap SKILL.md at 4499/5000; setup-interview.md shipped and required by verify-repo"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: added per maintainer feedback that bootstrap must ask, and must present the available options."

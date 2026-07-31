@@ -182,6 +182,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "agent-surfaces" / ".cursor" / "rules-scoped" / "security.mdc",
         SKILL_ROOT / "assets" / "security-checklists" / "general.md",
         SKILL_ROOT / "bootstrap" / "references" / "scaffolding.md",
+        SKILL_ROOT / "bootstrap" / "references" / "setup-interview.md",
         SKILL_ROOT / "bootstrap" / "references" / "doc-minimums.md",
         SKILL_ROOT / "bootstrap" / "references" / "team-mode.md",
         SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.sh",
