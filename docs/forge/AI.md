@@ -1,12 +1,13 @@
 # AI Execution Configuration
 
 ```FORGE-config
-forge_version: 1.6.0
+forge_version: 1.9.0
 FORGE_mode: Lightweight
 execution_mode: manual
 collaboration_mode: solo
 task_source: local
 agent_context_profile: lite
+activation_mode: explicit
 security_profile: baseline
 solo_branch_flow: task-branches
 integration_branch: dev
