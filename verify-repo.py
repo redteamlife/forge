@@ -675,6 +675,20 @@ def verify_surface_fallback() -> None:
         text = (repo / "CLAUDE.md").read_text()
         ensure(marker not in text, "fallback wrongly emitted without dev_only_paths")
 
+        # Moment map is always present; activation line only with repo-default consent.
+        ensure("forge-plan" in text and "forge-ship" in text,
+               "generated router lost the moment map")
+        activation_marker = "even when the request does not mention FORGE"
+        ensure(activation_marker not in text,
+               "activation line emitted without activation_mode: repo-default")
+        (forge_dir / "AI.md").write_text(
+            "```FORGE-config\nactivation_mode: repo-default\ngoverned_paths: src/\n```\n"
+        )
+        run([sys.executable, str(generator), str(repo), "--force"], cwd=ROOT)
+        text = (repo / "CLAUDE.md").read_text()
+        ensure(activation_marker in text and "`src/`" in text,
+               "activation line missing or unscoped under repo-default")
+
 
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""

@@ -1,0 +1,25 @@
+id: TASK-015
+title: "Consented activation and moment-map surfaces"
+status: complete
+priority: high
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Design v2 D2/D6: generated surfaces route by moment (plan/build/review/ship/memory, commit = execute-task closeout, build owns implement wording); activation_mode: explicit|repo-default with optional governed_paths gates the activation line; root skill defers to activation_mode; validator accepts the fields; bootstrap asks once (doc-minimums)."
+file_scope:
+  - skills/forge/assets/scripts/forge_generate_agent_surfaces.py
+  - skills/forge/assets/templates/AGENTS.narrative.md
+  - skills/forge/assets/templates/AI.md
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - skills/forge/SKILL.md
+  - skills/forge/bootstrap/references/doc-minimums.md
+  - verify-repo.py
+acceptance_criteria:
+  - "Router and narrative surfaces carry the moment map; commit routes to execute-task closeout, not forge-ship."
+  - "Activation line emitted only under activation_mode: repo-default, scoped by governed_paths when set; regeneration never changes activation."
+  - "Fixtures cover map presence, activation gating, and scoping."
+evidence:
+  - "verify_surface_fallback extended: moment map present, activation absent under explicit, present+scoped under repo-default"
+  - "budgets: root skill 3191/3200, AI.md template 3115/3200"
+history:
+  - "2026-07-31: implemented per design v2 D2/D6 (reviewer routing corrections adopted)."

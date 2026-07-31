@@ -397,6 +397,20 @@ if grep -q 'FORGE-config' "$AI_MD"; then
       fi
     fi
   done
+  if has_config_field "$AI_MD" "activation_mode"; then
+    ACTIVATION_MODE_VALUE=$(get_config_value "$AI_MD" "activation_mode")
+    if [ "$ACTIVATION_MODE_VALUE" != "explicit" ] && [ "$ACTIVATION_MODE_VALUE" != "repo-default" ]; then
+      echo "FORGE: activation_mode must be 'explicit' or 'repo-default' when present."
+      FAILED=1
+    fi
+  fi
+  if has_config_field "$AI_MD" "governed_paths"; then
+    GOVERNED_PATHS_VALUE=$(get_config_value "$AI_MD" "governed_paths")
+    if [ -z "$GOVERNED_PATHS_VALUE" ]; then
+      echo "FORGE: governed_paths must not be empty when present."
+      FAILED=1
+    fi
+  fi
   if has_config_field "$AI_MD" "collaboration_mode"; then
     COLLAB_MODE_VALUE=$(get_config_value "$AI_MD" "collaboration_mode")
     if [ "$COLLAB_MODE_VALUE" != "solo" ] && [ "$COLLAB_MODE_VALUE" != "team" ]; then

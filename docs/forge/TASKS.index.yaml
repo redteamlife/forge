@@ -119,3 +119,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-017.yaml
+  - id: TASK-015
+    title: "Consented activation and moment-map surfaces"
+    status: complete
+    priority: high
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-015.yaml

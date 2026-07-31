@@ -10,6 +10,9 @@ execution_mode: manual
 collaboration_mode: solo
 task_source: local
 agent_context_profile: lite
+# activation_mode: explicit (route when asked) | repo-default (surfaces route
+# all implementation work; optional governed_paths scopes it in monorepos)
+activation_mode: explicit
 security_profile: baseline
 # solo_branch_flow by bootstrap profile:
 #   solo-simple   -> direct
@@ -18,11 +21,10 @@ solo_branch_flow: direct
 # coordination_branch and integration_branch are team-full concepts. Omit for
 # solo profiles — except clean-main solo, where integration_branch is the
 # working branch (usually dev) and release_branch stays clean.
-# dev_only_paths: comma-separated paths that must never reach release_branch
-# (clean-main model). Entries ending in / are prefixes. Default when absent:
-# docs/forge/. Guards (pre-push, block-forge-in-main) and forge-promote read it.
-# Common additions when surfaces should stay off the release branch:
-#   CLAUDE.md, AGENTS.md, .cursor/rules/, .github/copilot-instructions.md
+# dev_only_paths: comma-separated paths that never reach release_branch
+# (clean-main model; trailing / = prefix; default docs/forge/). Read by the
+# guards and forge-promote. Common additions: CLAUDE.md, AGENTS.md,
+# .cursor/rules/, .github/copilot-instructions.md
 # dev_only_paths: docs/forge/
 # coordination_branch: forge-state
 # integration_branch: develop

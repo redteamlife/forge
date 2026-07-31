@@ -63,19 +63,20 @@ def detect_stacks(repo: Path) -> list[str]:
     return stacks
 
 
+MOMENT_MAP = """Route work through installed FORGE skills by moment:
+
+- plan / break down / add or reshape work -> `forge-plan`
+- implement / build / fix / continue -> `forge-build` (gates run in the loop)
+- review / "is this done" -> `forge-review`
+- commit the current task -> `forge-execute-task` closeout
+- merge / release / promote / close out -> `forge-ship`
+- record or recall lessons -> `forge-memory`
+"""
+
 ROUTER = """# Repo Agent Guide
 
-Use installed FORGE skills for governed work.
-
-Default read order:
-1. `docs/forge/AI.md`
-2. `docs/forge/CONTEXT.md` if present
-3. `docs/forge/TASKS.index.yaml` or the configured task source
-4. one selected task
-5. task-relevant source files only
-
-Do not load all `docs/forge/*` files at session start.
-Read team, architecture, memory, setup, evaluation, and security checklist docs only when relevant.
+""" + MOMENT_MAP + """
+Reads: `docs/forge/AI.md`, `docs/forge/CONTEXT.md` if present, the task index, one selected task, task-relevant source only. Do not load all `docs/forge/*` files at session start.
 """
 
 STANDARD = """# Repo Agent Guide
@@ -135,6 +136,20 @@ def config_value(repo: Path, field: str) -> str:
         if stripped.startswith(f"{field}:"):
             return stripped.split(":", 1)[1].strip()
     return ""
+
+
+def activation_line(repo: Path) -> str:
+    """Emitted only with explicit repo consent (design TASK-011 D6). Surface
+    regeneration must never change activation behavior by itself."""
+    if config_value(repo, "activation_mode") != "repo-default":
+        return ""
+    governed = config_value(repo, "governed_paths")
+    scope = f" under `{governed}`" if governed else ""
+    return (
+        "\nThis repo uses FORGE for implementation work" + scope +
+        " — route through the skills above even when the request does not "
+        "mention FORGE.\n"
+    )
 
 
 def clean_main_fallback(repo: Path) -> str:
@@ -235,8 +250,11 @@ def main() -> int:
         return router
 
     fallback = clean_main_fallback(repo)
+    activation = activation_line(repo)
     for name in ("CLAUDE.md", "AGENTS.md"):
         text = pick(name)
+        if activation and activation.strip() not in text:
+            text = text.rstrip("\n") + "\n" + activation
         if fallback and fallback.strip() not in text:
             text = text.rstrip("\n") + "\n" + fallback
         path = repo / name
