@@ -10,6 +10,9 @@ All notable changes to this repository will be documented in this file.
 - Defined execution modes on the shipped vocabulary in `references/execution-modes.md`: `manual` (default) | `batch` (requires `batch_size`, task independence, and per-task branch closure in solo-governed) | `auto` (org-policy gated). `requires_independent_review` is an unconditional stop in every mode; validator checks values.
 - Generated agent surfaces now route by moment (plan -> forge-plan, implement -> forge-build, review -> forge-review, release -> forge-ship, lessons -> forge-memory; per-task commits complete inside execute-task), with an always-route activation line emitted only under the new consented `activation_mode: repo-default` (optionally scoped by `governed_paths`). Surface regeneration never changes activation behavior.
 - Added `forge_next_gate.py`: deterministic next-required-gate conductor for small models and non-skill harnesses, plus a warn-only Claude Code adapter fragment; the pre-commit hook is now mode-aware and warns on `governed_paths` commits with no governance update.
+- Made FORGE commit trailers optional: the `commit-msg` hook still enforces Conventional Commits and rejects AI attribution, but no longer requires `FORGE-mode`/`FORGE-task` on every commit. `FORGE-gate` is removed (it was never verified and duplicated the task-file `gates:` block). `FORGE-task` remains available as an optional durable commit->task link.
+- The `pre-commit` hook warns (never blocks) when a task file staged as complete has no `gates:` block, pointing at the checkpoint gates.
+- Bootstrap seeds a starter `.gitignore` (append-only) from `assets/templates/gitignore.starter`.
 - Lifecycle alias descriptions trigger on the user's words plus the repo signal (`docs/forge/` present) instead of requiring the word "FORGE".
 
 ### Fixed
