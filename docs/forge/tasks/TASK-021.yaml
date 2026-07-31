@@ -1,6 +1,7 @@
 id: TASK-021
 title: "Design: release-gated docs, CHANGELOG, portable publishing"
 status: complete
+review_state: changes-incorporated
 priority: high
 phase: design
 owner_lane: single
@@ -22,3 +23,4 @@ gates:
   evaluation: pass
 history:
   - "2026-07-31: design written; publishing targets (GitLab wiki primary, Obsidian export) folded in per maintainer input."
+  - "2026-07-31: external critique returned changes-required; all findings verified and incorporated as v2 (target-neutral canonical form, sensitivity-gated publication fail-closed, textual-frontmatter no-YAML-dep, release manifest, topology matrix, configured version_source/changelog, Prepare/Publish split, no forge-docs CLI). TASK-023 flagged for security review."
