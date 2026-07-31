@@ -1,165 +1,174 @@
-# Design: Workflow Stickiness (closing the loop, moment-routing, continuous mode)
+# Design v2: Workflow Stickiness (layered activation, mode-aware loop, moment routing)
 
-Status: proposed (TASK-011). Implementation follows in separate bounded tasks after
-review. Written for external review; feedback welcome on every decision.
+Status: accepted after external review (v1 critique: fail pending revisions; all
+blocking findings incorporated below). Implemented by TASK-012..017, target 1.9.0.
 
-## Problem
+## Problem (unchanged from v1)
 
-After `forge-bootstrap`, governed behavior decays. Observed pattern (reported by the
-pack maintainer and matching downstream usage): bootstrap generates docs and tasks,
-then the operator must repeatedly say "use forge skills to create tasks for X",
-"commit using forge skills". Several gate skills (critique, security-review,
-evaluation, memory) effectively never run unless explicitly requested.
+After `forge-bootstrap`, governed behavior decays: gates (critique,
+security-review, evaluation, memory) never run unless explicitly requested, and
+users must keep saying "use forge skills to ...". Root causes: the execution loop
+does not close (execute-task never invokes the gates), agent surfaces route to
+files not moments, alias descriptions trigger only on the word "FORGE",
+`execution_mode` semantics are undefined, and memory handling drifted from
+`philosophy/execution-model.md`.
 
-Root causes found by reviewing all 13 subskills:
+## Architecture: stickiness as a layered system (from review)
 
-1. **The execution loop does not close.** `forge-execute-task`'s workflow is
-   implement -> checks -> update state -> commit -> stop. Critique, security
-   review, evaluation, and the memory write are separate skills it never invokes.
-   The gates exist; nothing conducts them.
-2. **Philosophy/skill drift.** `philosophy/execution-model.md` specifies memory is
-   queried before the alignment check; `forge-execute-task` never mentions memory
-   in reads, workflow, or evidence.
-3. **Agent surfaces route to files, not moments.** The generated router says what
-   to read (`AI.md`, task index, one task) but never when to invoke which skill.
-   The surface is the only always-in-context lever per session, and it is spent on
-   read order instead of activation.
-4. **Meta trigger descriptions.** Lifecycle aliases describe themselves as "Route
-   FORGE planning requests..." — they trigger only when the user says "FORGE".
-   A user in a bootstrapped repo says "now add auth", and ungoverned work happens
-   in a governed repo.
-5. **Continuous mode is undefined.** `execution_mode` exists in FORGE-config and
-   execute-task step 12 allows continuing "when the project explicitly allows it",
-   but no semantics are defined anywhere.
-
-Design tension to resolve honestly: FORGE's core principle is explicit activation,
-never always-on. Resolution: **the repo opts in at bootstrap.** Once a repo carries
-`docs/forge/`, its own surfaces declare FORGE the default workflow for that repo.
-Explicitness moves from every-message to once-at-bootstrap; the pack itself remains
-inert in repos that never opted in.
+```text
+repo activation surface        (always in context; consented via config)
+        v
+single moment router           (intent -> one owning skill)
+        v
+mode-aware checkpoint loop     (gates run per profile; outcomes recorded)
+        v
+deterministic enforcement      (machine-readable gate state + helper script,
+                                git hooks, CI; harness adapters optional)
+```
 
 ## Decisions
 
-### D1. Close the loop inside `forge-execute-task`
+### D1. Close the loop inside `forge-execute-task` — mode-aware
 
-The checkpoint definition becomes: select/claim task -> **memory read (index +
-relevant topic only, before the alignment check — fixes drift #2)** -> implement
--> run checks -> **critique gate** -> **security-review gate when the change
-surface or `security_profile` requires it** -> **evaluation gate** -> **memory
-write (short entry; fuller entry only when reusable)** -> update task state ->
-commit -> stop or continue per `execution_mode`.
+Checkpoint: select/claim -> memory read (index + relevant topic, before the
+alignment check) -> implement -> checks -> **review gates via the `forge-review`
+composite** (single owner of gate ordering; runs critique, then security review
+when the change surface or `security_profile` requires it, then evaluation) ->
+memory write when a reusable lesson exists -> update task state -> commit ->
+stop or continue per `execution_mode`.
 
-- The gate skills remain independently invocable (required for
-  `requires_independent_review`, standalone review requests, and forge-review
-  routing). Execute-task *invokes* them; it does not inline their content.
-- Gate failures behave as today: blocking findings are hard stops.
-- Cost control: gates already mandate compact findings-first output; the loop
-  adds no new reads beyond what each gate already declares.
-- Evidence list gains: memory entry reference, gate results per checkpoint.
+Mode/artifact awareness (v2 change — v1 would have hard-stopped Lightweight
+repos, including this one):
 
-Rejected alternative: merging critique/evaluation content into execute-task.
-Bloats the highest-frequency skill past its size budget and breaks independent
-review, forge-review routing, and separate-session evaluation.
+- critique: always (needs no project files).
+- security review: driven by change surface and `security_profile`, as the
+  security-review skill already defines; `n/a` is a recorded outcome, not a skip.
+- evaluation: full gate when `docs/forge/EVALUATION.md` exists; otherwise record
+  the outcome in the task's `gates:` block only.
+- memory: read/write only when memory docs exist; never a mandatory entry —
+  `no relevant lesson` is a first-class outcome (prevents operational sludge).
 
-### D2. Agent surfaces become moment->skill maps
+Recorded outcome vocabulary (machine-readable, in the task file):
 
-`forge_generate_agent_surfaces.py` router output (and the narrative template's
-governance section) is rewritten to a compact intent table:
+```yaml
+gates:
+  critique: pass | fail
+  security: pass | n/a | escalated
+  evaluation: pass | handoff-required | fail
+  memory: entry | no-relevant-lesson | store-unavailable
+```
 
-- plan / break down / add or reshape tasks -> `forge-plan`
-- implement / build / fix / continue work -> `forge-execute-task` (gates run
-  inside the loop per D1)
+### D2. Agent surfaces become moment->skill maps (routing corrected)
+
+Generated router and narrative governance section carry:
+
+- plan / break down / add or reshape work -> `forge-plan`
+- implement / build / fix / continue -> `forge-build` (public route; delegates
+  to the `forge-execute-task` primitive — one owner, resolving the v1
+  double-ownership error)
 - review / "is this done" -> `forge-review`
-- commit / merge / release / promote -> `forge-ship`
+- commit current task -> `forge-execute-task` closeout (v1 wrongly sent commits
+  to forge-ship)
+- merge / release / promote / close out -> `forge-ship`
 - record or recall lessons -> `forge-memory`
 
-Plus one activation line: "This repo uses FORGE for all implementation work —
-route through these skills even when the request does not mention FORGE."
-File read-order guidance shrinks to one line (`AI.md`, `CONTEXT.md`, task index,
-one task). Lite context budgets are preserved: the moment table replaces, not
-augments, the current router prose; `forge_validate_context.py` size checks and
-include-bomb rules still apply unchanged.
+The activation line is emitted only when the repo consents via D6.
 
-Rejected alternative: keeping read-order routing and relying on better skill
-descriptions alone. Descriptions compete with every other installed skill; the
-repo surface is the only deterministic, always-loaded channel.
+### D3. De-meta alias descriptions
 
-### D3. De-meta the alias descriptions; eval them
+Alias descriptions trigger on the user's words plus the repo signal
+(`docs/forge/` present or FORGE named), not on the word "FORGE" alone.
+`forge-build` owns implement/build/fix wording; `forge-execute-task`'s
+description names it as the primitive that build routes to (collision-avoidance
+between root, aliases, and primitives). Trigger evaluation: measured runs with
+the existing Claude-oriented optimizer harness; other harnesses get manual
+description review against their documented matching behavior (building a
+cross-harness eval rig is out of scope).
 
-Rewrite `forge-plan`/`forge-build`/`forge-review`/`forge-ship` (and audit
-`forge-critique`/`forge-evaluation`/`forge-memory`) descriptions to trigger on
-the user's words plus the repo signal, not the word FORGE. Shape: "Use when the
-user asks to plan, break down, or add tasks in a repo containing `docs/forge/`
-or governed by FORGE...". Then run the existing description-optimization harness
-(`skills/forge-workspace/description-optimization/`) over the subskills — the
-same process that fixed the root skill's triggering — with the collision lesson
-applied (isolate the skill under test from the system-wide install).
+### D4. Execution modes: define the vocabulary we already ship (v2 redesign)
 
-Guardrail: descriptions must still condition on the repo signal so the pack does
-not capture generic "review this" requests in non-FORGE repos. Always-on capture
-is a non-goal.
+v1's `manual | continuous` is dropped — the pack already ships
+`execution_mode: auto` (org policy `auto_mode_permitted`) and bounded batch
+(`batch_size`, modes philosophy). Semantics defined in a new
+`references/execution-modes.md`:
 
-### D4. Define `execution_mode` semantics
+- `manual` (default, all profiles): stop after each completed checkpoint.
+- `batch`: continue up to `batch_size` checkpoints. Requires: task independence
+  (no shared `file_scope`/`contract_files`), and a branch rule — solo-governed
+  merges or hands off each task branch before starting the next unless
+  `solo_branch_flow: direct`; team mode re-claims and reconciles per task.
+- `auto`: batch without a fixed count; permitted only when org policy allows
+  (`auto_mode_permitted`) and never with `requires_independent_review` tasks —
+  those are an unconditional stop in every mode.
 
-In FORGE-config and `references/`:
+All modes: full gates per checkpoint (mode changes pacing and topology rules,
+never rigor); stop on hard stops, ledger exhaustion, un-integrated dependents,
+or claim conflicts. "Do not stop until done" is a per-run override interpreted
+as `batch` with the run's stated bound, not a persistent config change.
+Validator gains value checking for `execution_mode` (`manual|batch|auto`).
 
-- `manual` (default): stop after each checkpoint (today's behavior).
-- `continuous`: after a completed checkpoint (all gates + evidence + commit),
-  select the next eligible task and continue; stop only on hard stops, ledger
-  exhaustion, or blocked dependencies. Every checkpoint retains full gates —
-  continuous changes pacing, never rigor.
+### D5. Deterministic enforcement core; adapters optional (v2 redesign)
 
-Bootstrap asks for it alongside the existing profile questions; execute-task
-step 12 references the field instead of "when the project explicitly allows it".
-The README's "do not stop until done" kickoff phrase maps to `continuous`.
+- Machine-readable gate state: the `gates:` block (D1) in per-task files;
+  templates document it; the task schema accepts it.
+- New helper `assets/scripts/forge_next_gate.py`: reads `AI.md` + one task file,
+  prints the next required gate (or `checkpoint-complete`) given the profile and
+  recorded outcomes. Small models and non-skill harnesses get a deterministic
+  conductor instead of probabilistic four-skill chaining.
+- Git `pre-commit` remains the local enforcement layer and closes the v1 bypass:
+  it now also warns on commits that touch `governed_paths` (D6) with no
+  task-state change at all (warn, not block — code-only WIP commits are legal).
+- Harness adapters are thin optional fragments invoking the same helper; ship
+  the Claude Code one (`.claude/settings.json` PreToolUse example, verifiable
+  today) and document the adapter pattern for Codex/Cursor/Qwen Code rather than
+  shipping unverified fragments. CI stays the durable backstop.
 
-### D5. Optional harness enforcement (Claude Code)
+### D6. Activation is consented config, not repo-presence (from review)
 
-New optional asset: `.claude/settings.json` fragment with a PreToolUse hook on
-`git commit` that warns (not blocks) when `docs/forge/` exists and the staged
-change set updates task state without touching `docs/forge/EVALUATION.md` —
-mirroring the existing git `pre-commit` hook so the nudge exists even before git
-hooks are installed. Opt-in at bootstrap, documented in `ci-setup/`.
+New FORGE-config fields:
 
-Additionally: bootstrap's hook-install question defaults to **yes** for
-`solo-governed` and `team-full` (currently "when the user wants it") — the git
-hooks are the enforcement layer that already exists and is rarely installed.
+```yaml
+activation_mode: explicit | repo-default
+# governed_paths: src/, services/payments/   # optional; monorepo scoping
+```
 
-Rejected alternative: making the Claude hook blocking. Cross-harness parity does
-not exist (Cursor/Copilot/Windsurf have no equivalent), and FORGE policy is that
-CI is the durable backstop; local nudges stay advisory.
+- `explicit` (default for existing repos and migrations): surfaces route when
+  asked; today's behavior, and the root skill's "never always-on" rule holds.
+- `repo-default`: surfaces carry the activation line ("implementation work in
+  this repo routes through FORGE skills, even when the request does not mention
+  FORGE"), scoped to `governed_paths` when set.
+- New bootstraps ask once (governed profiles recommend `repo-default`).
+  Surface regeneration NEVER changes `activation_mode` — existing repos keep
+  their behavior unless the human edits the config.
+- Root skill rule amended to defer to `activation_mode` instead of a blanket
+  "never always-on".
+
+### D7. Hook-docs reconciliation (pre-existing contradiction, fixed first)
+
+GETTING_STARTED.md and the 1.6.0 changelog say governed profiles install git
+hooks automatically; bootstrap SKILL.md says "when the user wants local
+enforcement". Resolution: governed profiles install hooks by default with an
+explicit opt-out at bootstrap; docs aligned in both directions.
+
+## Implementation plan
+
+1. TASK-012: D7 hook-docs reconciliation (standalone quick fix).
+2. TASK-013: D1 loop closure + memory drift fix + `gates:` block in templates/
+   schema + execute-task budget management.
+3. TASK-014: D4 `references/execution-modes.md` + validator value check + org
+   policy/philosophy/README alignment.
+4. TASK-015: D6 config + D2 surface generator/narrative rewrite + root-skill
+   amendment + fixtures.
+5. TASK-016: D3 description rewrites + collision review; optimizer eval runs
+   recorded as evidence where run.
+6. TASK-017: D5 `forge_next_gate.py` + pre-commit governed-paths warn + Claude
+   adapter fragment + ci-setup/agent-flavors docs.
+
+Scope includes (from review): root skill, `agent-flavors.md`, migration docs,
+mode philosophy, org policy template, and verification fixtures. Checkpoint
+context cost is measured (gate skills + evidence reads), not only surface size.
 
 ## Non-goals
 
-- No always-on behavior at the pack level; repos without `docs/forge/` are
-  untouched by every change here.
-- No new subskills. The fix is wiring, not surface area.
-- No harness-specific behavior beyond the optional D5 asset.
-
-## Implementation plan (bounded tasks, target 1.9.0)
-
-1. TASK-012: D1 + memory drift fix (execute-task workflow/evidence, philosophy
-   cross-check) + D4 semantics (config comment, execute-task step 12, bootstrap
-   question, README mapping).
-2. TASK-013: D2 surface generator + narrative template rewrite; regenerate
-   fixtures; context-validator budgets re-verified.
-3. TASK-014: D3 description rewrites + description-optimization eval runs;
-   record before/after trigger rates as evidence.
-4. TASK-015: D5 Claude hook asset + bootstrap hook-default change + ci-setup
-   docs.
-
-Verification: existing verify-repo fixtures plus new checks that (a) execute-task
-names all four gates in its workflow, (b) generated surfaces contain the moment
-table and stay within size budgets, (c) subskill descriptions parse under strict
-YAML and contain the repo-signal condition.
-
-## Review questions for downstream
-
-1. D1: is invoking gates from inside execute-task the right granularity, or
-   should gate results be summarized inline with full runs only on findings?
-2. D2: does the moment table read as capture-y in mixed repos (FORGE governs one
-   service in a monorepo)? Should the activation line be scoped to paths?
-3. D4: should `continuous` be the bootstrap default for solo-governed, or is
-   manual-first still right for new users?
-4. D5: is a warn-only Claude hook worth the harness-specific surface, or is
-   defaulting git hooks to installed sufficient?
+- No always-on behavior without `activation_mode: repo-default` consent.
+- No new subskills; no unverified harness fragments; no cross-harness eval rig.

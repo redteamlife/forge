@@ -17,3 +17,4 @@ evidence:
   - "full subskill review 2026-07-31: loop does not close (execute-task lacks gate/memory steps), philosophy/skill memory drift, meta alias descriptions, undefined execution_mode"
 history:
   - "2026-07-31: design written for external review before implementation."
+  - "2026-07-31: external critique returned fail-pending-revisions; all blocking findings verified against the repo and incorporated as design v2 (mode-aware gates, corrected routing, activation_mode consent, execution-mode vocabulary reuse, deterministic enforcement core, hook-docs reconciliation)."
