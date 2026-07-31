@@ -159,3 +159,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-020.yaml
+  - id: TASK-021
+    title: "Design: release-gated docs, CHANGELOG, portable publishing"
+    status: complete
+    priority: high
+    phase: design
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-021.yaml

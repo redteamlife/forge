@@ -1,0 +1,24 @@
+id: TASK-021
+title: "Design: release-gated docs, CHANGELOG, portable publishing"
+status: complete
+priority: high
+phase: design
+owner_lane: single
+owner: taffy
+description: "Design for making documentation a release-gated, standards-compliant, portable artifact: one canonical Obsidian-shaped handbook down-converted to GitLab wiki (primary) and Obsidian vault via a deterministic exporter; rich frontmatter with review_in_days staleness; CHANGELOG + SemVer release standard; forge-ship release gate. Folds in the maintainer's GitLab-wiki-primary / Obsidian-export requirement."
+file_scope:
+  - docs/forge/designs/TASK-021-docs-release-and-publishing.md
+  - docs/forge/TASKS.index.yaml
+acceptance_criteria:
+  - "Design records the canonical-source decision, target mechanics for GitLab wiki and Obsidian, the export pipeline, the release gate, and CHANGELOG/SemVer standards."
+  - "Existing application_docs content model is reused, not rebuilt."
+  - "Open questions and bounded implementation tasks (TASK-022..025) recorded for review."
+evidence:
+  - "docs/forge/designs/TASK-021-docs-release-and-publishing.md"
+  - "audit: application_docs already ships the recon_runner doc set; gaps are release-gating, CHANGELOG, versioning standard, and portability"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: design written; publishing targets (GitLab wiki primary, Obsidian export) folded in per maintainer input."
