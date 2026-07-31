@@ -1,0 +1,22 @@
+id: TASK-016
+title: "De-meta alias descriptions with repo signal"
+status: complete
+priority: high
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Design v2 D3: forge-plan/build/review/ship descriptions trigger on the user's words plus the repo signal (docs/forge/ present or FORGE named) instead of 'Route FORGE X requests'. forge-build owns implement/build/fix wording; execute-task names itself the primitive behind build; ship explicitly excludes per-task commits. Gate skills (critique/evaluation/memory) unchanged - the loop conducts them."
+file_scope:
+  - skills/forge/plan/SKILL.md
+  - skills/forge/build/SKILL.md
+  - skills/forge/review/SKILL.md
+  - skills/forge/ship/SKILL.md
+acceptance_criteria:
+  - "No alias description requires the word FORGE alone to trigger; each carries the repo-signal condition."
+  - "Collision ownership: build=implement wording, execute-task=primitive, ship excludes commits."
+  - "All frontmatter parses under strict YAML."
+evidence:
+  - "strict-YAML parse of all 14 SKILL.md frontmatter blocks passes"
+  - "optimizer eval runs not executed this round; recorded as follow-up (harness is Claude-oriented; manual collision review done)"
+history:
+  - "2026-07-31: implemented per design v2 D3."

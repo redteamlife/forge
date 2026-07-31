@@ -1,6 +1,6 @@
 ---
 name: forge-ship
-description: Route FORGE shipping requests through integration, release reconciliation, claim release, and completion evidence checks.
+description: Use when the user asks to merge, release, promote, reconcile, or close out work in a repo containing `docs/forge/` or governed by FORGE. Not for per-task commits; those complete inside forge-execute-task.
 ---
 
 # FORGE Ship
