@@ -1,0 +1,20 @@
+id: TASK-014
+title: "Execution-mode semantics on shipped vocabulary"
+status: complete
+priority: high
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Design v2 D4: references/execution-modes.md defines manual|batch|auto (pacing only; branch topology, independence, claim, and org-policy rules; requires_independent_review is an unconditional stop). Validator checks execution_mode values and batch_size pairing; AI.md template documents the field."
+file_scope:
+  - skills/forge/references/execution-modes.md
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - skills/forge/assets/templates/AI.md
+acceptance_criteria:
+  - "manual|batch|auto reuse the vocabulary already in org policy and modes philosophy; no continuous mode."
+  - "Validator rejects unknown execution_mode and batch without batch_size."
+  - "Per-run overrides documented as batch-bounded, never persistent config changes."
+evidence:
+  - "validator value check added; AI.md at 3048/3200 bytes"
+history:
+  - "2026-07-31: implemented per design v2 D4 (reviewer redesign adopted)."

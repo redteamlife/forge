@@ -373,6 +373,20 @@ if grep -q 'FORGE-config' "$AI_MD"; then
   if ! has_config_field "$AI_MD" "execution_mode"; then
     echo "FORGE: FORGE-config block in AI.md is missing execution_mode."
     FAILED=1
+  else
+    EXECUTION_MODE_VALUE=$(get_config_value "$AI_MD" "execution_mode")
+    case "$EXECUTION_MODE_VALUE" in
+      manual|batch|auto)
+        ;;
+      *)
+        echo "FORGE: execution_mode must be manual, batch, or auto."
+        FAILED=1
+        ;;
+    esac
+    if [ "$EXECUTION_MODE_VALUE" = "batch" ] && ! has_config_field "$AI_MD" "batch_size"; then
+      echo "FORGE: execution_mode: batch requires batch_size."
+      FAILED=1
+    fi
   fi
   for field in coordination_branch integration_branch release_branch dev_only_paths; do
     if has_config_field "$AI_MD" "$field"; then

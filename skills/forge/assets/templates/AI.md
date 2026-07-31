@@ -3,6 +3,9 @@
 ```FORGE-config
 forge_version: 1.8.1
 FORGE_mode: Lightweight
+# execution_mode: manual (stop per checkpoint) | batch (needs batch_size) | auto
+# (org-policy gated). Pacing only — gates run per checkpoint in every mode.
+# See references/execution-modes.md.
 execution_mode: manual
 collaboration_mode: solo
 task_source: local
