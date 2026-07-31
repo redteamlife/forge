@@ -1,0 +1,22 @@
+id: TASK-028
+title: "forge-ship Prepare/Publish release gate"
+status: complete
+priority: high
+phase: docs
+owner_lane: single
+owner: taffy
+description: "Design v3 D5/D6/D8: forge-ship rewritten into Prepare (authoritative pre-tag: version bump, changelog curate, release_check, doc export to in-repo staging, release manifest, commit content then evidence) and Publish (topology-selected release, tag, push with authz, notes, wiki/vault hand-off, mark complete). Topology matrix; multi-package stops-and-asks; acyclic manifest ordering."
+file_scope:
+  - skills/forge/ship/SKILL.md
+acceptance_criteria:
+  - "Release is two stages; pre-tag validation is authoritative."
+  - "Topology matrix selects normal/clean-main/tool/monorepo; monorepo stops and asks."
+  - "Release manifest content_commit is acyclic (names content, not evidence, commit)."
+evidence:
+  - "forge-ship SKILL.md Prepare/Publish rewrite; hard stops include release_check failure and multi-package detection"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: implemented per design v3."

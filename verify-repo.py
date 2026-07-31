@@ -143,10 +143,13 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "lifecycle-map.md",
         SKILL_ROOT / "references" / "skill-anatomy.md",
         SKILL_ROOT / "references" / "execution-modes.md",
+        SKILL_ROOT / "references" / "release-management.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_adapters.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py",
+        SKILL_ROOT / "assets" / "templates" / "CHANGELOG.md",
         SKILL_ROOT / "assets" / "agent-surfaces" / ".claude" / "settings.forge-fragment.json",
         SKILL_ROOT / "assets" / "application-docs" / "tool-overview.md",
         SKILL_ROOT / "assets" / "application-docs" / "developer-guide.md",
@@ -784,6 +787,19 @@ def verify_docs_export() -> None:
                "export overwrote an unmanaged destination")
 
 
+def verify_release_check() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py"
+    with tempfile.TemporaryDirectory(prefix="forge-rel-") as td:
+        cl = Path(td) / "CHANGELOG.md"
+        cl.write_text("# Changelog\n\n## [1.9.0] - 2026-07-31\n\n- x\n")
+        ok = subprocess.run([sys.executable, str(script), "--version", "1.9.0",
+                             "--changelog", str(cl)], capture_output=True, text=True)
+        ensure(ok.returncode == 0, f"release check failed on a present version:\n{ok.stderr}")
+        miss = subprocess.run([sys.executable, str(script), "--version", "2.0.0",
+                               "--changelog", str(cl)], capture_output=True, text=True)
+        ensure(miss.returncode == 1, "release check passed a missing changelog version")
+
+
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""
     execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
@@ -878,6 +894,7 @@ def main() -> int:
         verify_gate_loop()
         verify_docs_staleness()
         verify_docs_export()
+        verify_release_check()
         verify_commit_msg_hook()
         verify_install_flow()
     except CheckFailure as exc:

@@ -207,3 +207,19 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-025.yaml
+  - id: TASK-027
+    title: "CHANGELOG, release standard, release validator"
+    status: complete
+    priority: high
+    phase: docs
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-027.yaml
+  - id: TASK-028
+    title: "forge-ship Prepare/Publish release gate"
+    status: complete
+    priority: high
+    phase: docs
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-028.yaml

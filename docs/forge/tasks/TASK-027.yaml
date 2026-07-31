@@ -1,0 +1,26 @@
+id: TASK-027
+title: "CHANGELOG, release standard, release validator"
+status: complete
+priority: high
+phase: docs
+owner_lane: single
+owner: taffy
+description: "Design v3 D7: Keep-a-Changelog template; references/release-management.md defining release_management/version_source/changelog enums, CC-type-to-section suggestions (not mechanical), and release-cadence gates; forge_release_check.py provider-neutral pre-tag validator (changelog entry + doc staleness); validator accepts the config fields."
+file_scope:
+  - skills/forge/assets/templates/CHANGELOG.md
+  - skills/forge/references/release-management.md
+  - skills/forge/assets/scripts/forge_release_check.py
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - verify-repo.py
+acceptance_criteria:
+  - "No universal VERSION; version_source is authoritative and configurable."
+  - "forge_release_check.py fails a missing changelog entry or stale docs pre-tag."
+  - "Validator accepts release_management/changelog values."
+evidence:
+  - "verify_release_check fixture: present version passes, missing version fails"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: implemented per design v3."

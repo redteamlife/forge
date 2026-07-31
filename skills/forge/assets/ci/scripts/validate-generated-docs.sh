@@ -440,6 +440,20 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         ;;
     esac
   fi
+  if has_config_field "$AI_MD" "release_management"; then
+    RM_VALUE=$(get_config_value "$AI_MD" "release_management")
+    case "$RM_VALUE" in
+      semver|calver|tag-only|external|disabled) ;;
+      *) echo "FORGE: release_management must be semver, calver, tag-only, external, or disabled."; FAILED=1 ;;
+    esac
+  fi
+  if has_config_field "$AI_MD" "changelog"; then
+    CL_VALUE=$(get_config_value "$AI_MD" "changelog")
+    case "$CL_VALUE" in
+      keep-a-changelog|provider-generated|external|disabled) ;;
+      *) echo "FORGE: changelog must be keep-a-changelog, provider-generated, external, or disabled."; FAILED=1 ;;
+    esac
+  fi
   if has_config_field "$AI_MD" "docs_format"; then
     DOCS_FORMAT_VALUE=$(get_config_value "$AI_MD" "docs_format")
     if [ "$DOCS_FORMAT_VALUE" != "flat" ] && [ "$DOCS_FORMAT_VALUE" != "handbook" ]; then
