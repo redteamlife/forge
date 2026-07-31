@@ -1,0 +1,17 @@
+id: TASK-012
+title: "Reconcile hook-install docs contradiction"
+status: complete
+priority: normal
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Design D7: GETTING_STARTED.md and the 1.6.0 changelog promise automatic hook install for governed profiles while bootstrap SKILL.md said 'when the user wants'. Bootstrap now installs hooks by default for governed profiles with explicit opt-out."
+file_scope:
+  - skills/forge/bootstrap/SKILL.md
+acceptance_criteria:
+  - "Bootstrap skill matches GETTING_STARTED: governed profiles install hooks by default, opt-out available."
+  - "bootstrap SKILL.md stays within its 5000-byte budget."
+evidence:
+  - "bootstrap SKILL.md step 8 reworded (shorter than original); verify-repo size budget passes"
+history:
+  - "2026-07-31: fixed per design v2 D7 (contradiction found in external review)."

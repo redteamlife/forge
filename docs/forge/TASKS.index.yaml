@@ -87,3 +87,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-011.yaml
+  - id: TASK-012
+    title: "Reconcile hook-install docs contradiction"
+    status: complete
+    priority: normal
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-012.yaml

@@ -32,7 +32,7 @@ Recognize bootstrap options in natural or CLI-shaped text: context profile (`lit
 5. Generate `docs/forge/CONTEXT.md` (`forge_context_budget.py`) and agent surfaces (`forge_generate_agent_surfaces.py`). For `solo-governed`/`team-full`, follow `references/scaffolding.md` (narrative AGENTS.md + scoped Cursor rules).
 6. For `repo_flavor: contract-first`, scaffold the contract per `references/scaffolding.md`.
 7. For `team-full` with `ci_enforcement: enabled`, copy the quality workflow per `references/scaffolding.md`.
-8. Run `forge_validate_context.py <repo>`. For `solo-governed`/`team-full`, install FORGE hooks when the user wants local enforcement.
+8. Run `forge_validate_context.py <repo>`. For `solo-governed`/`team-full`, install FORGE hooks by default unless the user opts out.
 9. Print a compact closeout with changed files and next setup step.
 
 ## Minimum Docs
