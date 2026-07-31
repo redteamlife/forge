@@ -1,0 +1,21 @@
+id: TASK-017
+title: "Deterministic checkpoint enforcement core"
+status: complete
+priority: high
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Design v2 D5: forge_next_gate.py prints the next required gate from AI.md + one task file (deterministic conductor for small models and non-skill harnesses); pre-commit hook is now mode-aware (EVALUATION.md required only when it exists) and warns on governed_paths commits with no docs/forge update (closes the v1 bypass); Claude Code adapter fragment ships as the one verifiable harness adapter."
+file_scope:
+  - skills/forge/assets/scripts/forge_next_gate.py
+  - skills/forge/assets/ci/hooks/pre-commit
+  - skills/forge/assets/agent-surfaces/.claude/settings.forge-fragment.json
+  - verify-repo.py
+acceptance_criteria:
+  - "Helper covers gate order, n/a-as-recorded, blocking outcomes, memory-store awareness; functional fixtures in verify-repo."
+  - "Pre-commit no longer blocks Lightweight repos lacking EVALUATION.md."
+  - "Adapter is warn-only; git hooks and CI remain the durable backstop."
+evidence:
+  - "five-case functional test + verify_gate_loop fixtures pass"
+history:
+  - "2026-07-31: implemented per design v2 D5 (portable-core-plus-adapters model)."

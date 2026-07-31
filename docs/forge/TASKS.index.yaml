@@ -95,3 +95,27 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-012.yaml
+  - id: TASK-013
+    title: "Mode-aware gate loop in execute-task"
+    status: complete
+    priority: high
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-013.yaml
+  - id: TASK-014
+    title: "Execution-mode semantics on shipped vocabulary"
+    status: complete
+    priority: high
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-014.yaml
+  - id: TASK-017
+    title: "Deterministic checkpoint enforcement core"
+    status: complete
+    priority: high
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-017.yaml

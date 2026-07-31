@@ -142,6 +142,9 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "cross-project.md",
         SKILL_ROOT / "references" / "lifecycle-map.md",
         SKILL_ROOT / "references" / "skill-anatomy.md",
+        SKILL_ROOT / "references" / "execution-modes.md",
+        SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".claude" / "settings.forge-fragment.json",
         SKILL_ROOT / "assets" / "application-docs" / "tool-overview.md",
         SKILL_ROOT / "assets" / "application-docs" / "developer-guide.md",
         SKILL_ROOT / "assets" / "application-docs" / "adr" / "0001-record-architecture-decisions.md",
@@ -227,7 +230,8 @@ def verify_size_budgets() -> None:
     budgets = {
         SKILL_ROOT / "SKILL.md": 3200,
         SKILL_ROOT / "bootstrap" / "SKILL.md": 5000,
-        SKILL_ROOT / "execute-task" / "SKILL.md": 5200,
+        # Raised 5200 -> 5400 for the checkpoint gate loop (design TASK-011 D1).
+        SKILL_ROOT / "execute-task" / "SKILL.md": 5400,
         SKILL_ROOT / "assets" / "templates" / "AI.md": 3200,
         SKILL_ROOT / "assets" / "templates" / "TEAM.md": 3200,
         SKILL_ROOT / "assets" / "agent-surfaces" / "AGENTS.md": 1600,
@@ -672,6 +676,44 @@ def verify_surface_fallback() -> None:
         ensure(marker not in text, "fallback wrongly emitted without dev_only_paths")
 
 
+def verify_gate_loop() -> None:
+    """Design TASK-011: execute-task must conduct the gates; helper must agree."""
+    execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
+    for needle in ("forge-review", "gates:", "critique: pass|fail",
+                   "security: pass|n/a|escalated",
+                   "evaluation: pass|handoff-required|fail",
+                   "memory: entry|no-relevant-lesson|store-unavailable",
+                   "execution-modes.md", "forge_next_gate.py"):
+        ensure(needle in execute, f"execute-task lost gate-loop element: {needle}")
+
+    helper = SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py"
+    with tempfile.TemporaryDirectory(prefix="forge-gate-") as temp_dir:
+        repo = Path(temp_dir)
+        (repo / "docs" / "forge").mkdir(parents=True)
+        task = repo / "task.yaml"
+        cases = [
+            ("id: T1\n", "critique", 0),
+            ("id: T1\ngates:\n  critique: pass\n", "security", 0),
+            ("id: T1\ngates:\n  critique: pass\n  security: n/a\n  evaluation: pass\n",
+             "checkpoint-complete", 0),
+            ("id: T1\ngates:\n  critique: fail\n", "blocked:critique", 1),
+        ]
+        for body, expected, code in cases:
+            task.write_text(body.replace("\\n", "\n"))
+            result = subprocess.run(
+                [sys.executable, str(helper), str(task), "--repo", str(repo)],
+                text=True, capture_output=True, check=False)
+            ensure(result.stdout.strip() == expected and result.returncode == code,
+                   f"next-gate mismatch for {body!r}: got {result.stdout.strip()!r} rc={result.returncode}")
+        (repo / "docs" / "forge" / "MEMORY.md").write_text("# Memory\n")
+        task.write_text("id: T1\ngates:\n  critique: pass\n  security: n/a\n  evaluation: pass\n")
+        result = subprocess.run(
+            [sys.executable, str(helper), str(task), "--repo", str(repo)],
+            text=True, capture_output=True, check=False)
+        ensure(result.stdout.strip() == "memory",
+               f"next-gate ignored memory store: {result.stdout.strip()!r}")
+
+
 def verify_install_flow() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-verify-") as temp_dir:
         env = os.environ.copy()
@@ -699,6 +741,7 @@ def main() -> int:
         verify_dev_only_guards()
         verify_promote_flow()
         verify_surface_fallback()
+        verify_gate_loop()
         verify_install_flow()
     except CheckFailure as exc:
         print(f"FORGE verify failed: {exc}", file=sys.stderr)
