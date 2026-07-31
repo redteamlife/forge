@@ -1,8 +1,15 @@
 ---
 title: Incident Runbook
-owners:
-status: draft
+slug: incident-runbook
+doc_type: troubleshooting
+owners: []
+created:
 updated:
+reviewed_at:
+review_in_days: 90
+status: draft
+tags: []
+sensitivity: internal
 ---
 
 ## Purpose

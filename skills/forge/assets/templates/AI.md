@@ -11,12 +11,10 @@ collaboration_mode: solo
 task_source: local
 agent_context_profile: lite
 # activation_mode: explicit (route when asked) | repo-default (surfaces route
-# all implementation work; optional governed_paths scopes it in monorepos)
+# all implementation work; governed_paths scopes it in monorepos)
 activation_mode: explicit
 security_profile: baseline
-# solo_branch_flow by bootstrap profile:
-#   solo-simple   -> direct
-#   solo-governed -> task-branches (human-controlled merge to release_branch)
+# solo_branch_flow: direct (solo-simple) | task-branches (solo-governed)
 solo_branch_flow: direct
 # coordination_branch and integration_branch are team-full concepts. Omit for
 # solo profiles — except clean-main solo, where integration_branch is the
@@ -32,6 +30,8 @@ release_branch: main
 response_style: terse
 ci_enforcement: disabled
 application_docs: false
+# application_docs: true adds docs_root (default docs/handbook) and
+# docs_format: flat|handbook. See references/application-docs.md.
 ```
 
 ## Purpose

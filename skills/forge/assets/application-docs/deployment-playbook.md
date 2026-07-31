@@ -1,8 +1,15 @@
 ---
 title: Deployment Playbook
-owners:
-status: draft
+slug: deployment-playbook
+doc_type: operations
+owners: []
+created:
 updated:
+reviewed_at:
+review_in_days: 90
+status: draft
+tags: []
+sensitivity: internal
 ---
 
 ## Purpose

@@ -1,8 +1,15 @@
 ---
 title: Architecture Overview
-owners:
-status: draft
+slug: architecture-overview
+doc_type: system
+owners: []
+created:
 updated:
+reviewed_at:
+review_in_days: 90
+status: draft
+tags: []
+sensitivity: internal
 ---
 
 ## Purpose

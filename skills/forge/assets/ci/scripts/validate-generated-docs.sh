@@ -440,6 +440,13 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         ;;
     esac
   fi
+  if has_config_field "$AI_MD" "docs_format"; then
+    DOCS_FORMAT_VALUE=$(get_config_value "$AI_MD" "docs_format")
+    if [ "$DOCS_FORMAT_VALUE" != "flat" ] && [ "$DOCS_FORMAT_VALUE" != "handbook" ]; then
+      echo "FORGE: docs_format must be 'flat' or 'handbook' when present."
+      FAILED=1
+    fi
+  fi
   if has_config_field "$AI_MD" "application_docs"; then
     APPLICATION_DOCS_VALUE=$(get_config_value "$AI_MD" "application_docs")
     case "$APPLICATION_DOCS_VALUE" in

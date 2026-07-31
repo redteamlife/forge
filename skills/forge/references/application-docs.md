@@ -86,18 +86,43 @@ diffable in PRs.
   Mermaid genuinely cannot express the diagram (e.g., complex network
   topologies). Note the reason in the doc when you do.
 
+## Layout: flat or handbook
+
+`docs_format` (in `docs/forge/AI.md`) selects the layout under `docs_root`
+(default `docs/handbook`):
+
+- `flat` (migration default): docs live directly under `docs_root`.
+- `handbook` (recommended for new projects): docs live in target-neutral
+  semantic folders — `overview/`, `system/`, `software/`, `interfaces/`,
+  `operations/`, `troubleshooting/`, `adr/` — with a `README.md` whose ordered
+  link list is the single navigation manifest. Do NOT use numbered folder
+  prefixes; ordering lives in the README, not in filenames.
+
 ## Frontmatter
 
-Application docs use a minimal frontmatter:
+Core schema (enums fixed; `x-*` extension keys allowed):
 
 ```
 ---
 title: <doc title>
-owners: <comma-separated owners or empty>
-status: draft | reviewed | accepted | deprecated
-updated: YYYY-MM-DD
+slug: <kebab-case>
+doc_type: overview | system | software | interface | operations | troubleshooting | adr
+owners: [name, name]
+created: YYYY-MM-DD
+updated: YYYY-MM-DD          # content changed
+reviewed_at: YYYY-MM-DD      # a human confirmed it is still correct
+review_in_days: 90
+status: draft | active | deprecated | archived
+tags: [tag, tag]
+sensitivity: public | internal | confidential | restricted
 ---
 ```
 
-If a project maintains an Obsidian vault with richer frontmatter, that is
-fine — FORGE only requires these four fields and will not strip extras.
+`updated` and `reviewed_at` are distinct: a mechanical edit bumps `updated` but
+must not reset the review clock; a no-change review bumps `reviewed_at`.
+Staleness is `reviewed_at + review_in_days` in the past — reported by
+`assets/scripts/forge_docs_staleness.py` and surfaced at release preparation.
+
+`sensitivity` is an ordered lattice (`public < internal < confidential <
+restricted`) that gates publication (see `forge_docs_export.py`); missing values
+are treated as `restricted` (fail closed). Never strip `sensitivity` on export.

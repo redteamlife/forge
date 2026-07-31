@@ -175,3 +175,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-026.yaml
+  - id: TASK-022
+    title: "Docs config, handbook layout, frontmatter schema, staleness"
+    status: complete
+    priority: high
+    phase: docs
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-022.yaml

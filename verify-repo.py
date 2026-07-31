@@ -144,6 +144,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "skill-anatomy.md",
         SKILL_ROOT / "references" / "execution-modes.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "agent-surfaces" / ".claude" / "settings.forge-fragment.json",
         SKILL_ROOT / "assets" / "application-docs" / "tool-overview.md",
         SKILL_ROOT / "assets" / "application-docs" / "developer-guide.md",
@@ -692,6 +693,25 @@ def verify_surface_fallback() -> None:
                "activation line missing or unscoped under repo-default")
 
 
+def verify_docs_staleness() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py"
+    with tempfile.TemporaryDirectory(prefix="forge-stale-") as temp_dir:
+        root = Path(temp_dir)
+        (root / "overview").mkdir()
+        (root / "overview" / "stale.md").write_text(
+            "---\ntitle: S\nreviewed_at: 2020-01-01\nreview_in_days: 90\n---\nx\n")
+        (root / "overview" / "never.md").write_text(
+            "---\ntitle: N\nreview_in_days: 90\n---\nx\n")
+        (root / "overview" / "fresh.md").write_text(
+            "---\ntitle: F\nreviewed_at: 2026-07-30\nreview_in_days: 90\n---\nx\n")
+        r = subprocess.run([sys.executable, str(script), str(root), "--today", "2026-07-31"],
+                           text=True, capture_output=True, check=False)
+        ensure(r.returncode == 1, "staleness did not flag lapsed docs")
+        ensure("STALE: overview/stale.md" in r.stdout, "stale doc not reported")
+        ensure("NEVER-REVIEWED: overview/never.md" in r.stdout, "never-reviewed doc not reported")
+        ensure("fresh.md" not in r.stdout, "fresh doc wrongly reported")
+
+
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""
     execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
@@ -784,6 +804,7 @@ def main() -> int:
         verify_promote_flow()
         verify_surface_fallback()
         verify_gate_loop()
+        verify_docs_staleness()
         verify_commit_msg_hook()
         verify_install_flow()
     except CheckFailure as exc:

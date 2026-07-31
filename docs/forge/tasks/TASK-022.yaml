@@ -1,0 +1,27 @@
+id: TASK-022
+title: "Docs config, handbook layout, frontmatter schema, staleness"
+status: complete
+priority: high
+phase: docs
+owner_lane: single
+owner: taffy
+description: "Design v3 D1/D2: docs_root + docs_format (flat|handbook) config; target-neutral handbook layout (semantic folders + README nav manifest) documented; full frontmatter schema with enums and reviewed_at (distinct from updated); forge_docs_staleness.py reports lapsed reviews; validator accepts docs_format; application-docs templates upgraded to the schema."
+file_scope:
+  - skills/forge/references/application-docs.md
+  - skills/forge/assets/application-docs/
+  - skills/forge/assets/scripts/forge_docs_staleness.py
+  - skills/forge/assets/templates/AI.md
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - verify-repo.py
+acceptance_criteria:
+  - "Frontmatter schema defines enums and reviewed_at; staleness keys off reviewed_at + review_in_days."
+  - "docs_format validated as flat|handbook; templates carry the full schema."
+  - "Staleness script flags stale and never-reviewed docs; fixtures pass."
+tests:
+  - "verify-repo.py verify_docs_staleness"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: implemented per design v3 D1/D2."
