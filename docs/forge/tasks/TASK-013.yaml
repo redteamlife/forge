@@ -1,0 +1,21 @@
+id: TASK-013
+title: "Mode-aware gate loop in execute-task"
+status: complete
+priority: high
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Design v2 D1: checkpoint = implement + gates + evidence + commit. Execute-task invokes the forge-review composite, reads memory before alignment (fixes philosophy drift), records machine-readable gates outcomes, and defers pacing to execution_mode. Gate requirements are mode/artifact-aware so Lightweight repos are not hard-stopped."
+file_scope:
+  - skills/forge/execute-task/SKILL.md
+  - skills/forge/assets/templates/tasks/TASK-001.yaml
+  - docs/forge/.schemas/task.schema.json
+  - verify-repo.py
+acceptance_criteria:
+  - "Execute-task workflow names forge-review, the gates vocabulary, memory read/write, and execution_mode."
+  - "Task template documents the gates block; schema accepts it."
+  - "verify_gate_loop enforces the loop elements; size budget raised 5200->5400 with justification."
+evidence:
+  - "verify-repo verify_gate_loop passes; execute-task at 5225/5400 bytes"
+history:
+  - "2026-07-31: implemented per design v2 D1."

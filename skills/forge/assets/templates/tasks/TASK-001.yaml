@@ -25,5 +25,9 @@ acceptance_criteria:
 # id in the test filename for traceability.
 tests:
   - "tests/test_TASK-001.py"
+# Review-gate outcomes recorded per checkpoint by forge-execute-task.
+# critique: pass|fail   security: pass|n/a|escalated
+# evaluation: pass|handoff-required|fail   memory: entry|no-relevant-lesson|store-unavailable
+# gates: {}
 evidence: []
 history: []
