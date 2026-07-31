@@ -373,6 +373,20 @@ if grep -q 'FORGE-config' "$AI_MD"; then
   if ! has_config_field "$AI_MD" "execution_mode"; then
     echo "FORGE: FORGE-config block in AI.md is missing execution_mode."
     FAILED=1
+  else
+    EXECUTION_MODE_VALUE=$(get_config_value "$AI_MD" "execution_mode")
+    case "$EXECUTION_MODE_VALUE" in
+      manual|batch|auto)
+        ;;
+      *)
+        echo "FORGE: execution_mode must be manual, batch, or auto."
+        FAILED=1
+        ;;
+    esac
+    if [ "$EXECUTION_MODE_VALUE" = "batch" ] && ! has_config_field "$AI_MD" "batch_size"; then
+      echo "FORGE: execution_mode: batch requires batch_size."
+      FAILED=1
+    fi
   fi
   for field in coordination_branch integration_branch release_branch dev_only_paths; do
     if has_config_field "$AI_MD" "$field"; then
@@ -383,6 +397,20 @@ if grep -q 'FORGE-config' "$AI_MD"; then
       fi
     fi
   done
+  if has_config_field "$AI_MD" "activation_mode"; then
+    ACTIVATION_MODE_VALUE=$(get_config_value "$AI_MD" "activation_mode")
+    if [ "$ACTIVATION_MODE_VALUE" != "explicit" ] && [ "$ACTIVATION_MODE_VALUE" != "repo-default" ]; then
+      echo "FORGE: activation_mode must be 'explicit' or 'repo-default' when present."
+      FAILED=1
+    fi
+  fi
+  if has_config_field "$AI_MD" "governed_paths"; then
+    GOVERNED_PATHS_VALUE=$(get_config_value "$AI_MD" "governed_paths")
+    if [ -z "$GOVERNED_PATHS_VALUE" ]; then
+      echo "FORGE: governed_paths must not be empty when present."
+      FAILED=1
+    fi
+  fi
   if has_config_field "$AI_MD" "collaboration_mode"; then
     COLLAB_MODE_VALUE=$(get_config_value "$AI_MD" "collaboration_mode")
     if [ "$COLLAB_MODE_VALUE" != "solo" ] && [ "$COLLAB_MODE_VALUE" != "team" ]; then
@@ -411,6 +439,27 @@ if grep -q 'FORGE-config' "$AI_MD"; then
         FAILED=1
         ;;
     esac
+  fi
+  if has_config_field "$AI_MD" "release_management"; then
+    RM_VALUE=$(get_config_value "$AI_MD" "release_management")
+    case "$RM_VALUE" in
+      semver|calver|tag-only|external|disabled) ;;
+      *) echo "FORGE: release_management must be semver, calver, tag-only, external, or disabled."; FAILED=1 ;;
+    esac
+  fi
+  if has_config_field "$AI_MD" "changelog"; then
+    CL_VALUE=$(get_config_value "$AI_MD" "changelog")
+    case "$CL_VALUE" in
+      keep-a-changelog|provider-generated|external|disabled) ;;
+      *) echo "FORGE: changelog must be keep-a-changelog, provider-generated, external, or disabled."; FAILED=1 ;;
+    esac
+  fi
+  if has_config_field "$AI_MD" "docs_format"; then
+    DOCS_FORMAT_VALUE=$(get_config_value "$AI_MD" "docs_format")
+    if [ "$DOCS_FORMAT_VALUE" != "flat" ] && [ "$DOCS_FORMAT_VALUE" != "handbook" ]; then
+      echo "FORGE: docs_format must be 'flat' or 'handbook' when present."
+      FAILED=1
+    fi
   fi
   if has_config_field "$AI_MD" "application_docs"; then
     APPLICATION_DOCS_VALUE=$(get_config_value "$AI_MD" "application_docs")

@@ -2,7 +2,12 @@
 # FORGE commit-msg hook
 # Validates:
 #   1. Subject line follows Conventional Commits format
-#   2. Required FORGE trailers are present and valid
+#   2. No AI attribution / tool-marketing text
+#   3. FORGE trailers, IF PRESENT, are well-formed (they are optional)
+#
+# FORGE trailers are optional. Gate outcomes are recorded in the task file's
+# `gates:` block (machine-readable, verifiable), not asserted in the commit.
+# `FORGE-task: <id>` is a useful durable commit->task link when you want it.
 #
 # Install: cp ci/hooks/commit-msg .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
 
@@ -33,47 +38,23 @@ if ! echo "$SUBJECT" | grep -qE "$CC_PATTERN"; then
   exit 1
 fi
 
-# --- FORGE trailer validation ---
+# --- FORGE-mode trailer, if present, must be a valid value ---
 
 FORGE_MODE_LINE=$(echo "$COMMIT_MSG" | grep -E "^FORGE-mode:")
-FORGE_TASK_LINE=$(echo "$COMMIT_MSG" | grep -E "^FORGE-task:")
-
-if [ -z "$FORGE_MODE_LINE" ]; then
-  echo ""
-  echo "FORGE: Commit rejected - FORGE-mode trailer is missing."
-  echo ""
-  echo "  Add to commit footer (after a blank line):"
-  echo ""
-  echo "  FORGE-mode: <Lightweight|Mid|Strict|Full Discipline>"
-  echo "  FORGE-task: <task-id>"
-  echo "  FORGE-gate: pass"
-  echo ""
-  exit 1
+if [ -n "$FORGE_MODE_LINE" ]; then
+  FORGE_MODE=$(echo "$FORGE_MODE_LINE" | sed 's/^FORGE-mode: *//' | sed 's/[[:space:]]*$//')
+  case "$FORGE_MODE" in
+    Lightweight|Mid|Strict|"Full Discipline")
+      ;;
+    *)
+      echo ""
+      echo "FORGE: Commit rejected - invalid FORGE-mode value: $FORGE_MODE"
+      echo "  Valid modes: Lightweight, Mid, Strict, Full Discipline (or omit the trailer)."
+      echo ""
+      exit 1
+      ;;
+  esac
 fi
-
-if [ -z "$FORGE_TASK_LINE" ]; then
-  echo ""
-  echo "FORGE: Commit rejected - FORGE-task trailer is missing."
-  echo ""
-  echo "  Add to commit footer: FORGE-task: <task-id>"
-  echo ""
-  exit 1
-fi
-
-# Validate FORGE-mode value
-FORGE_MODE=$(echo "$FORGE_MODE_LINE" | sed 's/^FORGE-mode: *//' | sed 's/[[:space:]]*$//')
-
-case "$FORGE_MODE" in
-  Lightweight|Mid|Strict|"Full Discipline")
-    ;;
-  *)
-    echo ""
-    echo "FORGE: Commit rejected - invalid FORGE-mode value: $FORGE_MODE"
-    echo "  Valid modes: Lightweight, Mid, Strict, Full Discipline"
-    echo ""
-    exit 1
-    ;;
-esac
 
 # --- AI attribution rejection ---
 

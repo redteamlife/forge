@@ -1,8 +1,15 @@
 ---
 title: Interfaces and Protocols
-owners:
-status: draft
+slug: interfaces-and-protocols
+doc_type: interface
+owners: []
+created:
 updated:
+reviewed_at:
+review_in_days: 90
+status: draft
+tags: []
+sensitivity: internal
 ---
 
 ## Purpose

@@ -1,6 +1,6 @@
 ---
 name: forge-build
-description: Route FORGE build requests to bounded task execution while preserving task source, branch, file-scope, and checkpoint rules.
+description: Use when the user asks to implement, build, fix, or continue work in a repo containing `docs/forge/` or governed by FORGE. The public route into bounded execution; delegates to the forge-execute-task primitive with scope, branch, and checkpoint rules preserved.
 ---
 
 # FORGE Build

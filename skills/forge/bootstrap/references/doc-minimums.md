@@ -47,6 +47,15 @@ Additional expectations:
 - do not use wildcard branch patterns such as `task/*` as `integration_branch`
 - do not merge into `release_branch` without explicit human instruction
 
+### Activation
+
+Ask once at bootstrap for governed profiles: should this repo route all
+implementation work through FORGE skills by default? If yes, set
+`activation_mode: repo-default` (optionally scoped with `governed_paths` in
+monorepos); generated surfaces then carry the activation line. Existing repos
+keep `explicit` — surface regeneration must never change activation behavior;
+only a human editing `AI.md` does.
+
 ### Clean-Main Variant (solo-governed or team-full)
 
 Use when the release branch must stay free of FORGE governance files. Applies design decisions from the canonical clean-main model:

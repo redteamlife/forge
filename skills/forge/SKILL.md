@@ -42,7 +42,7 @@ Read references only when the current task requires them:
 4. Do not load all FORGE docs, all tasks, all memory, or all security checklists at startup.
 5. Preserve one bounded checkpoint at a time: implementation, evidence, task state, and commit or PR/MR handoff.
 6. Stop on ambiguity, missing prerequisites, architecture conflict, unsafe operations, unresolved security concerns, or failed gates.
-7. Keep FORGE explicit. Agent surfaces route; they do not make it always-on by default.
+7. Activation follows `activation_mode`; repo-default routing requires that consent.
 
 ## Team Mode
 

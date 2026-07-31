@@ -1,0 +1,16 @@
+{
+  "_comment": "FORGE optional Claude Code adapter (design TASK-011 D5). Merge the hooks entry into the project's .claude/settings.json. Warn-only: echoes the next required gate before a git commit when a governed task is in progress. Other harnesses: invoke assets/scripts/forge_next_gate.py from the equivalent hook surface; git pre-commit and CI remain the durable enforcement.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'task=$(git diff --cached --name-only | grep -m1 \"^docs/forge/tasks/.*\\.ya\\?ml$\"); if [ -n \"$task\" ] && [ -f \"$task\" ]; then next=$(python3 \"$(ls -d ~/.claude/skills/forge ~/.agents/skills/forge 2>/dev/null | head -1)/assets/scripts/forge_next_gate.py\" \"$task\" 2>/dev/null); [ -n \"$next\" ] && [ \"$next\" != \"checkpoint-complete\" ] && echo \"FORGE: next required gate for $task: $next\"; fi; exit 0'"
+          }
+        ]
+      }
+    ]
+  }
+}

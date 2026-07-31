@@ -4,6 +4,27 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-07-31
+
+### Added
+
+- Closed the checkpoint loop: `forge-execute-task` now reads memory before the alignment check, runs the review gates via the `forge-review` composite, records machine-readable `gates:` outcomes (`critique`/`security`/`evaluation`/`memory`) in the task file, and defers pacing to `execution_mode`. Gate requirements are mode/artifact-aware so Lightweight repos are not blocked.
+- Defined execution modes on the shipped vocabulary in `references/execution-modes.md`: `manual` (default) | `batch` (requires `batch_size`, task independence, and per-task branch closure in solo-governed) | `auto` (org-policy gated). `requires_independent_review` is an unconditional stop in every mode; validator checks values.
+- Generated agent surfaces now route by moment (plan -> forge-plan, implement -> forge-build, review -> forge-review, release -> forge-ship, lessons -> forge-memory; per-task commits complete inside execute-task), with an always-route activation line emitted only under the new consented `activation_mode: repo-default` (optionally scoped by `governed_paths`). Surface regeneration never changes activation behavior.
+- Added `forge_next_gate.py`: deterministic next-required-gate conductor for small models and non-skill harnesses, plus a warn-only Claude Code adapter fragment; the pre-commit hook is now mode-aware and warns on `governed_paths` commits with no governance update.
+- Made FORGE commit trailers optional: the `commit-msg` hook still enforces Conventional Commits and rejects AI attribution, but no longer requires `FORGE-mode`/`FORGE-task` on every commit. `FORGE-gate` is removed (it was never verified and duplicated the task-file `gates:` block). `FORGE-task` remains available as an optional durable commit->task link.
+- The `pre-commit` hook warns (never blocks) when a task file staged as complete has no `gates:` block, pointing at the checkpoint gates.
+- Bootstrap seeds a starter `.gitignore` (append-only) from `assets/templates/gitignore.starter`.
+- Bootstrap now presents a setup interview: each choice (profile, context, task_source, security_profile, activation_mode, application_docs, clean-main, repo_flavor) is shown as a menu of available options with descriptions and a recommended default, rather than silently auto-picking. Full catalog in `bootstrap/references/setup-interview.md`; fast path preserved when config is supplied.
+- Documentation is now a release-gated, portable artifact: configurable `docs_root`/`docs_format` (flat|handbook), a full frontmatter schema with `reviewed_at` staleness (`forge_docs_staleness.py`), and a deterministic exporter (`forge_docs_export.py`) to GitLab wiki and Obsidian. Publication is fail-closed on a `sensitivity` lattice (public<internal<confidential<restricted) with `fail`/`omit` policy, path-safety, and reproducible output manifests.
+- Release management is now first-class and configurable (`release_management`/`version_source`/`changelog`): a Keep-a-Changelog template, `references/release-management.md`, and a provider-neutral pre-tag validator (`forge_release_check.py`). `forge-ship` is a two-stage Prepare/Publish gate with a release manifest and a repository-topology matrix.
+- Lifecycle alias descriptions trigger on the user's words plus the repo signal (`docs/forge/` present) instead of requiring the word "FORGE".
+
+### Fixed
+
+- Bootstrap now installs git hooks by default for governed profiles (docs already promised this; the skill said "when the user wants").
+- The pre-commit hook no longer blocks Lightweight repos that record gate outcomes in task files instead of `EVALUATION.md`.
+
 ## [1.8.1] - 2026-07-26
 
 ### Fixed

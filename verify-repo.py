@@ -142,6 +142,15 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "cross-project.md",
         SKILL_ROOT / "references" / "lifecycle-map.md",
         SKILL_ROOT / "references" / "skill-anatomy.md",
+        SKILL_ROOT / "references" / "execution-modes.md",
+        SKILL_ROOT / "references" / "release-management.md",
+        SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_docs_adapters.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py",
+        SKILL_ROOT / "assets" / "templates" / "CHANGELOG.md",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".claude" / "settings.forge-fragment.json",
         SKILL_ROOT / "assets" / "application-docs" / "tool-overview.md",
         SKILL_ROOT / "assets" / "application-docs" / "developer-guide.md",
         SKILL_ROOT / "assets" / "application-docs" / "adr" / "0001-record-architecture-decisions.md",
@@ -171,6 +180,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "templates" / "SECURITY.md",
         SKILL_ROOT / "assets" / "templates" / "dependabot.yml",
         SKILL_ROOT / "assets" / "templates" / "CODEOWNERS",
+        SKILL_ROOT / "assets" / "templates" / "gitignore.starter",
         SKILL_ROOT / "assets" / "templates" / "contracts" / "openapi" / "openapi.yaml",
         SKILL_ROOT / "assets" / "templates" / "contracts" / "protobuf" / "api.proto",
         SKILL_ROOT / "assets" / "templates" / "contracts" / "graphql" / "schema.graphql",
@@ -178,6 +188,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "agent-surfaces" / ".cursor" / "rules-scoped" / "security.mdc",
         SKILL_ROOT / "assets" / "security-checklists" / "general.md",
         SKILL_ROOT / "bootstrap" / "references" / "scaffolding.md",
+        SKILL_ROOT / "bootstrap" / "references" / "setup-interview.md",
         SKILL_ROOT / "bootstrap" / "references" / "doc-minimums.md",
         SKILL_ROOT / "bootstrap" / "references" / "team-mode.md",
         SKILL_ROOT / "assets" / "scripts" / "install-forge-hooks.sh",
@@ -227,7 +238,8 @@ def verify_size_budgets() -> None:
     budgets = {
         SKILL_ROOT / "SKILL.md": 3200,
         SKILL_ROOT / "bootstrap" / "SKILL.md": 5000,
-        SKILL_ROOT / "execute-task" / "SKILL.md": 5200,
+        # Raised 5200 -> 5400 for the checkpoint gate loop (design TASK-011 D1).
+        SKILL_ROOT / "execute-task" / "SKILL.md": 5400,
         SKILL_ROOT / "assets" / "templates" / "AI.md": 3200,
         SKILL_ROOT / "assets" / "templates" / "TEAM.md": 3200,
         SKILL_ROOT / "assets" / "agent-surfaces" / "AGENTS.md": 1600,
@@ -671,6 +683,186 @@ def verify_surface_fallback() -> None:
         text = (repo / "CLAUDE.md").read_text()
         ensure(marker not in text, "fallback wrongly emitted without dev_only_paths")
 
+        # Moment map is always present; activation line only with repo-default consent.
+        ensure("forge-plan" in text and "forge-ship" in text,
+               "generated router lost the moment map")
+        activation_marker = "even when the request does not mention FORGE"
+        ensure(activation_marker not in text,
+               "activation line emitted without activation_mode: repo-default")
+        (forge_dir / "AI.md").write_text(
+            "```FORGE-config\nactivation_mode: repo-default\ngoverned_paths: src/\n```\n"
+        )
+        run([sys.executable, str(generator), str(repo), "--force"], cwd=ROOT)
+        text = (repo / "CLAUDE.md").read_text()
+        ensure(activation_marker in text and "`src/`" in text,
+               "activation line missing or unscoped under repo-default")
+
+
+def verify_docs_staleness() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py"
+    with tempfile.TemporaryDirectory(prefix="forge-stale-") as temp_dir:
+        root = Path(temp_dir)
+        (root / "overview").mkdir()
+        (root / "overview" / "stale.md").write_text(
+            "---\ntitle: S\nreviewed_at: 2020-01-01\nreview_in_days: 90\n---\nx\n")
+        (root / "overview" / "never.md").write_text(
+            "---\ntitle: N\nreview_in_days: 90\n---\nx\n")
+        (root / "overview" / "fresh.md").write_text(
+            "---\ntitle: F\nreviewed_at: 2026-07-30\nreview_in_days: 90\n---\nx\n")
+        r = subprocess.run([sys.executable, str(script), str(root), "--today", "2026-07-31"],
+                           text=True, capture_output=True, check=False)
+        ensure(r.returncode == 1, "staleness did not flag lapsed docs")
+        ensure("STALE: overview/stale.md" in r.stdout, "stale doc not reported")
+        ensure("NEVER-REVIEWED: overview/never.md" in r.stdout, "never-reviewed doc not reported")
+        ensure("fresh.md" not in r.stdout, "fresh doc wrongly reported")
+
+
+def verify_docs_export() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py"
+
+    def setup(repo: Path, arch_sensitivity: str, behavior: str) -> Path:
+        (repo / "docs" / "forge").mkdir(parents=True)
+        (repo / "docs" / "forge" / "AI.md").write_text(
+            "```FORGE-config\n"
+            "gitlab_wiki_max_sensitivity: internal\n"
+            f"sensitivity_excess_behavior: {behavior}\n```\n")
+        hb = repo / "handbook"
+        (hb / "system").mkdir(parents=True)
+        (hb / "README.md").write_text(
+            "---\ntitle: HB\nsensitivity: internal\n---\n\n"
+            "- [Arch](system/arch.md)\n")
+        (hb / "system" / "arch.md").write_text(
+            f"---\ntitle: Arch\nsensitivity: {arch_sensitivity}\n---\n\n# Arch\n")
+        return hb
+
+    def run(repo, hb, target, out, *extra):
+        return subprocess.run(
+            [sys.executable, str(script), "--target", target, "--docs-root", str(hb),
+             "--out", str(out), "--repo", str(repo), *extra],
+            text=True, capture_output=True, check=False)
+
+    # fail-closed: confidential > internal aborts
+    with tempfile.TemporaryDirectory(prefix="forge-export-fail-") as td:
+        repo = Path(td); hb = setup(repo, "confidential", "fail")
+        r = run(repo, hb, "gitlab-wiki", repo / "out")
+        ensure(r.returncode == 1 and "exceeds gitlab-wiki" in r.stderr,
+               f"export did not fail-close on excess sensitivity:\n{r.stderr}")
+
+    # omit mode: kept README links to omitted arch -> dangling link fails
+    with tempfile.TemporaryDirectory(prefix="forge-export-omit-") as td:
+        repo = Path(td); hb = setup(repo, "confidential", "omit")
+        r = run(repo, hb, "gitlab-wiki", repo / "out")
+        ensure(r.returncode == 1 and "links to omitted" in r.stderr,
+               f"omit mode did not catch dangling link:\n{r.stderr}")
+
+    # clean gitlab export: home.md + _sidebar.md + slug page + manifest
+    with tempfile.TemporaryDirectory(prefix="forge-export-ok-") as td:
+        repo = Path(td); hb = setup(repo, "internal", "fail")
+        out = repo / "out"
+        r = run(repo, hb, "gitlab-wiki", out)
+        ensure(r.returncode == 0, f"clean gitlab export failed:\n{r.stderr}")
+        ensure((out / "home.md").exists(), "gitlab export missing home.md")
+        ensure((out / "_sidebar.md").exists(), "gitlab export missing _sidebar.md")
+        ensure((out / "system" / "arch.md").exists(), "gitlab export missing slug page")
+        ensure((out / ".forge-export-manifest.json").exists(), "gitlab export missing manifest")
+        # reproducible: second export to a fresh dir yields identical hashes
+        out2 = repo / "out2"
+        run(repo, hb, "gitlab-wiki", out2)
+        import json as _j
+        h1 = _j.loads((out / ".forge-export-manifest.json").read_text())["outputs"]
+        h2 = _j.loads((out2 / ".forge-export-manifest.json").read_text())["outputs"]
+        ensure(h1 == h2, "gitlab export is not reproducible")
+
+    # obsidian near-identity + path safety (refuse unmanaged dir)
+    with tempfile.TemporaryDirectory(prefix="forge-export-obs-") as td:
+        repo = Path(td); hb = setup(repo, "internal", "fail")
+        out = repo / "vault"
+        r = run(repo, hb, "obsidian", out)
+        ensure(r.returncode == 0 and (out / "system" / "arch.md").exists(),
+               f"obsidian export failed:\n{r.stderr}")
+        unmanaged = repo / "unmanaged"; unmanaged.mkdir()
+        (unmanaged / "keep.txt").write_text("x")
+        r = run(repo, hb, "obsidian", unmanaged)
+        ensure(r.returncode == 1 and "refusing to overwrite" in r.stderr,
+               "export overwrote an unmanaged destination")
+
+
+def verify_release_check() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py"
+    with tempfile.TemporaryDirectory(prefix="forge-rel-") as td:
+        cl = Path(td) / "CHANGELOG.md"
+        cl.write_text("# Changelog\n\n## [1.9.0] - 2026-07-31\n\n- x\n")
+        ok = subprocess.run([sys.executable, str(script), "--version", "1.9.0",
+                             "--changelog", str(cl)], capture_output=True, text=True)
+        ensure(ok.returncode == 0, f"release check failed on a present version:\n{ok.stderr}")
+        miss = subprocess.run([sys.executable, str(script), "--version", "2.0.0",
+                               "--changelog", str(cl)], capture_output=True, text=True)
+        ensure(miss.returncode == 1, "release check passed a missing changelog version")
+
+
+def verify_gate_loop() -> None:
+    """Design TASK-011: execute-task must conduct the gates; helper must agree."""
+    execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
+    for needle in ("forge-review", "gates:", "critique: pass|fail",
+                   "security: pass|n/a|escalated",
+                   "evaluation: pass|handoff-required|fail",
+                   "memory: entry|no-relevant-lesson|store-unavailable",
+                   "execution-modes.md", "forge_next_gate.py"):
+        ensure(needle in execute, f"execute-task lost gate-loop element: {needle}")
+
+    helper = SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py"
+    with tempfile.TemporaryDirectory(prefix="forge-gate-") as temp_dir:
+        repo = Path(temp_dir)
+        (repo / "docs" / "forge").mkdir(parents=True)
+        task = repo / "task.yaml"
+        cases = [
+            ("id: T1\n", "critique", 0),
+            ("id: T1\ngates:\n  critique: pass\n", "security", 0),
+            ("id: T1\ngates:\n  critique: pass\n  security: n/a\n  evaluation: pass\n",
+             "checkpoint-complete", 0),
+            ("id: T1\ngates:\n  critique: fail\n", "blocked:critique", 1),
+        ]
+        for body, expected, code in cases:
+            task.write_text(body.replace("\\n", "\n"))
+            result = subprocess.run(
+                [sys.executable, str(helper), str(task), "--repo", str(repo)],
+                text=True, capture_output=True, check=False)
+            ensure(result.stdout.strip() == expected and result.returncode == code,
+                   f"next-gate mismatch for {body!r}: got {result.stdout.strip()!r} rc={result.returncode}")
+        (repo / "docs" / "forge" / "MEMORY.md").write_text("# Memory\n")
+        task.write_text("id: T1\ngates:\n  critique: pass\n  security: n/a\n  evaluation: pass\n")
+        result = subprocess.run(
+            [sys.executable, str(helper), str(task), "--repo", str(repo)],
+            text=True, capture_output=True, check=False)
+        ensure(result.stdout.strip() == "memory",
+               f"next-gate ignored memory store: {result.stdout.strip()!r}")
+
+
+def verify_commit_msg_hook() -> None:
+    """Trailers optional (finding-1 fix): a bare Conventional Commit passes;
+    AI attribution and bad subjects fail; invalid FORGE-mode fails if present."""
+    hook = SKILL_ROOT / "assets" / "ci" / "hooks" / "commit-msg"
+    with tempfile.TemporaryDirectory(prefix="forge-cmsg-") as temp_dir:
+        msg = Path(temp_dir) / "m"
+
+        def run_hook(text: str) -> int:
+            msg.write_text(text)
+            return subprocess.run(["bash", str(hook), str(msg)],
+                                  capture_output=True, text=True, check=False).returncode
+
+        ensure(run_hook("feat(ledger): add core ledger\n") == 0,
+               "commit-msg rejected a valid trailerless Conventional Commit")
+        ensure(run_hook("chore(forge): bootstrap governance\n") == 0,
+               "commit-msg rejected a trailerless bootstrap commit")
+        ensure(run_hook("feat: x\n\nFORGE-task: TASK-001\n") == 0,
+               "commit-msg rejected an optional FORGE-task trailer")
+        ensure(run_hook("update stuff\n") != 0,
+               "commit-msg accepted a non-Conventional subject")
+        ensure(run_hook("feat: x\n\nGenerated by Claude\n") != 0,
+               "commit-msg accepted AI attribution")
+        ensure(run_hook("feat: x\n\nFORGE-mode: Bogus\n") != 0,
+               "commit-msg accepted an invalid FORGE-mode value")
+
 
 def verify_install_flow() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-verify-") as temp_dir:
@@ -699,6 +891,11 @@ def main() -> int:
         verify_dev_only_guards()
         verify_promote_flow()
         verify_surface_fallback()
+        verify_gate_loop()
+        verify_docs_staleness()
+        verify_docs_export()
+        verify_release_check()
+        verify_commit_msg_hook()
         verify_install_flow()
     except CheckFailure as exc:
         print(f"FORGE verify failed: {exc}", file=sys.stderr)

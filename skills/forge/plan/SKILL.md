@@ -1,6 +1,6 @@
 ---
 name: forge-plan
-description: Route FORGE planning requests to the repo's configured task source, task-shaping docs, and lifecycle guidance without duplicating execution workflow.
+description: Use when the user asks to plan, break down, sequence, or add tasks in a repo containing `docs/forge/` or governed by FORGE. Shapes bounded tasks (scope, file_scope, dependencies, review needs) in the configured task source without implementing.
 ---
 
 # FORGE Plan

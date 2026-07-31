@@ -1,6 +1,6 @@
 ---
 name: forge-review
-description: Route FORGE review requests through critique, security review, and evaluation gates without treating CI as a complete review.
+description: Use when the user asks to review work, a PR/MR, or whether a task is done in a repo containing `docs/forge/` or governed by FORGE. Runs the critique, security review, and evaluation gates in order; CI alone is not a review.
 ---
 
 # FORGE Review

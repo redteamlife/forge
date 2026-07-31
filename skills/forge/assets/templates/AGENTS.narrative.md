@@ -55,6 +55,14 @@ Highlights:
 
 {{ROLE_SPLIT}}
 
+## FORGE moments
+
+- plan / break down work → `forge-plan`
+- implement / build / fix → `forge-build` (review gates run in the loop)
+- review / "is this done" → `forge-review`
+- merge / release / promote → `forge-ship`
+- lessons → `forge-memory`
+
 ## Where to look when stuck
 
 - Architecture / constraints → [`docs/forge/ARCHITECTURE.md`](docs/forge/ARCHITECTURE.md)

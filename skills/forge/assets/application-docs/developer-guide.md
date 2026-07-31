@@ -1,8 +1,15 @@
 ---
 title: Developer Guide
-owners:
-status: draft
+slug: developer-guide
+doc_type: software
+owners: []
+created:
 updated:
+reviewed_at:
+review_in_days: 90
+status: draft
+tags: []
+sensitivity: internal
 ---
 
 ## Purpose

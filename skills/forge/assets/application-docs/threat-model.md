@@ -1,8 +1,15 @@
 ---
 title: Threat Model
-owners:
-status: draft
+slug: threat-model
+doc_type: system
+owners: []
+created:
 updated:
+reviewed_at:
+review_in_days: 90
+status: draft
+tags: []
+sensitivity: internal
 ---
 
 ## Purpose
