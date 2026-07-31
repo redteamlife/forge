@@ -1,217 +1,229 @@
-# Design v2: Release-Gated Documentation, CHANGELOG, and Portable Publishing
+# Design v3: Release-Gated Documentation, CHANGELOG, and Portable Publishing
 
-Status: revised after external review (v1 critique: changes required). All
-blocking findings verified against the repo and incorporated. review_state:
-changes-incorporated — awaiting acceptance before TASK-022 begins.
+Status: v2 direction approved by external review; four narrow blockers + minor
+items incorporated here. review_state: changes-incorporated — awaiting a
+design-level security review (below) and acceptance before TASK-022 begins.
 
 ## Problem
 
-Four separable concerns, kept separate here (the review's framing): documentation
-structure, freshness policy, format export, and release/version orchestration.
+Four separable concerns: documentation structure, freshness policy, format
+export, and release/version orchestration. Per-task doc triggers already
+maintain *changed* docs; the gaps are a cumulative freshness backstop, a
+CHANGELOG/versioning standard, portable publishing to GitLab wiki (primary) and
+Obsidian, and treating publication as a security boundary. Reuse the existing
+`application_docs` content set; do not rebuild it.
 
-1. **Doc freshness has no cumulative backstop.** Per-task triggers maintain
-   *changed* docs (execute/critique/evaluation already do this); nothing catches
-   cumulative consistency, navigation, ownership, and expiry drift across a
-   release. The fix is a release-time backstop, NOT a replacement cadence — both
-   run.
-2. **No CHANGELOG and no versioning/release standard for user projects**, though
-   this repo runs that flow by hand.
-3. **Docs are not portable** to a GitLab project wiki (primary) or an
-   Obsidian/markdown vault.
-4. **Publishing is a security boundary** (added in v2): exporting a
-   `confidential` doc to a broadly-visible wiki is a data leak; classification
-   must gate publication.
+## Target mechanics (verify at implementation time)
 
-Reuse, do not rebuild: the `application_docs` content set and its maintenance-
-trigger model.
-
-## Target mechanics (verify exact behavior at implementation time)
-
-- **Obsidian**: a vault is just a folder of Markdown; standard relative links
-  work; frontmatter renders as properties. It does NOT require numbered folders
-  or wikilinks. Near-lossless target.
+- **Obsidian**: a vault is a folder of Markdown; standard relative links work;
+  frontmatter renders as properties. No numbered folders or wikilinks required.
 - **GitLab wiki**: a `<project>.wiki.git` repo; `home.md` landing, `_sidebar.md`
-  nav; current GitLab *does* support wiki-page frontmatter and renders it in a
-  metadata box (recognizing `title`). Preserve frontmatter; do not assume it
-  must be stripped. (Confirm current rendering at implementation time.)
+  nav; current GitLab supports wiki frontmatter (recognizes `title`) — preserve
+  it.
 
 ## Decisions
 
-### D1. Target-neutral canonical form (revised)
+### D1. Target-neutral canonical form
 
-Canonical docs are authored once in a form that privileges neither consumer:
+Author once in a consumer-neutral form: semantic folder paths (`overview/`,
+`system/`, `operations/`, …) — never numbered folders (they bake order into
+filenames → mass renames); YAML frontmatter (D2); standard relative Markdown
+links; an ordered link list in the handbook `README.md` as the single
+navigation manifest. Configured, not hardcoded:
 
-- semantic folder paths (`overview/`, `system/`, `operations/`, ...), NOT
-  numbered folders — baking order into filenames causes mass renames and noisy
-  history on reorder
-- YAML frontmatter (D2)
-- standard relative Markdown links
-- an ordered link list in the handbook `README.md` as the **navigation
-  manifest** (single source of order)
-
-Location and shape are configured, not hardcoded:
-
-```yaml
+```
 application_docs: true
-docs_root: docs/handbook        # configurable; not docs/<AppName>/
-docs_format: flat | handbook    # flat = migration default; handbook for new projects
+docs_root: docs/handbook
+docs_format: flat | handbook     # flat = migration default; handbook for new
 ```
 
-Exporters add target-specific ordering or link forms from the README manifest.
+### D2. Frontmatter schema — defined enums, `updated` vs `reviewed_at` (v3)
 
-### D2. Small core frontmatter schema + extensions (revised)
+Two distinct freshness facts (v3 fix): `updated` = content changed;
+`reviewed_at` = a human confirmed it is still correct. Staleness keys off
+`reviewed_at + review_in_days`, NOT `updated` (a mechanical edit must not reset
+the review clock; a no-change review must).
 
-Standardize a small core with enums; permit `x-*` extension keys; do not make
-essential fields arbitrarily configurable.
+Core keys and enums (defined before implementation):
 
-Core: `title, doc_type, slug, owners, created, updated, status, tags,
-sensitivity, review_in_days`. `updated` + `review_in_days` drive a staleness
-report ("review due"); the release gate surfaces overdue docs.
+```
+title:        <string>
+slug:         <kebab-string>
+doc_type:     overview | system | software | interface | operations | troubleshooting | adr
+owners:       <list of strings>
+created:      YYYY-MM-DD
+updated:      YYYY-MM-DD
+reviewed_at:  YYYY-MM-DD
+review_in_days: <int>
+status:       draft | active | deprecated | archived
+tags:         <list of strings>
+sensitivity:  public | internal | confidential | restricted   # ordered lattice, low->high
+```
 
-### D3. Deterministic exporter, no home-grown YAML, no new CLI (revised)
+`x-*` extension keys are permitted. Missing `sensitivity` is treated as
+`restricted` (fail closed, D4).
+
+### D3. Deterministic exporter — bounded frontmatter grammar, no new CLI
 
 Invoke via skill-relative Python (FORGE has no standalone CLI):
 `python3 <skill-root>/assets/scripts/forge_docs_export.py --target {gitlab-wiki|obsidian} ...`
 
-Frontmatter handling: **preserve the block textually**; parse only a strict,
-documented set of scalar keys needed for routing (`sensitivity`,
-`review_in_days`, `updated`, `title`, `slug`). No general YAML parser is written
-or required in the user repo (the pack's own tooling uses PyYAML, but the
-exporter must run without it). This resolves the v1 stdlib-vs-rich-YAML
-contradiction.
+Frontmatter is preserved textually and passed through. The exporter parses only
+a **documented restricted grammar**: single-line scalars and single-line inline
+lists (`[a, b]` or `key:` block lists) for exactly `title, slug, doc_type,
+owners, status, sensitivity, reviewed_at, review_in_days`. No general YAML
+parser; no PyYAML dependency in the user repo. Anything outside the grammar is
+preserved but not interpreted. (This also lets D4/summary read `owners`/`status`
+— the v2 gap.)
 
-Exporter must cover (from review): slug normalization + collision detection,
+Engineering scope (must cover): slug normalization + collision detection,
 case-insensitive filesystem collisions, duplicate filenames across folders,
-heading/anchor links, attachments/images, Mermaid fences, deleted-page
-synchronization, existing `_sidebar.md`/`home.md` handling, reproducible output
-ordering, post-transform link validation, and a generated output manifest
-(source commit/version + per-file output hashes). Destination safety: refuse to
-overwrite unmanaged files; for Obsidian, write only into a managed subtree
-(marker file) and never touch `.obsidian/` or unrelated notes.
+heading/anchor links, attachments/images, Mermaid fences, deleted-page sync,
+existing `_sidebar.md`/`home.md` handling, reproducible output ordering,
+post-transform link validation, and an output manifest (source commit/version +
+per-file output hashes). Destination safety: refuse to overwrite unmanaged
+files.
 
-- **obsidian**: near-identity into the managed subtree; preserve frontmatter and
-  folders; standard links.
-- **gitlab-wiki**: emit a tree for `<project>.wiki.git` — slugs from paths,
-  `_sidebar.md` + `home.md` from the README manifest, preserve frontmatter
-  (optional visible owner/review summary only when configured; never duplicate
-  metadata in both frontmatter and body by default), rewrite internal links to
-  wiki slugs. Idempotent; `--dry-run` prints the mapping.
+Destinations (v3 resolves the v2 contradiction):
+- **Prepare** (automatic, D8) writes export output only to an in-repo staging
+  path.
+- **Explicit** invocation may copy to an external Obsidian vault *after
+  authorization*, into a managed subtree (marker file); never touch
+  `.obsidian/` or unrelated notes.
 
-The script produces trees; it never pushes to a remote.
+### D4. Sensitivity gates publication — flat config, fail closed (v3)
 
-### D4. Sensitivity gates publication — fail closed (new, security-critical)
+Flat config (v3 fix — nested config breaks FORGE's flat readers, and precedent
+is `dev_only_paths`/`governed_paths`):
 
-`sensitivity` controls export, not just describes it:
-
-```yaml
-docs_publish_targets:
-  gitlab-wiki: { max_sensitivity: internal }
-  obsidian:    { max_sensitivity: confidential }
+```
+docs_publish_targets: gitlab-wiki, obsidian
+gitlab_wiki_max_sensitivity: internal
+obsidian_max_sensitivity: confidential
+sensitivity_excess_behavior: fail | omit    # default fail
 ```
 
-The exporter refuses to emit any doc whose classification exceeds the target's
-`max_sensitivity`. Missing or unknown classification is treated as the most
-restrictive (fail closed) unless an explicit project policy sets otherwise.
-Stripping `sensitivity` while still exporting the content is forbidden.
-**TASK-023 requires a security review.**
+The exporter compares each doc's `sensitivity` against the target's max on the
+ordered lattice (`public < internal < confidential < restricted`).
 
-### D5. Release change surface = a release manifest (new)
+- `fail` (default): any doc exceeding the target aborts the whole export.
+- `omit`: exclude the doc, record the exclusion in the output manifest, and fail
+  if any navigation entry or surviving link references an omitted page.
+- Missing/unknown `sensitivity` → `restricted` (never publishable by a
+  permissive default). Migration of unclassified legacy docs classifies them
+  `restricted` or requires manual classification — never auto-publishable.
 
-"Docs matching the release" needs a deterministic baseline. Produce a release
-manifest on the **integration branch** (before promotion strips governance
-state):
+Stripping `sensitivity` while exporting the content is forbidden.
 
-```yaml
+### D5. Release change surface = a release manifest, acyclic ordering (v3)
+
+Manifest fields:
+
+```
 version:
 previous_version:
-source_commit:
-included_tasks:        # tasks integrated since previous_version
-generated_at:
-docs_export_manifest:  # path/hash of the export output
+content_commit:        # the immutable commit exported from (NOT the evidence commit)
+included_tasks:
+docs_export_hashes:    # per-file output hashes
+release_timestamp:     # supplied or SOURCE_DATE_EPOCH; excluded from repro hashes
 ```
 
-Clean-main interaction: because `forge-promote.sh` snapshots and tags without
-integration history, the manifest MUST be generated pre-promotion where task
-history exists, then carried as evidence.
+Acyclic sequence (v3 fix — v2's `source_commit` could not name the tree that
+contained the manifest):
 
-### D6. Release topology matrix — forge-ship selects, does not implement one flow
+1. Update docs/version/CHANGELOG; commit the release **content**.
+2. Export from that immutable content commit.
+3. Record the content commit + export hashes in the manifest.
+4. Commit generated evidence (manifest/export) separately, if tracked.
+5. Promote/tag the evidence commit; the manifest identifies the content commit
+   distinctly.
+
+`included_tasks` algorithm by task source: `local` — tasks integrated since the
+prior release manifest; `github`/`gitlab` — milestone or explicit release
+assignment; `external` — a supplied list.
+
+### D6. Release topology matrix — forge-ship selects, does not implement one
 
 | Repository shape | Authoritative release action |
-|---|---|
+| --- | --- |
 | Normal | merge/tag per project policy |
 | Clean-main | `forge-promote.sh --tag` |
 | Private/public tool | `forge-tool-workflow` / publish scripts |
-| Multi-package monorepo | possibly multiple versions/tags |
+| Multi-package monorepo | deferred (see D7) |
 
-`forge-ship` reads the configured strategy and delegates; it does not hardcode a
-bump/tag sequence.
+### D7. Versioning/changelog configured; multi-package deferred (v3)
 
-### D7. Versioning/changelog are configured, not universal (revised)
-
-```yaml
+```
 release_management: semver | calver | tag-only | external | disabled
 version_source:     VERSION | package.json | pyproject.toml | tag | external
 changelog:          keep-a-changelog | provider-generated | external | disabled
 ```
 
-No universal `VERSION` file — many projects already carry a version in
-`package.json`/`pyproject.toml`/tags. Conventional-Commit types **suggest**
-changelog sections (feat→Added/Changed, fix→Fixed, `!`→Changed/Removed/Security)
-but do not mechanically determine them; a human curates.
+No universal `VERSION`. Conventional-Commit types **suggest** changelog sections
+(feat→Added/Changed, fix→Fixed, `!`→Changed/Removed/Security); a human curates.
+Multi-package (multiple versions/sources in one repo) is explicitly **deferred**
+to a follow-up design; v3 models a single version + source. forge-ship stops
+with a clear message if it detects multiple independent version sources.
 
-### D8. Release as two stages — Prepare then Publish (new)
+### D8. Release as two stages — Prepare then Publish
 
 **Prepare** (authoritative, pre-tag): select version; update the configured
-version source; curate `CHANGELOG.md` (move Unreleased → version); validate
-triggered + expired docs; generate export + manifest (D3/D5); run checks; commit
-release preparation.
+version source; curate `CHANGELOG.md`; validate triggered + expired docs (via
+`reviewed_at`); generate export + manifest to in-repo staging (D3/D5); run
+checks; commit release content, then evidence (D5 sequence).
 
-**Publish**: promote/merge per topology (D6); create tag; push branch/tag with
-explicit authorization; publish provider release notes from the changelog;
+**Publish**: promote/merge per topology (D6); tag the evidence commit; push with
+explicit authorization; publish provider release notes from the CHANGELOG;
 publish or hand off the wiki output; record release evidence.
 
-A tag-triggered workflow is too late to gate an invalid changelog (the tag
-already exists). Pre-tag validation in Prepare is authoritative; tag-triggered
-automation only publishes afterward. TASK-024 ships a **provider-neutral
-validator** with thin GitHub and GitLab examples (GitLab primary), not a single
-ambiguous `release.yml`.
+A tag-triggered workflow is too late to gate an invalid CHANGELOG; pre-tag
+validation in Prepare is authoritative. TASK-027 ships a provider-neutral
+validator with thin GitHub and GitLab examples (GitLab primary).
 
-## Accepted answers to v1 open questions
+## Design-level security review (requested by review)
 
-Flat is the compatibility default, handbook recommended for new projects (D1).
-Canonical form is target-neutral, not Obsidian-shaped (D1). GitLab frontmatter
-is preserved (D3). forge-ship auto-validates and generates configured exports in
-Prepare but never writes outside the repo or publishes without authorization
-(D3/D8). Schema is a small enum core plus `x-*` extensions (D2). Navigation is
-the ordered README manifest, not numbered folders (D1).
+Publication is a trust boundary; the following are architectural security
+decisions, reviewed here:
 
-## Implementation plan (bounded; sequence matters)
+- **Classification lattice** `public < internal < confidential < restricted`,
+  compared numerically; unknown/missing → `restricted`. Fail closed.
+- **Excess handling** defaults to `fail` (abort); `omit` must not leave dangling
+  links/nav to omitted pages (enforced), preventing partial leaks or broken
+  published trees.
+- **Path handling**: exporter refuses to overwrite unmanaged files; external
+  vault writes require authorization and a managed-subtree marker; never writes
+  outside the repo during automatic Prepare.
+- **No secret exfiltration via frontmatter**: only the documented key set is
+  interpreted; the block is otherwise passed through unmodified, so the exporter
+  introduces no new parsing-driven execution.
+- **Residual risk**: correct classification depends on authors setting
+  `sensitivity`; the `restricted` default mitigates omission. TASK-023 carries a
+  full implementation security review.
+
+## Implementation plan (re-split per review)
 
 1. TASK-022: `docs_root`/`docs_format` config + target-neutral handbook layout +
-   core frontmatter schema + staleness report. **Scope note (from review):**
-   also touches bootstrap, `application-docs.md`, execute-task, critique,
-   evaluation, generated surfaces, validators, migration, and fixtures — not
-   just templates.
-2. TASK-023: `forge_docs_export.py` (gitlab-wiki + obsidian) with the full
-   engineering checklist and **D4 fail-closed classification gating**. Requires
-   a security review.
-3. TASK-024: CHANGELOG template + `references/release-management.md`
-   (SemVer/CalVer, version_source, CC→section *suggestions*) + provider-neutral
-   release validator with GH/GL examples.
-4. TASK-025: `forge-ship` Prepare/Publish split (D8) + topology selection (D6) +
-   release manifest (D5) + doc-minimums/README alignment.
+   frontmatter schema/enums + `reviewed_at` staleness report. Scope also touches
+   bootstrap, `application-docs.md`, execute-task, critique, evaluation,
+   generated surfaces, validators, migration, fixtures.
+2. TASK-023: exporter **core + classification/security policy** (grammar, path
+   safety, fail/omit, manifest, link validation) — **security review required**.
+3. TASK-024: gitlab-wiki adapter (slugs, `_sidebar.md`/`home.md`, link rewrite).
+4. TASK-025: obsidian adapter (managed subtree, external-vault authorization).
+5. TASK-027: CHANGELOG template + `references/release-management.md` +
+   provider-neutral release validator (GH/GL examples).
+6. TASK-028: release-manifest generation + `forge-ship` Prepare/Publish
+   orchestration (D5/D6/D8).
 
-## Process note
-
-The review flagged that a design task marked `complete` with gates passed is not
-the same as *accepted*. FORGE's design-task model conflates "authored" with
-"accepted." Small follow-up: add an optional `review_state`
-(draft|in-review|changes-requested|accepted) to design tasks. Applied here
-manually pending that.
+(TASK-026 is unrelated — the bootstrap setup interview.)
 
 ## Non-goals
 
-- Auto-pushing to a wiki remote or hosted docs site (produce, don't push).
-- Generating doc content from code.
-- Replacing per-task doc triggers (this adds a release backstop).
-- A standalone `forge-docs` CLI (use skill-relative Python).
+Auto-pushing to remotes/hosted sites; generating content from code; replacing
+per-task triggers; a standalone `forge-docs` CLI; multi-package release (deferred).
+
+## Process note
+
+Add an optional `review_state` (draft|in-review|changes-requested|accepted) to
+design tasks — FORGE currently conflates "authored" with "accepted." Applied
+manually here.

@@ -6,21 +6,21 @@ priority: high
 phase: design
 owner_lane: single
 owner: taffy
-description: "Design for making documentation a release-gated, standards-compliant, portable artifact: one canonical Obsidian-shaped handbook down-converted to GitLab wiki (primary) and Obsidian vault via a deterministic exporter; rich frontmatter with review_in_days staleness; CHANGELOG + SemVer release standard; forge-ship release gate. Folds in the maintainer's GitLab-wiki-primary / Obsidian-export requirement."
+description: "Design (v3) for documentation as a release-gated, standards-compliant, portable artifact: one target-neutral canonical handbook exported to GitLab wiki (primary) and Obsidian via a deterministic, classification-gated exporter; frontmatter with reviewed_at staleness; configurable release_management/version_source/changelog (no universal VERSION); release manifest with acyclic commit ordering; forge-ship Prepare/Publish split and topology matrix. Publication is a fail-closed security boundary."
 file_scope:
   - docs/forge/designs/TASK-021-docs-release-and-publishing.md
   - docs/forge/TASKS.index.yaml
 acceptance_criteria:
-  - "Design records the canonical-source decision, target mechanics for GitLab wiki and Obsidian, the export pipeline, the release gate, and CHANGELOG/SemVer standards."
-  - "Existing application_docs content model is reused, not rebuilt."
-  - "Open questions and bounded implementation tasks (TASK-022..025) recorded for review."
+  - "Canonical form is target-neutral (semantic paths, README nav manifest, standard links); flat is the migration default."
+  - "Frontmatter enums defined; staleness keys off reviewed_at, not updated."
+  - "Publishing config is flat; sensitivity gates export fail-closed with a defined lattice and fail|omit policy."
+  - "Release manifest ordering is acyclic; version_source/changelog are configurable; multi-package deferred."
+  - "Design carries a security-review section; TASK-023 flagged for implementation security review."
 evidence:
-  - "docs/forge/designs/TASK-021-docs-release-and-publishing.md"
-  - "audit: application_docs already ships the recon_runner doc set; gaps are release-gating, CHANGELOG, versioning standard, and portability"
-gates:
-  critique: pass
-  security: n/a
-  evaluation: pass
+  - "docs/forge/designs/TASK-021-docs-release-and-publishing.md (v3)"
+  - "external reviews x2: v1 changes-required, v2 direction-approved with 4 narrow blockers; all findings verified against the repo and incorporated"
+  - "implementation re-split into TASK-022 (config/layout), 023 (exporter core+security), 024 (gitlab adapter), 025 (obsidian adapter), 027 (changelog/release-mgmt), 028 (forge-ship orchestration)"
 history:
-  - "2026-07-31: design written; publishing targets (GitLab wiki primary, Obsidian export) folded in per maintainer input."
-  - "2026-07-31: external critique returned changes-required; all findings verified and incorporated as v2 (target-neutral canonical form, sensitivity-gated publication fail-closed, textual-frontmatter no-YAML-dep, release manifest, topology matrix, configured version_source/changelog, Prepare/Publish split, no forge-docs CLI). TASK-023 flagged for security review."
+  - "2026-07-31: v1 authored; publishing targets folded in."
+  - "2026-07-31: v2 after first external review (target-neutral form, fail-closed publication, textual frontmatter, release manifest, topology matrix, Prepare/Publish split)."
+  - "2026-07-31: v3 after second external review (reviewed_at vs updated, flat publish config, acyclic manifest ordering, enum lattice, fail|omit policy, multi-package deferred, task-plan re-split, design-level security review). Awaiting acceptance."
