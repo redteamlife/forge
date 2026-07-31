@@ -79,3 +79,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-010.yaml
+  - id: TASK-011
+    title: "Design: workflow stickiness"
+    status: complete
+    priority: high
+    phase: design
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-011.yaml

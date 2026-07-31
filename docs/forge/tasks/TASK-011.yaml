@@ -1,0 +1,19 @@
+id: TASK-011
+title: "Design: workflow stickiness"
+status: complete
+priority: high
+phase: design
+owner_lane: single
+owner: taffy
+description: "Design response to the post-bootstrap decay problem: execute-task never invokes the gate skills, surfaces route to files instead of moments, alias descriptions only trigger on the word FORGE, and execution_mode is undefined. Decisions D1-D5 with rejected alternatives and review questions; implementation split into TASK-012..015 targeting 1.9.0."
+file_scope:
+  - docs/forge/designs/TASK-011-workflow-stickiness.md
+  - docs/forge/TASKS.index.yaml
+acceptance_criteria:
+  - "Design doc records root causes from a full 13-subskill review, decisions D1-D5, the explicit-activation tension and its resolution, and open review questions."
+  - "Implementation deferred to bounded follow-up tasks pending external review."
+evidence:
+  - "docs/forge/designs/TASK-011-workflow-stickiness.md"
+  - "full subskill review 2026-07-31: loop does not close (execute-task lacks gate/memory steps), philosophy/skill memory drift, meta alias descriptions, undefined execution_mode"
+history:
+  - "2026-07-31: design written for external review before implementation."
