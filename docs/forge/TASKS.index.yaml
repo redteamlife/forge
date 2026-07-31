@@ -135,3 +135,27 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-016.yaml
+  - id: TASK-018
+    title: "Make commit-msg FORGE trailers optional"
+    status: complete
+    priority: normal
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-018.yaml
+  - id: TASK-019
+    title: "Gate-record advisory in pre-commit"
+    status: complete
+    priority: normal
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-019.yaml
+  - id: TASK-020
+    title: "Bootstrap seeds a starter .gitignore"
+    status: complete
+    priority: normal
+    phase: stickiness
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-020.yaml

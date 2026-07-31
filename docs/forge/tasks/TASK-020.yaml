@@ -1,0 +1,23 @@
+id: TASK-020
+title: "Bootstrap seeds a starter .gitignore"
+status: complete
+priority: normal
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Test-drive finding 3: bootstrap left no .gitignore, so pycache and local ledgers risked being committed. Ship assets/templates/gitignore.starter and add a bootstrap step to append missing entries without overwriting."
+file_scope:
+  - skills/forge/assets/templates/gitignore.starter
+  - skills/forge/bootstrap/SKILL.md
+  - verify-repo.py
+acceptance_criteria:
+  - "Starter ignores cover Python/Node/env/editor/FORGE scratch."
+  - "Bootstrap step 4 seeds it append-only; required-file check added."
+evidence:
+  - "verify-repo required-files includes gitignore.starter; bootstrap at 4999/5000"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: from test-drive findings 1-3."

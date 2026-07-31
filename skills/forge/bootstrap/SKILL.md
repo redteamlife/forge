@@ -10,8 +10,8 @@ Purpose: initialize the smallest project-local FORGE contract with low default c
 ## Defaults
 
 - Default `agent_context_profile: lite` (always for enterprise, API, CI, non-interactive, or uncertain environments).
-- Generate `docs/forge/CONTEXT.md`, compact router-style `CLAUDE.md`/`AGENTS.md`, and always-on IDE rules by default.
-- For `solo-governed`/`team-full`, prefer the narrative `AGENTS.md` form (see `references/scaffolding.md`).
+- Generate `CONTEXT.md`, router-style `CLAUDE.md`/`AGENTS.md`, and always-on IDE rules by default.
+- For governed profiles, prefer the narrative `AGENTS.md` form (`references/scaffolding.md`).
 - Prefer split task and checklist layouts for new `lite`/`standard` projects.
 - Keep FORGE explicit. Agent surfaces remind and route.
 
@@ -28,12 +28,12 @@ Recognize bootstrap options in natural or CLI-shaped text: context profile (`lit
 1. Inspect repo shape, existing FORGE docs, existing agent surfaces, likely task source, and collaboration needs.
 2. Choose bootstrap profile (`solo-simple`/`solo-governed`/`team-full`), context profile (default `lite`), `task_source` (`local`/`github`/`gitlab`/`external`), optional `repo_flavor` (`contract-first`/`tooling` only when it changes behavior), and `security_profile` (`baseline`/`repo-fortress`/`ci-security`/`full-devsecops`).
 3. For governed profiles, ask whether the release branch must stay free of governance files; if yes, apply the clean-main variant in `references/doc-minimums.md`.
-4. Generate only required docs; preserve project-specific existing content.
-5. Generate `docs/forge/CONTEXT.md` (`forge_context_budget.py`) and agent surfaces (`forge_generate_agent_surfaces.py`). For `solo-governed`/`team-full`, follow `references/scaffolding.md` (narrative AGENTS.md + scoped Cursor rules).
+4. Generate only required docs; preserve existing content. Seed `.gitignore` from `assets/templates/gitignore.starter` (append missing entries; never overwrite).
+5. Generate `CONTEXT.md` (`forge_context_budget.py`) and agent surfaces (`forge_generate_agent_surfaces.py`). Governed profiles: see `references/scaffolding.md` (narrative AGENTS.md + scoped Cursor rules).
 6. For `repo_flavor: contract-first`, scaffold the contract per `references/scaffolding.md`.
-7. For `team-full` with `ci_enforcement: enabled`, copy the quality workflow per `references/scaffolding.md`.
+7. For `team-full` + `ci_enforcement`, copy the quality workflow (`references/scaffolding.md`).
 8. Run `forge_validate_context.py <repo>`. For `solo-governed`/`team-full`, install FORGE hooks by default unless the user opts out.
-9. Print a compact closeout with changed files and next setup step.
+9. Print a compact closeout with changed files and next step.
 
 ## Minimum Docs
 
