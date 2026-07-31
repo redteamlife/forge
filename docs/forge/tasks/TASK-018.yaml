@@ -1,0 +1,23 @@
+id: TASK-018
+title: "Make commit-msg FORGE trailers optional"
+status: complete
+priority: normal
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Test-drive finding 1: commit-msg required FORGE-mode/FORGE-task on every commit (even bootstrap). Trailers are now optional; hook keeps Conventional Commits + AI-attribution enforcement and validates FORGE-mode only if present. FORGE-gate removed (never verified; duplicated the task-file gates block). commit-format doc rewritten."
+file_scope:
+  - skills/forge/assets/ci/hooks/commit-msg
+  - skills/forge/assets/ci/docs/commit-format.md
+  - verify-repo.py
+acceptance_criteria:
+  - "A trailerless Conventional Commit passes; bad subjects and AI attribution fail; invalid FORGE-mode fails only if present."
+  - "Gate outcomes live in the task gates block, not the commit."
+evidence:
+  - "verify_commit_msg_hook fixture: 6 cases pass"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: from test-drive findings 1-3."

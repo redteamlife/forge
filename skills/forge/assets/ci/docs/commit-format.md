@@ -1,29 +1,32 @@
 # FORGE Commit Format
 
-FORGE commits use Conventional Commits with FORGE metadata as git trailers.
+FORGE commits use Conventional Commits. The subject line and the no-AI-attribution
+rule are enforced by the `commit-msg` hook.
 
 ```text
 <type>[optional scope]: <description>
 
-FORGE-mode: <Lightweight|Mid|Strict|Full Discipline>
-FORGE-task: <task-id>
-FORGE-gate: pass
+[optional body]
+
+[optional FORGE-task: <task-id>]
 ```
 
-Valid types:
+Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`,
+`build`, `ci`, `perf`, `revert`.
 
-- `feat`
-- `fix`
-- `docs`
-- `style`
-- `refactor`
-- `test`
-- `chore`
-- `build`
-- `ci`
-- `perf`
-- `revert`
+## FORGE trailers are optional
 
-Trailers must appear in the commit footer, separated from any body text by a blank line.
+Gate outcomes live in the task file's `gates:` block (machine-readable and
+verifiable) — not in the commit. Do not hand-assert gate state in a commit
+trailer.
 
-Do not include AI attribution, assistant branding, or tool-marketing trailers.
+- `FORGE-task: <id>` — optional but useful: a durable commit->task link that
+  survives ledger trimming (`git log --grep=<id>`). The `task/<id>` branch name
+  already carries the same link.
+- `FORGE-mode:` — optional; if present, it must be a valid mode value. It
+  duplicates `docs/forge/AI.md` and is usually unnecessary noise.
+- `FORGE-gate:` — removed. It was never verified and duplicated the task-file
+  `gates:` record.
+
+Trailers, when used, appear in the footer separated from the body by a blank
+line. Do not include AI attribution, assistant branding, or tool-marketing text.
