@@ -1,0 +1,22 @@
+id: TASK-024
+title: "GitLab wiki adapter"
+status: complete
+priority: high
+phase: docs
+owner_lane: single
+owner: taffy
+description: "Design v3: gitlab-wiki adapter in forge_docs_adapters.py — path-based slugs with collision detection, README -> home.md, _sidebar.md from the README nav manifest, internal-link rewrite to wiki slugs, frontmatter preserved (GitLab renders it)."
+file_scope:
+  - skills/forge/assets/scripts/forge_docs_adapters.py
+  - verify-repo.py
+acceptance_criteria:
+  - "Clean export yields home.md, _sidebar.md, slug pages, and rewritten links."
+  - "Slug collisions raise rather than silently overwrite."
+evidence:
+  - "verify_docs_export gitlab branch: home/sidebar/slug/manifest present, links rewritten"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: implemented per design v3."

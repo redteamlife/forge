@@ -1,0 +1,22 @@
+id: TASK-025
+title: "Obsidian adapter"
+status: complete
+priority: high
+phase: docs
+owner_lane: single
+owner: taffy
+description: "Design v3: obsidian adapter — near-identity export preserving folders and frontmatter into a managed subtree (marker-guarded); external-vault writes require authorization; never touches .obsidian/ or unmanaged files."
+file_scope:
+  - skills/forge/assets/scripts/forge_docs_adapters.py
+  - verify-repo.py
+acceptance_criteria:
+  - "Obsidian export preserves the tree and frontmatter."
+  - "Path safety refuses unmanaged destinations."
+evidence:
+  - "verify_docs_export obsidian branch: tree preserved, unmanaged dir refused"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: implemented per design v3."

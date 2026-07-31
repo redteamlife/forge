@@ -145,6 +145,8 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "execution-modes.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_docs_adapters.py",
         SKILL_ROOT / "assets" / "agent-surfaces" / ".claude" / "settings.forge-fragment.json",
         SKILL_ROOT / "assets" / "application-docs" / "tool-overview.md",
         SKILL_ROOT / "assets" / "application-docs" / "developer-guide.md",
@@ -712,6 +714,76 @@ def verify_docs_staleness() -> None:
         ensure("fresh.md" not in r.stdout, "fresh doc wrongly reported")
 
 
+def verify_docs_export() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py"
+
+    def setup(repo: Path, arch_sensitivity: str, behavior: str) -> Path:
+        (repo / "docs" / "forge").mkdir(parents=True)
+        (repo / "docs" / "forge" / "AI.md").write_text(
+            "```FORGE-config\n"
+            "gitlab_wiki_max_sensitivity: internal\n"
+            f"sensitivity_excess_behavior: {behavior}\n```\n")
+        hb = repo / "handbook"
+        (hb / "system").mkdir(parents=True)
+        (hb / "README.md").write_text(
+            "---\ntitle: HB\nsensitivity: internal\n---\n\n"
+            "- [Arch](system/arch.md)\n")
+        (hb / "system" / "arch.md").write_text(
+            f"---\ntitle: Arch\nsensitivity: {arch_sensitivity}\n---\n\n# Arch\n")
+        return hb
+
+    def run(repo, hb, target, out, *extra):
+        return subprocess.run(
+            [sys.executable, str(script), "--target", target, "--docs-root", str(hb),
+             "--out", str(out), "--repo", str(repo), *extra],
+            text=True, capture_output=True, check=False)
+
+    # fail-closed: confidential > internal aborts
+    with tempfile.TemporaryDirectory(prefix="forge-export-fail-") as td:
+        repo = Path(td); hb = setup(repo, "confidential", "fail")
+        r = run(repo, hb, "gitlab-wiki", repo / "out")
+        ensure(r.returncode == 1 and "exceeds gitlab-wiki" in r.stderr,
+               f"export did not fail-close on excess sensitivity:\n{r.stderr}")
+
+    # omit mode: kept README links to omitted arch -> dangling link fails
+    with tempfile.TemporaryDirectory(prefix="forge-export-omit-") as td:
+        repo = Path(td); hb = setup(repo, "confidential", "omit")
+        r = run(repo, hb, "gitlab-wiki", repo / "out")
+        ensure(r.returncode == 1 and "links to omitted" in r.stderr,
+               f"omit mode did not catch dangling link:\n{r.stderr}")
+
+    # clean gitlab export: home.md + _sidebar.md + slug page + manifest
+    with tempfile.TemporaryDirectory(prefix="forge-export-ok-") as td:
+        repo = Path(td); hb = setup(repo, "internal", "fail")
+        out = repo / "out"
+        r = run(repo, hb, "gitlab-wiki", out)
+        ensure(r.returncode == 0, f"clean gitlab export failed:\n{r.stderr}")
+        ensure((out / "home.md").exists(), "gitlab export missing home.md")
+        ensure((out / "_sidebar.md").exists(), "gitlab export missing _sidebar.md")
+        ensure((out / "system" / "arch.md").exists(), "gitlab export missing slug page")
+        ensure((out / ".forge-export-manifest.json").exists(), "gitlab export missing manifest")
+        # reproducible: second export to a fresh dir yields identical hashes
+        out2 = repo / "out2"
+        run(repo, hb, "gitlab-wiki", out2)
+        import json as _j
+        h1 = _j.loads((out / ".forge-export-manifest.json").read_text())["outputs"]
+        h2 = _j.loads((out2 / ".forge-export-manifest.json").read_text())["outputs"]
+        ensure(h1 == h2, "gitlab export is not reproducible")
+
+    # obsidian near-identity + path safety (refuse unmanaged dir)
+    with tempfile.TemporaryDirectory(prefix="forge-export-obs-") as td:
+        repo = Path(td); hb = setup(repo, "internal", "fail")
+        out = repo / "vault"
+        r = run(repo, hb, "obsidian", out)
+        ensure(r.returncode == 0 and (out / "system" / "arch.md").exists(),
+               f"obsidian export failed:\n{r.stderr}")
+        unmanaged = repo / "unmanaged"; unmanaged.mkdir()
+        (unmanaged / "keep.txt").write_text("x")
+        r = run(repo, hb, "obsidian", unmanaged)
+        ensure(r.returncode == 1 and "refusing to overwrite" in r.stderr,
+               "export overwrote an unmanaged destination")
+
+
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""
     execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
@@ -805,6 +877,7 @@ def main() -> int:
         verify_surface_fallback()
         verify_gate_loop()
         verify_docs_staleness()
+        verify_docs_export()
         verify_commit_msg_hook()
         verify_install_flow()
     except CheckFailure as exc:

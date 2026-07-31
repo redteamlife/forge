@@ -1,0 +1,26 @@
+id: TASK-023
+title: "Docs exporter core + classification security"
+status: complete
+priority: high
+phase: docs
+owner_lane: single
+owner: taffy
+description: "Design v3 D3/D4: forge_docs_export.py — bounded frontmatter grammar (no PyYAML), sensitivity lattice with fail-closed default, fail|omit excess policy with dangling-link protection, destination path safety (managed-marker), reproducible output + per-file hash manifest, post-transform link handling. Security-critical publication boundary."
+file_scope:
+  - skills/forge/assets/scripts/forge_docs_export.py
+  - skills/forge/assets/scripts/forge_docs_adapters.py
+  - docs/forge/security/TASK-023-exporter-review.md
+  - verify-repo.py
+acceptance_criteria:
+  - "Missing/over-clearance sensitivity fails closed; omit mode blocks dangling links."
+  - "Unmanaged destinations are refused without --force; output is reproducible."
+  - "Security review recorded; no blocking issues."
+evidence:
+  - "verify_docs_export fixtures: fail-closed, omit dangling-link, clean export, reproducibility, path safety"
+  - "docs/forge/security/TASK-023-exporter-review.md: security pass"
+gates:
+  critique: pass
+  security: pass
+  evaluation: pass
+history:
+  - "2026-07-31: implemented per design v3."

@@ -183,3 +183,27 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-022.yaml
+  - id: TASK-023
+    title: "Docs exporter core + classification security"
+    status: complete
+    priority: high
+    phase: docs
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-023.yaml
+  - id: TASK-024
+    title: "GitLab wiki adapter"
+    status: complete
+    priority: high
+    phase: docs
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-024.yaml
+  - id: TASK-025
+    title: "Obsidian adapter"
+    status: complete
+    priority: high
+    phase: docs
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-025.yaml
