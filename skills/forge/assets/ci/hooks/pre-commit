@@ -45,4 +45,18 @@ if [ -f "$AI_MD" ]; then
   fi
 fi
 
+# Gate-record advisory (warn, never block): a task file staged as complete
+# should carry a `gates:` block with recorded critique/evaluation outcomes.
+# Gate state lives in the task file, not the commit — this nudges the agent to
+# run the checkpoint gates (forge_next_gate.py) before closing a task.
+for tf in $(echo "$CHANGED_FILES" | grep -E "^docs/forge/tasks/.*[.]ya?ml$"); do
+  [ -f "$tf" ] || continue
+  if git show ":$tf" 2>/dev/null | grep -qE "^status:[[:space:]]*complete"; then
+    if ! git show ":$tf" 2>/dev/null | grep -qE "^gates:"; then
+      echo "FORGE: note - $tf is marked complete with no gates: block."
+      echo "  Record checkpoint gate outcomes (critique/security/evaluation) before closing."
+    fi
+  fi
+done
+
 exit 0

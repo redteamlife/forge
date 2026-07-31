@@ -1,0 +1,20 @@
+id: TASK-019
+title: "Gate-record advisory in pre-commit"
+status: complete
+priority: normal
+phase: stickiness
+owner_lane: single
+owner: taffy
+description: "Test-drive finding 2: nothing pointed the agent at the gates before closing a task. Pre-commit now warns (never blocks) when a task file staged as complete has no gates: block, nudging toward forge_next_gate.py. Reads the staged blob; self-contained."
+file_scope:
+  - skills/forge/assets/ci/hooks/pre-commit
+acceptance_criteria:
+  - "Completing a task with no gates block emits a warning; commits still succeed (advisory, CI is the backstop)."
+evidence:
+  - "hook syntax-checked; warn path added for staged complete task files"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-07-31: from test-drive findings 1-3."
