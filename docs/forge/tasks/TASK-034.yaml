@@ -7,7 +7,7 @@ priority: high
 phase: design
 owner_lane: single
 owner: taffy
-description: "Design response to two reports that 1.9.1 progress_policy: compact did not reduce narration on Codex, plus a Codex-harness review. 1.9.1 shipped the right content but wrong delivery: the protocol is on-demand not required, the override clause is a self-inflicted escape hatch, surfaces don't prohibit per-tool announcements, no config migration (this repo still has response_style: terse), and the Codex hook is stale-schema with no output discipline. Fix: minimum-cadence wording, required-read at activation, migration path, and a compaction-durable Codex SessionStart hook. Portable instructions cannot fully override a host contract; the Codex hook is the strongest reinforcement."
+description: "Design response to two reports that 1.9.1 progress_policy: compact did not reduce narration on Codex, plus a Codex-harness review. 1.9.1 shipped the right content but wrong delivery: the protocol is on-demand not required, the override clause is a self-inflicted escape hatch, surfaces don't prohibit per-tool announcements, no config migration (this repo still has response_style: terse), and the Codex hook is stale-schema with no output discipline. Fix: minimum-cadence wording, required-read at activation, migration path, a compaction-durable Codex SessionStart hook, and a behavioral (not static-only) acceptance criterion with a baseline captured before any change. Portable instructions cannot fully override a host contract; the Codex hook is the strongest reinforcement."
 file_scope:
   - docs/forge/designs/TASK-034-token-discipline-v2.md
   - docs/forge/TASKS.index.yaml
@@ -15,7 +15,8 @@ file_scope:
 acceptance_criteria:
   - "Records the verified delivery gaps (on-demand load, escape-hatch clause, weak surfaces, no migration, stale Codex hook)."
   - "Decisions cover minimum-cadence wording, required-read loading, migration, and Codex-native reinforcement (SessionStart+compact hook, opt-in low-verbosity profile)."
-  - "Honest ceiling recorded; implementation split into TASK-035..037."
+  - "Honest ceiling recorded; behavioral evaluation (D5) with an objective rubric is the acceptance basis, not static fixtures."
+  - "Implementation split into a frozen pre-work baseline, TASK-035..037 (035/037 carry behavioral deltas; 036 deterministic), and TASK-038 integrated regression evidence."
 evidence:
   - "verified: checkpoint-output.md on-demand (execute-task:83); override clause at line 19; this repo AI.md still response_style: terse; .codex/hooks.json stale two-level schema with no output discipline"
   - "Codex-harness external review agreed with the hierarchy diagnosis, corrected the supersede framing to minimum-heartbeat, and surfaced the loading/migration/hook gaps"

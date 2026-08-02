@@ -72,9 +72,12 @@ rule (GETTING_STARTED "Updating Existing Projects"). Do NOT route migration
 through it. Prefer a dedicated `forge_upgrade.py` with this contract:
 
 - **detect automatically, mutate only with explicit authorization.**
-- **`AI.md`: patch structurally after a backup** — add `progress_policy: compact`
-  when absent; map legacy `response_style: terse → progress_policy: compact`;
-  STOP for human choice on any other legacy value. Never regenerate `AI.md`.
+- **`AI.md`: patch structurally after a backup**, limited to the `FORGE-config`
+  block (never touch prose). Add `progress_policy: compact` when absent; map
+  legacy `response_style: terse → progress_policy: compact`. Both-fields rule: a
+  valid `progress_policy` is authoritative — after backup + authorization, remove
+  the recognized legacy `response_style`; STOP on an invalid or conflicting value
+  for human choice. Never regenerate `AI.md`.
 - **Surfaces: auto-update only when the file matches a known FORGE-generated
   version or carries a managed marker/hash.** Otherwise emit a diff/fragment and
   require approval. **Never force-regenerate a customized narrative `AGENTS.md`.**
@@ -93,13 +96,17 @@ A version bump must stop being treated as "migrated."
   line as developer context. The `compact` match is the key win: it re-injects
   the rule after automatic compaction, which no once-loaded reference can.
 - **Installation/upgrade safety (must specify):** if `.codex/hooks.json` already
-  exists, **merge — never overwrite** unrelated hooks; identify the FORGE entry
-  by a managed marker/matcher so later upgrades can find and replace only it;
+  exists, **merge — never overwrite** unrelated hooks; identify the FORGE entry by
+  a **schema-valid identity — the canonical command path** (do not assume the hook
+  schema accepts an arbitrary marker field) so upgrades find and replace only it;
   respect project trust / hook-review (a hook is not active merely by existing).
-  The script uses **fixed-enum parsing of `progress_policy`** — it never
-  evaluates project-controlled text — emits **no secrets**, and performs **no
-  repository mutation**. Tests: `compact`/`checkpoint`/`detailed`, missing/invalid
-  AI config, and `startup`/`resume`/`compact` events.
+  **Fail closed:** malformed hook JSON → refuse and report (no partial write);
+  duplicate FORGE entries → dedupe to the canonical one; a conflicting command
+  path → stop for human resolution. The script uses **fixed-enum parsing of
+  `progress_policy`** — it never evaluates project-controlled text — emits **no
+  secrets**, and performs **no repository mutation**. Tests: `compact`/
+  `checkpoint`/`detailed`, missing/invalid AI config, all matcher events
+  (`startup`/`resume`/`clear`/`compact`), and the fail-closed cases above.
 - **Document a copyable, user-owned low-verbosity Codex profile** (guidance, not
   a portable field, and FORGE never writes to `~/.codex`): `model_verbosity =
   "low"`, `model_reasoning_summary = "none"`, `hide_agent_reasoning = true`. Note
@@ -115,59 +122,65 @@ A version bump must stop being treated as "migrated."
 ### D5. A behavioral success criterion (not just static fixtures)
 
 This design exists because 1.9.1 **passed static verification and failed in
-practice.** Static wording fixtures are necessary but insufficient. Acceptance of
-the implementation requires a small Codex evaluation comparing identical baseline
-and updated runs on the same task, measuring:
+practice.** Static fixtures are necessary but insufficient — behavioral evidence
+is required. Lifecycle (avoids a retroactive gate that clashes with FORGE's
+one-task/per-checkpoint model, and avoids capturing the baseline after the fact):
 
-- commentary messages per tool call (target: near zero routine pre-tool
-  announcements);
-- commentary/output bytes or tokens (should drop materially);
-- required heartbeats still present;
-- blockers and terminal summaries preserved;
-- reinjection verified after a compaction event.
+1. **Freeze the protocol and capture the baseline BEFORE TASK-035** changes
+   anything (a recorded Codex run of a representative task under 1.9.1).
+2. **Behavioral acceptance is part of TASK-035 and TASK-037** — the output/wording
+   change and the Codex hook are the tasks whose effect is narration, so each
+   proves its own behavioral delta against the frozen baseline.
+3. **TASK-036 (migration) closes on deterministic safety tests** — narration
+   behavior does not validate a migration utility.
+4. **TASK-038 is the final integrated regression evidence** across the shipped set
+   (baseline vs. fully-updated run), not an unexplained retroactive gate.
 
-Record BOTH: deterministic contract tests (wording/loading/migration/hook parse)
-AND a manual/transcript-based Codex run, since model behavior is probabilistic.
-No implementation task in this design is "done" on static fixtures alone.
+Objective rubric (reproducible, not "near zero"/"materially"):
 
-## Answers to review
+- **Disallowed:** zero routine pre-tool announcements (reads, searches, edits,
+  commands, checks) across the run.
+- **Allowed (enumerated):** required host heartbeats, checkpoint/material-state
+  lines, blockers/decisions, one terminal summary.
+- **Runs:** at least 3 paired baseline/updated runs of the same fixed task
+  (behavior is probabilistic).
+- **Byte/token comparison:** total assistant-output bytes (or native tokens when
+  exposed) per run, reported as updated/baseline ratio; the reinjection check is
+  a transcript inspection after a forced compaction event.
 
-- **Required reads on weak harnesses:** accept the limitation. Make the inline
-  fallback in `execute-task` **independently normative** (the reference only adds
-  detail); Codex gets extra durability from the D4 hook.
-- **Low-verbosity profile:** documentation plus a **copyable user-level profile
-  example**; FORGE never installs into or mutates `~/.codex`.
+Record BOTH deterministic contract tests and the transcript-based Codex runs.
+
+## Answers to review (resolved — no open questions remain)
+
+- **Required reads on weak harnesses:** accept the limitation; the inline
+  fallback is independently normative (the reference only adds detail); Codex
+  gets extra durability from the D4 hook.
+- **Low-verbosity profile:** documentation plus a copyable user-level profile
+  example; FORGE never installs into or mutates `~/.codex`.
 - **Automatic migration:** automatic detection, explicit mutation; only recognized
   untouched FORGE-managed files are eligible for automatic refresh.
 
-## Open questions for review
-
-1. D2: how does "required read at activation" degrade on harnesses where a skill
-   cannot force a file read? (Inline fallback is the backstop — is it strong
-   enough alone?)
-2. D4: ship the Codex low-verbosity profile as a copyable `config.toml` fragment,
-   or documentation only?
-3. Should the migration (D3) run automatically on bootstrap-refresh, or only when
-   the user opts in (surfaces are project files)?
-
 ## Implementation plan (bounded, if accepted)
 
+0. TASK-034-baseline (pre-work): freeze the D5 protocol and capture the 1.9.1
+   baseline runs before any change lands.
 1. TASK-035: D1 + D2 — minimum-cadence wording in `checkpoint-output.md`, the
    independently-normative inline fallback, and all six surfaces (explicit
    no-per-tool-announcement); required-read workflow step in `execute-task`
-   (consolidate — it is at 5389/5400 bytes, 11 free); static fixtures.
-   **Security review required** (an output-policy change must not suppress
-   security blockers).
+   (consolidate — it is at 5389/5400 bytes, 11 free); static fixtures **plus its
+   own behavioral delta vs. the frozen baseline**. **Security review required**
+   (an output-policy change must not suppress security blockers).
 2. TASK-036: D3 — new `forge_upgrade.py` with the safe contract (patch `AI.md`
    after backup; surfaces only on managed-marker/known-version match, else
    diff-for-approval; never force-regen narrative `AGENTS.md`); fix this repo's
-   `AI.md`; idempotency fixtures. **Security review required** (mutates existing
-   project files).
-3. TASK-037: D4 — corrected `.codex/hooks.json` (merge-safe, managed marker) +
+   `AI.md`; **closes on deterministic migration-safety/idempotency tests** (not
+   narration). **Security review required** (mutates existing project files).
+3. TASK-037: D4 — corrected `.codex/hooks.json` (merge-safe, managed identity) +
    `.codex/hooks/` script + ci-setup docs for the opt-in user-owned Codex
-   profile. **Security review required** (executable hooks).
-4. TASK-038: D5 — behavioral Codex evaluation harness/protocol; the acceptance
-   gate for TASK-035–037. No task closes on static fixtures alone.
+   profile; **includes its own behavioral delta (esp. post-compaction
+   reinjection)**. **Security review required** (executable hooks).
+4. TASK-038: D5 — final integrated regression evidence (baseline vs. fully-updated
+   run) across the shipped set. Not a retroactive per-task gate.
 
 ## Non-goals
 
