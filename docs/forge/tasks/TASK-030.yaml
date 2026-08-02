@@ -1,6 +1,6 @@
 id: TASK-030
 title: "Checkpoint-output protocol and progress_policy"
-status: todo
+status: complete
 priority: high
 phase: token-discipline
 owner_lane: single
@@ -22,6 +22,10 @@ acceptance_criteria:
   - "Security/DevSecOps review recorded; verify-repo passes."
 tests:
   - "verify-repo.py surface-deferral fixture"
-gates: {}
+gates:
+  critique: pass
+  security: pass
+  evaluation: pass
 history:
   - "2026-08-02: planned from accepted design TASK-029."
+  - "2026-08-02: implemented — checkpoint-output.md protocol; progress_policy field + validator; execute-task inline fallback + run-boundary reference (consolidated within budget); all six output-guidance surfaces migrated to defer; positive-invariant fixture; security review recorded (pass)."

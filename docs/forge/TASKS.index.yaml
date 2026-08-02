@@ -233,7 +233,7 @@ tasks:
     task_file: docs/forge/tasks/TASK-029.yaml
   - id: TASK-030
     title: "Checkpoint-output protocol and progress_policy"
-    status: todo
+    status: complete
     priority: high
     phase: token-discipline
     owner_lane: single

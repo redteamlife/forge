@@ -454,6 +454,16 @@ if grep -q 'FORGE-config' "$AI_MD"; then
       *) echo "FORGE: changelog must be keep-a-changelog, provider-generated, external, or disabled."; FAILED=1 ;;
     esac
   fi
+  if has_config_field "$AI_MD" "progress_policy"; then
+    PP_VALUE=$(get_config_value "$AI_MD" "progress_policy")
+    case "$PP_VALUE" in
+      checkpoint|compact|detailed) ;;
+      *) echo "FORGE: progress_policy must be checkpoint, compact, or detailed."; FAILED=1 ;;
+    esac
+    if has_config_field "$AI_MD" "response_style"; then
+      echo "FORGE: note - both progress_policy and legacy response_style present; progress_policy takes precedence."
+    fi
+  fi
   if has_config_field "$AI_MD" "docs_format"; then
     DOCS_FORMAT_VALUE=$(get_config_value "$AI_MD" "docs_format")
     if [ "$DOCS_FORMAT_VALUE" != "flat" ] && [ "$DOCS_FORMAT_VALUE" != "handbook" ]; then

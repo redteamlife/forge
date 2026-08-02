@@ -13,4 +13,4 @@ When working here:
 - use the configured `task_source`; GitHub/GitLab/external trackers are authoritative when selected
 - honor declared `contract_files` and update shared API/schema/client contracts with the task that changes them
 - in team mode, follow `docs/forge/TEAM.md`, declared `file_scope`, and CI-backed PR workflow
-- keep working responses terse and implementation-focused; avoid repeated recap unless a human asks for detail
+- Follow `progress_policy` in `docs/forge/AI.md` (default compact: concise checkpoint output, detailed blockers).
