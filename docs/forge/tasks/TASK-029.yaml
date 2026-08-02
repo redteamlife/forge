@@ -1,7 +1,7 @@
 id: TASK-029
 title: "Design: token discipline in the execution loop"
 status: complete
-review_state: in-review
+review_state: changes-incorporated
 priority: high
 phase: design
 owner_lane: single
@@ -18,8 +18,9 @@ evidence:
   - "verified: grep -c terse|narrat|recap|status in execute-task/SKILL.md = 0"
   - "verified: token-efficiency.md referenced only from root SKILL.md, not from execute-task"
 gates:
-  critique: pass
+  critique: changes-incorporated
   security: n/a
-  evaluation: pass
+  evaluation: pending
 history:
-  - "2026-08-02: design written from real-world NES-project token-burn report; grounded in file inspection."
+  - "2026-08-02: v1 written from NES-project token-burn report."
+  - "2026-08-02: v1 critique = fail pending revision; all findings verified and incorporated as v2 (contributing-gap reframe with by-harness variance, single positive-template checkpoint protocol loaded once, separate progress_policy field, model guidance doc-only no field, file-size gate removed to its own security-reviewed design). Awaiting acceptance."

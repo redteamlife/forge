@@ -1,113 +1,126 @@
-# Design: Token Discipline in the Execution Loop (+ file-size ratchet)
+# Design v2: Token Discipline — a Portable Checkpoint-Output Protocol
 
-Status: proposed (TASK-029). For external review before implementation.
+Status: v1 critique = fail pending revision; all blocking findings verified and
+incorporated. review_state: changes-incorporated. D5 (file-size) removed to its
+own design. Awaiting acceptance before TASK-030/031.
 
-## Problem (confirmed by file inspection)
+## Problem (re-scoped)
 
-A real multi-hour `batch`/`auto` refactor (user's NES project) exhausted a weekly
-token allowance, mostly on narration. Root cause, verified in the pack:
+A real multi-hour `batch`/`auto` refactor exhausted a weekly token allowance,
+much of it apparently on narration. Inspection confirms a **contributing control
+gap** — not a proven root cause:
 
-1. `execute-task/SKILL.md` — the skill that runs the loop — contains **no output
-   discipline at all** (`grep -c terse|narrat|recap|status = 0`). The loop never
-   tells the model to be terse.
-2. `references/token-efficiency.md` is strong and specific (it names "narrating
-   routine steps" and "prose summaries of reasoning already stored in files" as
-   leaks) but is referenced **only** from the root skill's on-demand list;
-   `execute-task`'s own reference list does not include it. It is effectively
-   never loaded during a loop.
-3. The root skill's `## Output Discipline` is good but read **once at session
-   start**; over a long autonomous run it falls out of active context.
+- `execute-task/SKILL.md` (the loop) has no output contract
+  (`grep -c terse|narrat|recap|status = 0`).
+- `references/token-efficiency.md` is strong but referenced only from the root
+  skill, never from the loop; effectively never loaded during a run.
+- The root `## Output Discipline` is read once at session start; on long runs it
+  may drift out of active context (a **portability risk**, not a proven
+  universal behavior — some harnesses reinforce it).
 
-Net: the discipline exists but is not where the work happens, and it does not
-scale with autonomy — narration is write-only tokens in `batch`/`auto` (no human
-is reading until the loop stops), yet those modes get the same (front-loaded,
-then forgotten) guidance as `manual`.
+Coverage already varies by harness: the always-applied Cursor rule and the
+`AGENTS.md` surface already request terse output, so Cursor/AGENTS users see less
+of this; the gap is worst where no persistent rule surface reinforces the
+contract. What the inspection does NOT establish: how much burn came from visible
+narration vs. repeated reads, tool output, gate execution, compaction, or source
+rereads. Implementation should capture before/after measurements (output tokens
+per checkpoint, tokens per task, repeated reads, tool-output volume).
 
 ## Decisions
 
-### D1. Put compact output discipline in the loop, not just the front door
+### D1. One canonical checkpoint-output protocol, loaded in the loop
 
-Add a short, permanent output-discipline block to `execute-task/SKILL.md` (and a
-one-liner to the other lifecycle skills that run work) so it is in context every
-checkpoint, not only at startup. Add `references/token-efficiency.md` to
-`execute-task`'s on-demand reference list. Keep it compact (byte budgets apply).
+Define the output contract **once** in `references/checkpoint-output.md` (not
+scattered, slightly-different, across every lifecycle skill — the gate skills are
+already compact). `execute-task` loads it **once at the start of a run** (never
+re-read per checkpoint) and references it; other lifecycle skills point at the
+same file. Because `execute-task` is at 5225/5400 bytes, this is a compact
+pointer + protocol reference, achieved by consolidation, not a large insertion.
 
-### D2. Scale verbosity down as autonomy goes up
+### D2. The protocol is a positive template, not a list of prohibitions
 
-Output discipline is a function of `execution_mode`:
+Local/open-weight models follow an explicit output schema far more reliably than
+negatives ("do not narrate/recap/explain"). The protocol specifies what TO emit:
 
-- `manual` — a human is watching each checkpoint; a one-line `Done: … Changed: …
-  Next: …` closeout is allowed and useful.
-- `batch` / `auto` — nobody reads until the loop stops. Per-checkpoint output is
-  a **single status line** (`TASK-007 complete`); no narration, no per-task
-  summary, no reasoning prose. A compact run summary is produced **once, at the
-  end**, not per task.
+- **per checkpoint**: one line — `TASK-<id>: <complete|blocked>` (+ commit/PR ref
+  when one exists).
+- **on a blocker**: always emit the failed gate/check, the relevant evidence, and
+  the required action — blockers are never silenced.
+- **once at end of run**: exactly one compact terminal summary, e.g.
+  `Done: TASK-030..032. Gates: pass. Commits: abc123, def456. Remaining: none.`
 
-### D3. The task file and commit ARE the summary — do not restate them
+No-duplication principle (from v1 D3, corrected): do not restate task evidence or
+gate reasoning that is already recorded — but DO produce the single terminal
+summary. This holds across configurations where a commit is not the record:
+issue-tracker-authoritative work, team PR-ready-without-commit, this repo's
+release branch that strips `docs/forge/`, and hosts requiring a self-contained
+final response.
 
-Make explicit what token-efficiency.md implies: the task `gates:`/evidence and
-the Conventional Commit already record what happened. A post-task prose recap of
-that same content is duplicate output, multiplied across every looped task.
-Rule: do not narrate gate reasoning unless a gate fails; do not summarize a task
-after committing it; do not echo file contents or re-explain the plan.
+### D3. Verbosity level is its own field, not overloaded onto execution_mode
 
-### D4. Model tiering is a recommendation, NOT skill-enforced (honest scoping)
+`execution_mode` is defined as checkpoint *pacing* and must stay that. Add a
+separate field:
 
-A skill cannot change the running model — that is harness/operator control, not
-portable instruction. So FORGE ships **guidance**, not a mechanism:
+```
+progress_policy: checkpoint | compact | detailed
+```
 
-- `references/token-efficiency.md` (or a short model-tiering note) recommends
-  which work suits a cheaper tier (bounded mechanical `execute-task` iterations,
-  routine gate runs) vs. a stronger tier (planning, architecture, security
-  review, ambiguous critique).
-- An optional advisory config field (e.g. `model_profile: economical | balanced |
-  max`) may **express intent** in `AI.md` for harnesses that can honor it, but
-  the pack must not claim to switch models itself. Do not design a mechanism we
-  cannot deliver.
+- `checkpoint` — concise per-checkpoint summaries (default `manual`).
+- `compact` — one success line, detailed blockers (default `batch`/`auto`).
+- `detailed` — operator-requested narration.
 
-### D5. File-size ratchet as a mechanical quality gate (separate concern)
+`batch`/`auto` default to `compact`, but **user and harness requirements
+override** — a host that requires periodic progress or a self-contained final
+response gets it. Complete silence is not portable; compact structured updates
+are.
 
-Adopt the "small files" idea as a configurable, ratcheting, tiered gate — not a
-blunt 500-line purge:
+### D4. Model selection is documentation only — no config field yet
 
-- **Ratchet**: existing over-cap files are not violations; growing one past the
-  cap, or adding a new file over it, is. No day-one refactor tax.
-- **Tiers**: warn at a soft cap (default 500), block at a hard cap (default
-  ~800–1000). Same warn/block philosophy as the existing hooks.
-- **Exclusions + exceptions**: `generated/`, `vendor/`, fixtures, lockfiles
-  excluded by config; a per-file documented exception with justification is
-  allowed (mirrors the scope-expansion rule).
-- Enforced in `forge-quality.yml` / pre-commit — a numeric rule a one-line check
-  can enforce (the same pattern as the pack's own SKILL.md byte budgets, which
-  have repeatedly caught drift).
+A skill cannot switch the running model. Ship **guidance**, not a mechanism, and
+do not add a validated `model_profile` field (an unimplemented field implies a
+capability FORGE lacks; add configuration only when an adapter consumes it):
 
-Rationale: this is really an agent-ergonomics rule (small files edit reliably,
-review cheaply, fit in context), which also reduces tokens.
+- Economical-tier candidates: deterministic checks (tests, linters,
+  `forge_next_gate.py`), mechanical bounded edits.
+- Stronger-tier work: planning, architecture, and the judgment gates —
+  critique, evaluation, security review. (v1 wrongly implied "routine gate runs"
+  suit weak models; judgment gates do not.)
+
+## Removed: file-size ratchet (was D5)
+
+Deferred to its own design (`TASK-0xx-file-size-gate`). It carries independent
+policy, CI/pre-commit changes (so a **security/DevSecOps review is required**,
+not n/a), exception storage, and baseline semantics. Design notes for later: the
+pack's own budgets are **byte-based**, not line-based (line count is a weak proxy
+that invites artificial splitting); prefer bytes + optional line thresholds;
+compare against the PR merge base (natural ratchet); block growth of over-limit
+files and new over-limit files; advisory soft threshold; exceptions in config
+with owner/justification/optional expiry; apply only to configured source
+classes.
 
 ## Open questions for review
 
-1. D2: is a single status line per checkpoint too terse for `batch` — should a
-   failed checkpoint still emit a short reason (yes, I think) while successes
-   stay one line?
-2. D4: is an advisory `model_profile` field worth shipping if no current harness
-   honors it, or should it stay pure documentation until one does?
-3. D5: soft/hard cap defaults (500/1000?) and whether the ratchet baseline is the
-   file's line count at gate-introduction time or at each commit.
-4. Should output discipline also tighten the gate skills (critique/evaluation)
-   in-loop, or is D1+D3 enough given they already say "findings-first"?
+1. D2 terminal-summary shape — is the `Done/Gates/Commits/Remaining` line the
+   right canonical schema, or should it vary by task_source?
+2. D3 — new `progress_policy` field vs. clarifying/reusing the existing
+   `response_style`? (New field is explicit; reuse avoids config growth.)
+3. D1 loading — "once at start of run" is clear for a fresh session; how should a
+   resumed/compacted session re-establish the protocol?
 
 ## Implementation plan (bounded, if accepted)
 
-1. TASK-030: D1–D3 — in-loop output discipline block in `execute-task` (+ short
-   lines in plan/build/review/ship), `execution_mode`-scaled verbosity, "task &
-   commit are the summary" rule; reference token-efficiency.md from the loop.
-2. TASK-031: D4 — model-tiering recommendation doc (+ optional advisory
-   `model_profile` field with validator, explicitly non-enforcing).
-3. TASK-032: D5 — file-size ratchet gate (config, `forge-quality.yml`/pre-commit
-   check, exclusions/exceptions, fixtures).
+1. TASK-030: `references/checkpoint-output.md` protocol (positive template) +
+   `progress_policy` field + validator + load-once wiring in `execute-task` (via
+   consolidation) + one-line pointers in plan/build/review/ship. Capture
+   before/after token measurements as evidence.
+2. TASK-031: model-selection guidance in `references/token-efficiency.md` (or a
+   short note) — documentation only, no config field.
+
+File-size gate: separate future design with its own security review.
 
 ## Non-goals
 
-- Skill-driven model switching (cannot be delivered from portable instructions).
-- A blunt universal line cap or forced refactor of legacy files.
-- Removing useful `manual`-mode summaries (a watching human benefits from them).
+- Skill-driven model switching (undeliverable from portable instructions).
+- Complete silence (not portable; compact structured output instead).
+- Overloading `execution_mode` with output style.
+- Scattering divergent output instructions across every skill.
