@@ -1,6 +1,6 @@
 id: TASK-029
 title: "Design: token discipline in the execution loop"
-status: complete
+status: in_progress
 review_state: in-review
 priority: high
 phase: design

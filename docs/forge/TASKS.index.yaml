@@ -225,7 +225,7 @@ tasks:
     task_file: docs/forge/tasks/TASK-028.yaml
   - id: TASK-029
     title: "Design: token discipline in the execution loop"
-    status: complete
+    status: in_progress
     priority: high
     phase: design
     owner_lane: single

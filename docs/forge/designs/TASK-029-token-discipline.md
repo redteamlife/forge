@@ -1,4 +1,4 @@
-# Design v2: Token Discipline — a Portable Checkpoint-Output Protocol
+# Design v3: Token Discipline — a Portable Checkpoint-Output Protocol
 
 Status: v1 findings addressed; v2 direction approved with narrow corrections,
 applied here as v3. review_state: in-review — awaiting acceptance before
@@ -41,8 +41,9 @@ Loading and run boundaries: a run boundary is an initial `execute-task`
 activation or an explicit resume/new session. Load the reference at those
 boundaries, never between checkpoints. Because a pointer alone can disappear
 during compaction, keep a **minimal inline fallback** in `execute-task` — the
-one-line success/blocker schema below — so the contract survives even if the
-reference is not reloaded. Because `execute-task` is at 5225/5400 bytes, the
+one-line success/stop schema below — for redundancy. No portable skill
+instruction can guarantee preservation through every harness's compaction; the
+inline schema reduces the risk, it does not eliminate it. Because `execute-task` is at 5225/5400 bytes, the
 inline fallback is achieved by consolidation, not a large insertion.
 
 ### D2. The protocol is a positive template, not a list of prohibitions
@@ -50,18 +51,25 @@ inline fallback is achieved by consolidation, not a large insertion.
 Local/open-weight models follow an explicit output schema far more reliably than
 negatives ("do not narrate/recap/explain"). The protocol specifies what TO emit:
 
-- **per checkpoint**: one line — `TASK-<id>: <complete|blocked>` (+ commit/PR ref
-  when one exists).
-- **on a blocker**: always emit the failed gate/check, the relevant evidence, and
-  the required action — blockers are never silenced.
+- **per checkpoint (success)**: `TASK-<id> complete | validation <pass|n/a> | ref <id>`
+  (ref = commit/PR/issue when one exists).
+- **per checkpoint (stopped)**: cover every execute-task stop state, not just
+  `blocked` — also `handoff-required`, `escalated`, `independent-review`, and
+  `claim-conflict`, plus failures before a task is selected:
+  - `TASK-<id> blocked | check: pytest | evidence: 2 failures | need: fix or exception`
+  - `TASK-<id> handoff-required | need: independent reviewer | ref: PR-42`
+  - `TASK-<id> escalated | reason: <fact> | need: <decision>`
+  - `Stopped before task selection | reason: <missing prerequisite> | need: <action>`
+  A stop message is itself informative; blockers are never silenced.
 - **once at end of run**: exactly one compact, task-source-neutral terminal
   summary, e.g.
   `Done: TASK-030..031. Validation: pass. Refs: abc123, PR-42. Remaining: none.`
   `Refs:` covers commits, PRs, issues, and external-tracker records — better than
   a commit-specific field.
 - **single-checkpoint run**: when a run ends after one checkpoint, the terminal
-  summary REPLACES the checkpoint line (do not emit both — they would be nearly
-  identical).
+  summary REPLACES the checkpoint line (do not emit both). A stopped-run summary
+  form covers a run that ends on a blocker:
+  `Stopped: TASK-031 blocked. Done: TASK-030. Need: <action>. Remaining: TASK-032.`
 
 No-duplication principle (from v1 D3, corrected): do not restate task evidence or
 gate reasoning that is already recorded — but DO produce the single terminal
@@ -88,11 +96,19 @@ override** — a host that requires periodic progress or a self-contained final
 response gets it. Complete silence is not portable; compact structured updates
 are.
 
-Migration from `response_style` (resolve before TASK-030): `progress_policy` is
-optional. Defaults: `manual` → `checkpoint`, `batch`/`auto` → `compact`. Legacy
-`response_style: terse` maps to `compact`. New templates emit only
-`progress_policy`. If both fields are present, `progress_policy` takes precedence
-and the validator emits a migration warning.
+Migration from `response_style` (decided): `progress_policy` is optional.
+Defaults: `manual` → `checkpoint`, `batch`/`auto` → `compact`. Legacy
+`response_style: terse` maps to `compact`; any other legacy `response_style`
+value maps to the mode-derived default with a validator warning. New templates
+emit only `progress_policy`. If both fields are present, `progress_policy` takes
+precedence and the validator warns.
+
+Durable-surface conflict (must be handled in TASK-030): the generated `AGENTS.md`,
+the Cursor rule, and the root skill each independently hardcode "be terse," which
+would contradict a configured `detailed`. TASK-030 updates those canonical
+surfaces to defer to config — "Follow `progress_policy` from `AI.md`; default to
+compact output when absent" — so the field is authoritative rather than
+overridden by more persistent instructions.
 
 ### D4. Model selection is documentation only — no config field yet
 
@@ -117,16 +133,6 @@ compare against the PR merge base (natural ratchet); block growth of over-limit
 files and new over-limit files; advisory soft threshold; exceptions in config
 with owner/justification/optional expiry; apply only to configured source
 classes.
-
-## Open questions for review
-
-1. D2 terminal-summary shape — is the `Done/Gates/Commits/Remaining` line the
-   right canonical schema, or should it vary by task_source?
-2. D3 — new `progress_policy` field vs. clarifying/reusing the existing
-   `response_style`? (New field is explicit; reuse avoids config growth.)
-3. D3 field choice — new `progress_policy` (explicit) vs. clarifying/reusing
-   `response_style` (avoids config growth). v3 leans to the new field with a
-   defined migration; confirm.
 
 ## Implementation plan (bounded, if accepted)
 
