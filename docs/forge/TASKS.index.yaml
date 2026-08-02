@@ -223,3 +223,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-028.yaml
+  - id: TASK-029
+    title: "Design: token discipline in the execution loop"
+    status: complete
+    priority: high
+    phase: design
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-029.yaml

@@ -1,0 +1,25 @@
+id: TASK-029
+title: "Design: token discipline in the execution loop"
+status: complete
+review_state: in-review
+priority: high
+phase: design
+owner_lane: single
+owner: taffy
+description: "Design response to real-world token burn in a multi-hour batch/auto run: output discipline exists (root skill + token-efficiency.md) but is absent from execute-task (the loop) and not scaled by autonomy. Relocate compact discipline into the loop, scale verbosity by execution_mode, stop restating task/commit content; ship model-tiering as recommendation-not-mechanism; add a ratcheting file-size quality gate. Implementation deferred to TASK-030..032."
+file_scope:
+  - docs/forge/designs/TASK-029-token-discipline.md
+  - docs/forge/TASKS.index.yaml
+acceptance_criteria:
+  - "Design records the confirmed root cause (execute-task has no output discipline; token-efficiency.md unreferenced from the loop)."
+  - "Decisions cover in-loop discipline, autonomy-scaled verbosity, no-restatement, honest model-tiering scoping, and the file-size ratchet."
+  - "Open questions and bounded implementation tasks recorded for review."
+evidence:
+  - "verified: grep -c terse|narrat|recap|status in execute-task/SKILL.md = 0"
+  - "verified: token-efficiency.md referenced only from root SKILL.md, not from execute-task"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-08-02: design written from real-world NES-project token-burn report; grounded in file inspection."
