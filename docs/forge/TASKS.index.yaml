@@ -265,7 +265,7 @@ tasks:
     task_file: docs/forge/tasks/TASK-033.yaml
   - id: TASK-034
     title: "Design: token discipline v2 (delivery, cadence, migration, Codex)"
-    status: complete
+    status: in_progress
     priority: high
     phase: design
     owner_lane: single
