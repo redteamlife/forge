@@ -1,6 +1,6 @@
 id: TASK-031
 title: "Model-selection guidance (documentation only)"
-status: todo
+status: complete
 priority: normal
 phase: token-discipline
 owner_lane: single
@@ -10,6 +10,10 @@ file_scope:
   - skills/forge/references/token-efficiency.md
 acceptance_criteria:
   - "Guidance distinguishes economical-tier vs judgment work; no model_profile config field is added."
-gates: {}
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
 history:
   - "2026-08-02: planned from accepted design TASK-029."
+  - "2026-08-02: implemented — model-selection guidance appended to token-efficiency.md; documentation only, no config field."

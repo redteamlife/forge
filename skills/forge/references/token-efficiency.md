@@ -40,3 +40,24 @@ and less like:
 - repeated context recap
 - exhaustive changelog narration
 - prose summaries of reasoning already stored in files
+
+## Model Selection (guidance, not a mechanism)
+
+A FORGE skill cannot switch the running model — that is harness/operator control.
+This is guidance for whoever configures the session, not a config field FORGE
+enforces (an unimplemented `model_profile` field would imply a capability the
+pack lacks; add configuration only when an adapter consumes it).
+
+Economical-tier candidates:
+
+- deterministic checks — tests, linters, `forge_next_gate.py`, doc validators
+- bounded mechanical `execute-task` iterations on a small, well-scoped change
+
+Stronger-tier work (do not downgrade):
+
+- planning and architecture (`forge-plan`, design tasks)
+- the judgment gates — `forge-critique`, `forge-evaluation`, `forge-security-review`
+
+Deterministic checks being economical does not make the gates that *interpret*
+them economical: a linter run is cheap-model work; deciding whether a finding is
+a blocker is not.

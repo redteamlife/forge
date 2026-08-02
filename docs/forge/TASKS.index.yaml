@@ -241,7 +241,7 @@ tasks:
     task_file: docs/forge/tasks/TASK-030.yaml
   - id: TASK-031
     title: "Model-selection guidance (documentation only)"
-    status: todo
+    status: complete
     priority: normal
     phase: token-discipline
     owner_lane: single
