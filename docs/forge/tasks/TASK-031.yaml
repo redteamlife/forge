@@ -1,0 +1,15 @@
+id: TASK-031
+title: "Model-selection guidance (documentation only)"
+status: todo
+priority: normal
+phase: token-discipline
+owner_lane: single
+owner: taffy
+description: "Implement TASK-029 D4: add model-tiering guidance to references/token-efficiency.md — economical-tier for deterministic checks and bounded edits, stronger tier for planning and the judgment gates (critique/evaluation/security). Documentation only; no config field until an adapter consumes it."
+file_scope:
+  - skills/forge/references/token-efficiency.md
+acceptance_criteria:
+  - "Guidance distinguishes economical-tier vs judgment work; no model_profile config field is added."
+gates: {}
+history:
+  - "2026-08-02: planned from accepted design TASK-029."

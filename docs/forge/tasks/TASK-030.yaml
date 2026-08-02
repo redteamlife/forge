@@ -1,0 +1,27 @@
+id: TASK-030
+title: "Checkpoint-output protocol and progress_policy"
+status: todo
+priority: high
+phase: token-discipline
+owner_lane: single
+owner: taffy
+description: "Implement TASK-029 D1-D3: references/checkpoint-output.md (positive-template protocol scoped to execute-task; success + all stop states mapped to existing vocabulary + terminal/single-checkpoint summary); progress_policy field with response_style migration and validator warnings; inline fallback + run-boundary loading in execute-task (consolidate within budget); migrate all output-guidance surfaces (discovered via grep -rlE, incl. root SKILL.md) to defer to progress_policy, guarded by a positive-invariant fixture; capture before/after token measurements. Requires a security/DevSecOps review (touches a validator and governance surfaces)."
+file_scope:
+  - skills/forge/references/checkpoint-output.md
+  - skills/forge/execute-task/SKILL.md
+  - skills/forge/SKILL.md
+  - skills/forge/assets/agent-surfaces/
+  - skills/forge/assets/templates/AI.md
+  - skills/forge/assets/templates/AGENTS.narrative.md
+  - skills/forge/assets/ci/scripts/validate-generated-docs.sh
+  - verify-repo.py
+acceptance_criteria:
+  - "progress_policy validated with response_style migration (both-present and non-terse legacy warn)."
+  - "Every output-guidance surface defers to progress_policy; positive-invariant fixture fails if one does not."
+  - "execute-task carries the inline fallback schema within its byte budget; root SKILL.md consolidated within budget."
+  - "Security/DevSecOps review recorded; verify-repo passes."
+tests:
+  - "verify-repo.py surface-deferral fixture"
+gates: {}
+history:
+  - "2026-08-02: planned from accepted design TASK-029."

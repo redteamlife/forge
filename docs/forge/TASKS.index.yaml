@@ -225,9 +225,25 @@ tasks:
     task_file: docs/forge/tasks/TASK-028.yaml
   - id: TASK-029
     title: "Design: token discipline in the execution loop"
-    status: in_progress
+    status: complete
     priority: high
     phase: design
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-029.yaml
+  - id: TASK-030
+    title: "Checkpoint-output protocol and progress_policy"
+    status: todo
+    priority: high
+    phase: token-discipline
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-030.yaml
+  - id: TASK-031
+    title: "Model-selection guidance (documentation only)"
+    status: todo
+    priority: normal
+    phase: token-discipline
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-031.yaml
