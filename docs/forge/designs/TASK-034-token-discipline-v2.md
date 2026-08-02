@@ -1,7 +1,7 @@
 # Design: Token Discipline v2 — Delivery, Cadence, Migration, Codex Reinforcement
 
 Status: changes-incorporated after external review. task_type: design.
-review_state: in-review.
+status: complete (document authored). review_state: in-review.
 Origin: two real reports that 1.9.1's `progress_policy: compact` did not reduce
 narration on Codex/ChatGPT, plus a Codex-harness review that agreed with the
 diagnosis and corrected the fix. All claims below verified against the installed
@@ -98,7 +98,11 @@ A version bump must stop being treated as "migrated."
 - **Installation/upgrade safety (must specify):** if `.codex/hooks.json` already
   exists, **merge — never overwrite** unrelated hooks; identify the FORGE entry by
   a **schema-valid identity — the canonical command path** (do not assume the hook
-  schema accepts an arbitrary marker field) so upgrades find and replace only it;
+  schema accepts an arbitrary marker field) so upgrades find and replace only it.
+  **Recognize the currently shipped legacy hook** by its exact known signature
+  (the 1.9.x inline `echo '...FORGE governance...'` command string / a recorded
+  hash) so it can be safely replaced; **any unknown hook stays untouched**.
+  Upgrades find and replace only the FORGE entry;
   respect project trust / hook-review (a hook is not active merely by existing).
   **Fail closed:** malformed hook JSON → refuse and report (no partial write);
   duplicate FORGE entries → dedupe to the canonical one; a conflicting command
@@ -136,17 +140,26 @@ one-task/per-checkpoint model, and avoids capturing the baseline after the fact)
 4. **TASK-038 is the final integrated regression evidence** across the shipped set
    (baseline vs. fully-updated run), not an unexplained retroactive gate.
 
-Objective rubric (reproducible, not "near zero"/"materially"):
+Objective rubric with a **pass threshold** (reporting a ratio is not a decision):
 
-- **Disallowed:** zero routine pre-tool announcements (reads, searches, edits,
-  commands, checks) across the run.
+- **Disallowed (hard fail):** any routine pre-tool announcement (reads, searches,
+  edits, commands, checks) — pass requires **zero** across the run.
 - **Allowed (enumerated):** required host heartbeats, checkpoint/material-state
   lines, blockers/decisions, one terminal summary.
-- **Runs:** at least 3 paired baseline/updated runs of the same fixed task
-  (behavior is probabilistic).
-- **Byte/token comparison:** total assistant-output bytes (or native tokens when
-  exposed) per run, reported as updated/baseline ratio; the reinjection check is
-  a transcript inspection after a forced compaction event.
+- **Runs:** ≥3 paired runs of the same fixed task (behavior is probabilistic);
+  report the **median** output-bytes (or native tokens) ratio.
+- **Pass:** zero disallowed narration in every run AND median updated/enabled
+  ratio ≤ **0.5** of its comparison baseline (chosen threshold; tune once the
+  frozen baseline exists).
+- **Reinjection:** transcript inspection confirms the rule re-appears after a
+  forced compaction event.
+
+Comparison targets (isolate each change; do not confound):
+
+- **TASK-035:** 1.9.1 baseline vs. D1/D2 wording+loading.
+- **TASK-037:** the *same* updated version with the hook **disabled vs. enabled**
+  (especially after compaction) — comparing to 1.9.1 cannot isolate the hook.
+- **TASK-038:** original frozen baseline vs. the fully integrated result.
 
 Record BOTH deterministic contract tests and the transcript-based Codex runs.
 
@@ -162,14 +175,15 @@ Record BOTH deterministic contract tests and the transcript-based Codex runs.
 
 ## Implementation plan (bounded, if accepted)
 
-0. TASK-034-baseline (pre-work): freeze the D5 protocol and capture the 1.9.1
-   baseline runs before any change lands.
-1. TASK-035: D1 + D2 — minimum-cadence wording in `checkpoint-output.md`, the
-   independently-normative inline fallback, and all six surfaces (explicit
-   no-per-tool-announcement); required-read workflow step in `execute-task`
-   (consolidate — it is at 5389/5400 bytes, 11 free); static fixtures **plus its
-   own behavioral delta vs. the frozen baseline**. **Security review required**
-   (an output-policy change must not suppress security blockers).
+1. TASK-035: D1 + D2. **First checkpoint (before any edit): freeze the D5
+   protocol and capture the 1.9.1 baseline runs** — the baseline is the opening
+   step of this bounded task, not a separate pseudo-task. Then: minimum-cadence
+   wording in `checkpoint-output.md`, the independently-normative inline fallback,
+   and all six surfaces (explicit no-per-tool-announcement); required-read
+   workflow step in `execute-task` (consolidate — it is at 5389/5400 bytes, 11
+   free); static fixtures **plus its behavioral delta vs. the frozen baseline**.
+   **Security review required** (an output-policy change must not suppress
+   security blockers).
 2. TASK-036: D3 — new `forge_upgrade.py` with the safe contract (patch `AI.md`
    after backup; surfaces only on managed-marker/known-version match, else
    diff-for-approval; never force-regen narrative `AGENTS.md`); fix this repo's
@@ -177,8 +191,9 @@ Record BOTH deterministic contract tests and the transcript-based Codex runs.
    narration). **Security review required** (mutates existing project files).
 3. TASK-037: D4 — corrected `.codex/hooks.json` (merge-safe, managed identity) +
    `.codex/hooks/` script + ci-setup docs for the opt-in user-owned Codex
-   profile; **includes its own behavioral delta (esp. post-compaction
-   reinjection)**. **Security review required** (executable hooks).
+   profile; **behavioral delta measured hook-disabled vs. hook-enabled on the same
+   updated version (esp. post-compaction reinjection)**. **Security review
+   required** (executable hooks).
 4. TASK-038: D5 — final integrated regression evidence (baseline vs. fully-updated
    run) across the shipped set. Not a retroactive per-task gate.
 

@@ -2,7 +2,7 @@ id: TASK-034
 title: "Design: token discipline v2 (delivery, cadence, migration, Codex)"
 task_type: design
 review_state: in-review
-status: in_progress
+status: complete
 priority: high
 phase: design
 owner_lane: single
@@ -22,4 +22,5 @@ evidence:
   - "Codex-harness external review agreed with the hierarchy diagnosis, corrected the supersede framing to minimum-heartbeat, and surfaced the loading/migration/hook gaps"
 history:
   - "2026-08-02: written after Codex-harness review of the 1.9.1 narration reports; all claims verified."
+  - "2026-08-02: second critique — baseline folded into TASK-035 (no pseudo-task), behavioral pass threshold + isolated comparison targets (037 = hook off vs on), legacy-hook signature recognition, status corrected to complete per design-tasks.md (review_state carries acceptance)."
   - "2026-08-02: external critique (changes-required) verified and incorporated — safe migration contract via dedicated forge_upgrade.py (no destructive regen), Codex hook coexistence/marker/trust/tests, and a behavioral Codex evaluation (D5) as the acceptance gate since static fixtures passed while 1.9.1 failed in practice. Per-task security reviews added. Status in_progress until accepted."
