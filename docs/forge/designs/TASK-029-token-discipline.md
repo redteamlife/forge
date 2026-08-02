@@ -107,17 +107,29 @@ precedence and the validator warns.
 
 Durable-surface conflict (must be handled in TASK-030): multiple generated
 surfaces independently hardcode "be terse," which would contradict a configured
-`detailed`. The set must be discovered MECHANICALLY, not hand-listed — a sweep
-(`grep -rln "terse|avoid.*recap|avoid.*narrat|implementation-focused"` over
-`assets/agent-surfaces/` and `assets/templates/`) currently finds seven:
+`detailed`. The set must be discovered MECHANICALLY, not hand-listed. The sweep must use
+extended regex and include the root skill (a basic-grep `|` is a literal pipe
+and returns nothing):
+
+```sh
+grep -rlE 'terse|avoid.*recap|avoid.*narrat|implementation-focused' \
+  skills/forge/SKILL.md skills/forge/assets/agent-surfaces skills/forge/assets/templates
+```
+
+It currently finds seven:
 `AGENTS.md`, the Cursor rule, the Windsurf rule, the Copilot instructions,
 `AGENTS.narrative.md`, the root `SKILL.md`, and the `AI.md` template (which is
 the `response_style` source, not a surface to defer). TASK-030 updates every
 output-guidance surface to defer to config — "Follow `progress_policy` from
 `AI.md`; default to compact output when absent" — and ships a
-fixture/generated-output test that FAILS if any surface still asserts
-unconditional "always terse" language, so the set cannot silently grow out of
-sync. Root `SKILL.md` is 3191/3200 bytes: like `execute-task`, its update must
+fixture with a POSITIVE invariant (a negative "no 'terse' wording" check is
+insufficient — a new surface could omit both the terse wording and the policy
+reference and silently be non-compliant). The fixture must: enumerate every
+generated agent surface and assert each contains the canonical `progress_policy`
+deferral; separately assert the root skill contains it; assert `AI.md` defines
+the configuration source; and may additionally reject known unconditional-terse
+patterns. This makes deference the invariant, so the set cannot silently grow out
+of sync. Root `SKILL.md` is 3191/3200 bytes: like `execute-task`, its update must
 consolidate existing text, not append.
 
 ### D4. Model selection is documentation only — no config field yet
@@ -153,8 +165,11 @@ classes.
    run-boundary loading in `execute-task` (via consolidation); update ALL
    output-guidance canonical surfaces — discovered mechanically, consolidating
    not appending where budgeted — to defer to `progress_policy`, with a fixture
-   that fails on any retained unconditional "always terse" language. Capture
-   before/after token measurements (native when exposed, else proxies).
+   with a positive invariant (each surface asserts the deferral; not merely
+   absence of terse wording). Capture before/after token measurements (native
+   when exposed, else proxies). **Security/DevSecOps review required**: TASK-030
+   modifies a validator and workflow-governance surfaces, which FORGE gates as a
+   repository-control change.
 2. TASK-031: model-selection guidance in `references/token-efficiency.md` (or a
    short note) — documentation only, no config field.
 
