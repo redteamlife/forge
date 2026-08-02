@@ -17,4 +17,4 @@ This repository uses FORGE governance.
 - if `task_source` is GitHub, GitLab, or external, treat that tracker as authoritative and use local task files only as planning snapshots unless project policy says otherwise
 - honor declared `contract_files` and update shared API/schema/client contracts with the task that changes them
 - in team repos, follow `docs/forge/TEAM.md` and CI enforcement when team rules are relevant
-- keep working responses terse and implementation-focused; avoid restating repo context unless needed for a decision
+- Follow `progress_policy` in `docs/forge/AI.md` (default compact: concise checkpoint output, detailed blockers).

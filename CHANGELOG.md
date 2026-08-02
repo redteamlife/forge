@@ -4,6 +4,20 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-08-02
+
+### Added
+
+- Token discipline for long runs: a `references/checkpoint-output.md` positive-template output protocol and a `progress_policy` config field (`checkpoint` | `compact` | `detailed`; absent -> `compact`, `batch`/`auto` default to `compact`). All output-guidance surfaces (AGENTS, Cursor, Windsurf, Copilot, narrative, root skill) now defer to `progress_policy` instead of hardcoding "terse", guarded by a positive-invariant fixture. `execute-task` carries an inline fallback and loads the protocol at run boundaries. Reduces narration cost in `batch`/`auto` runs; `detailed` cannot suppress blockers.
+- Model-selection guidance in `references/token-efficiency.md`: economical tier for deterministic checks and bounded edits, stronger tier for planning and the judgment gates. Documentation only — no config field.
+- Design tasks are first-class: `task_type: design` + `review_state` (draft|in-review|changes-requested|accepted), tracked via `review_state` and exempt from execution gates (`forge_next_gate.py` returns a design-task exemption). `references/design-tasks.md` documents the workflow; `docs/forge/designs/README.md` indexes design records for handbook publishing.
+
+### Changed
+
+- Bumped the default generated `forge_version` to `1.9.1`.
+- Legacy `response_style: terse` maps to `progress_policy: compact`; the validator notes precedence when both are present.
+
+
 ## [1.9.0] - 2026-07-31
 
 ### Added

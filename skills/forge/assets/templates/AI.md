@@ -1,7 +1,7 @@
 # AI Execution Configuration
 
 ```FORGE-config
-forge_version: 1.9.0
+forge_version: 1.9.1
 FORGE_mode: Lightweight
 # execution_mode: manual (stop per checkpoint) | batch (needs batch_size) | auto
 # (org-policy gated). Pacing only — gates run per checkpoint in every mode.
@@ -19,15 +19,14 @@ solo_branch_flow: direct
 # coordination_branch and integration_branch are team-full concepts. Omit for
 # solo profiles — except clean-main solo, where integration_branch is the
 # working branch (usually dev) and release_branch stays clean.
-# dev_only_paths: comma-separated paths that never reach release_branch
-# (clean-main model; trailing / = prefix; default docs/forge/). Read by the
-# guards and forge-promote. Common additions: CLAUDE.md, AGENTS.md,
-# .cursor/rules/, .github/copilot-instructions.md
+# dev_only_paths: paths that never reach release_branch (clean-main; default
+# docs/forge/; trailing / = prefix). See references/doc-minimums.md.
 # dev_only_paths: docs/forge/
 # coordination_branch: forge-state
 # integration_branch: develop
 release_branch: main
-response_style: terse
+# progress_policy: checkpoint|compact|detailed output verbosity (absent -> compact)
+progress_policy: compact
 ci_enforcement: disabled
 application_docs: false
 # application_docs: true adds docs_root (default docs/handbook) and

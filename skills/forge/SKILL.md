@@ -57,10 +57,7 @@ When multiple developers or agents work in parallel:
 
 ## Output Discipline
 
-Default to terse, implementation-focused responses:
-
-- working update: `Status: <ok/doing/blocker>. Next: <next step>.`
-- task closeout: `Done: <result>. Changed: <files or areas>. Next: <next step or none>.`
-- blocker: `Blocked: <fact>. Need: <decision or missing prerequisite>.`
-
-Avoid repeated recap, file-content echoes, and routine narration unless clarity prevents a bad decision.
+Follow `progress_policy` in `docs/forge/AI.md` (default `compact` when absent):
+concise checkpoint output, detailed blockers, one terminal summary — never
+per-task recaps of what the task file and commit already record. Full protocol:
+`references/checkpoint-output.md`.

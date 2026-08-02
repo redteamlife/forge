@@ -144,6 +144,8 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "skill-anatomy.md",
         SKILL_ROOT / "references" / "execution-modes.md",
         SKILL_ROOT / "references" / "release-management.md",
+        SKILL_ROOT / "references" / "design-tasks.md",
+        SKILL_ROOT / "references" / "checkpoint-output.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
@@ -800,6 +802,29 @@ def verify_release_check() -> None:
         ensure(miss.returncode == 1, "release check passed a missing changelog version")
 
 
+def verify_progress_policy_surfaces() -> None:
+    """Positive invariant: every output-guidance surface defers to progress_policy;
+    the root skill defers; AI.md defines the config source (design TASK-030)."""
+    surfaces = [
+        SKILL_ROOT / "assets" / "agent-surfaces" / "AGENTS.md",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".cursor" / "rules" / "forge.mdc",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".windsurf" / "rules" / "forge.md",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".github" / "copilot-instructions.md",
+        SKILL_ROOT / "assets" / "templates" / "AGENTS.narrative.md",
+        SKILL_ROOT / "SKILL.md",
+    ]
+    for path in surfaces:
+        text = path.read_text()
+        ensure("progress_policy" in text,
+               f"{path}: output-guidance surface does not defer to progress_policy")
+        ensure("terse and implementation-focused" not in text,
+               f"{path}: retains unconditional 'terse' guidance that overrides progress_policy")
+    ai = (SKILL_ROOT / "assets" / "templates" / "AI.md").read_text()
+    ensure("progress_policy:" in ai, "AI.md template does not define progress_policy")
+    proto = SKILL_ROOT / "references" / "checkpoint-output.md"
+    ensure(proto.is_file(), "checkpoint-output.md protocol is missing")
+
+
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""
     execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
@@ -836,6 +861,14 @@ def verify_gate_loop() -> None:
             text=True, capture_output=True, check=False)
         ensure(result.stdout.strip() == "memory",
                f"next-gate ignored memory store: {result.stdout.strip()!r}")
+
+        design = repo / "design.yaml"
+        design.write_text("id: D1\ntask_type: design\nreview_state: accepted\n")
+        result = subprocess.run(
+            [sys.executable, str(helper), str(design), "--repo", str(repo)],
+            text=True, capture_output=True, check=False)
+        ensure("design-task" in result.stdout and result.returncode == 0,
+               f"next-gate did not exempt design task: {result.stdout.strip()!r}")
 
 
 def verify_commit_msg_hook() -> None:
@@ -895,6 +928,7 @@ def main() -> int:
         verify_docs_staleness()
         verify_docs_export()
         verify_release_check()
+        verify_progress_policy_surfaces()
         verify_commit_msg_hook()
         verify_install_flow()
     except CheckFailure as exc:

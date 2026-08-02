@@ -5,8 +5,7 @@ description: Execute one bounded FORGE task from repository-local governance doc
 
 # FORGE Execute Task
 
-Purpose: execute one governed FORGE task with minimal context. A checkpoint is
-not complete until its review gates have run and outcomes are recorded.
+Execute one governed task with minimal context. A checkpoint is not complete until its review gates have run and outcomes are recorded.
 
 ## Use When
 
@@ -19,7 +18,7 @@ not complete until its review gates have run and outcomes are recorded.
 
 ## Default Reads
 
-`docs/forge/CONTEXT.md` (if present), `docs/forge/AI.md`, the task index (`TASKS.index.yaml`, else `TASKS.yaml` or the configured tracker), exactly one selected task, and the files in its `file_scope`. Read other FORGE docs (TEAM, ARCHITECTURE, SETUP, checklists, EVALUATION) only when a step requires them.
+`docs/forge/CONTEXT.md` (if present), `docs/forge/AI.md`, the task index (`TASKS.index.yaml`, else `TASKS.yaml` or the configured tracker), exactly one selected task, and the files in its `file_scope`. Read other docs (TEAM, ARCHITECTURE, SETUP, checklists, EVALUATION) only when a step needs them.
 
 ## Workflow
 
@@ -30,14 +29,15 @@ not complete until its review gates have run and outcomes are recorded.
 5. Start with declared `file_scope`; note why before any expansion.
 6. Check branch, team, architecture, contract, and security constraints.
 7. Implement the smallest safe change; run relevant checks.
-8. Run the review gates via `forge-review` (critique always; security review when the change surface or `security_profile` requires it; evaluation as a full gate when `docs/forge/EVALUATION.md` exists, otherwise recorded in the task only). Record outcomes in the task's `gates:` block:
-   `critique: pass|fail` · `security: pass|n/a|escalated` · `evaluation: pass|handoff-required|fail`.
+8. Run the review gates via `forge-review` (critique always; security per change surface/`security_profile`; evaluation is a full gate when `EVALUATION.md` exists, else recorded in-task). Record in the `gates:` block: `critique: pass|fail` · `security: pass|n/a|escalated` · `evaluation: pass|handoff-required|fail`.
 9. Record a memory entry only when a reusable lesson exists: `memory: entry|no-relevant-lesson|store-unavailable`.
 10. Update task state and evidence.
 11. Commit per project policy (Conventional Commit, no AI attribution).
-12. Stop or continue per `execution_mode` (`../references/execution-modes.md`); `requires_independent_review` is an unconditional stop in every mode.
+12. Stop or continue per `execution_mode`; `requires_independent_review` is an unconditional stop.
 
-`<skill-root>/assets/scripts/forge_next_gate.py <task-file>` prints the next required gate deterministically when in doubt.
+`<skill-root>/assets/scripts/forge_next_gate.py <task-file>` prints the next required gate.
+
+Output (fallback if `../references/checkpoint-output.md` is not loaded): follow `progress_policy` (default `compact`) — one line per checkpoint (`TASK-<id> complete|blocked|handoff-required | …`), blockers always state check + evidence + need, and one terminal `Done: … Refs: … Remaining: …` summary. No per-task recaps; the task file and commit are the record.
 
 Task sources — `local`: `TASKS.index.yaml` plus `docs/forge/tasks/<id>.yaml`, else `TASKS.yaml`. `github`/`gitlab`: issues are authoritative; local task files are planning snapshots. `external`: only the configured MCP, CLI, or human-provided reference.
 
@@ -75,11 +75,9 @@ Stop when:
 
 ## Evidence Required
 
-- selected task id or issue; changed files and scope-expansion notes
-- validation commands run or blocker
+- selected task id/issue; changed files and scope-expansion notes; validation run or blocker
 - `gates:` outcomes for the checkpoint (critique, security, evaluation, memory)
 - updated task source when state changes
-- required docs, contracts, ADRs, XPDs, or evaluation entries when triggered
-- Conventional Commit for completed solo task work, or PR/MR-ready state in team mode
+- required docs/contracts/ADRs/XPDs when triggered; Conventional Commit (solo) or PR/MR-ready state (team)
 
-On-demand references: `../references/execution-modes.md`, `../references/team-mode.md`, `../references/repo-flavors.md`, `../references/application-docs.md`.
+On-demand references: `../references/checkpoint-output.md`, `../references/execution-modes.md`, `../references/team-mode.md`, `../references/repo-flavors.md`, `../references/application-docs.md`.
