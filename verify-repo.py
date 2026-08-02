@@ -148,6 +148,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "checkpoint-output.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_narration_metrics.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_adapters.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py",
@@ -825,6 +826,25 @@ def verify_progress_policy_surfaces() -> None:
     ensure(proto.is_file(), "checkpoint-output.md protocol is missing")
 
 
+def verify_narration_metrics() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_narration_metrics.py"
+    with tempfile.TemporaryDirectory(prefix="forge-narr-") as td:
+        chatty = Path(td) / "chatty.jsonl"
+        chatty.write_text(
+            '{"role":"assistant","text":"Now let me read the file.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n')
+        compact = Path(td) / "compact.jsonl"
+        compact.write_text(
+            '{"role":"assistant","text":"Status: doing. Next: implement.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n')
+        r = subprocess.run([sys.executable, str(script), str(chatty)], capture_output=True, text=True)
+        ensure(r.returncode == 1 and "disallowed_check: FAIL" in r.stdout,
+               f"scorer did not flag chatty narration:\n{r.stdout}")
+        r = subprocess.run([sys.executable, str(script), str(compact)], capture_output=True, text=True)
+        ensure(r.returncode == 0 and "disallowed_check: PASS" in r.stdout,
+               f"scorer failed a compact transcript:\n{r.stdout}")
+
+
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""
     execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
@@ -926,6 +946,7 @@ def main() -> int:
         verify_surface_fallback()
         verify_gate_loop()
         verify_docs_staleness()
+        verify_narration_metrics()
         verify_docs_export()
         verify_release_check()
         verify_progress_policy_surfaces()

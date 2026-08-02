@@ -1,0 +1,11 @@
+id: TASK-038
+title: "D5: integrated behavioral regression evidence"
+status: todo
+priority: normal
+phase: token-discipline-v2
+owner_lane: single
+owner: taffy
+description: "forge_narration_metrics.py eval harness formalized; final integrated baseline-vs-updated Codex regression across the shipped set. 1.9.2 ships only if zero disallowed narration and median ratio <= 0.5."
+gates: {}
+history:
+  - "2026-08-02: planned from accepted design TASK-034."

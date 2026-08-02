@@ -1,0 +1,11 @@
+id: TASK-036
+title: "D3: safe forge_upgrade.py migration"
+status: todo
+priority: high
+phase: token-discipline-v2
+owner_lane: single
+owner: taffy
+description: "New forge_upgrade.py: detect-then-authorize; patch AI.md FORGE-config block after backup (progress_policy authoritative, remove recognized legacy response_style, stop on invalid/conflict); surfaces only on managed-marker/known-version match else diff-for-approval; never force-regen narrative AGENTS.md; idempotent. Fix this repo AI.md. Closes on deterministic safety tests. Security review required (mutates project files)."
+gates: {}
+history:
+  - "2026-08-02: planned from accepted design TASK-034."

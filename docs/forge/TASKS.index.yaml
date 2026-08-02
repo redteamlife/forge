@@ -271,3 +271,35 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-034.yaml
+  - id: TASK-035
+    title: "D1+D2: minimum-cadence output + required-read loading"
+    status: in_progress
+    priority: high
+    phase: token-discipline-v2
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-035.yaml
+  - id: TASK-036
+    title: "D3: safe forge_upgrade.py migration"
+    status: todo
+    priority: high
+    phase: token-discipline-v2
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-036.yaml
+  - id: TASK-037
+    title: "D4: Codex SessionStart hook + profile guidance"
+    status: todo
+    priority: high
+    phase: token-discipline-v2
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-037.yaml
+  - id: TASK-038
+    title: "D5: integrated behavioral regression evidence"
+    status: todo
+    priority: normal
+    phase: token-discipline-v2
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-038.yaml

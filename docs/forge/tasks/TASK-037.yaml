@@ -1,0 +1,11 @@
+id: TASK-037
+title: "D4: Codex SessionStart hook + profile guidance"
+status: todo
+priority: high
+phase: token-discipline-v2
+owner_lane: single
+owner: taffy
+description: "Corrected .codex/hooks.json (3-level schema, startup|resume|clear|compact, merge-safe, recognize legacy inline-echo signature, canonical-path identity, fail-closed) + .codex/hooks/ script (fixed-enum parse, no secrets, no mutation) + user-owned low-verbosity profile docs. Behavioral delta hook off vs on (post-compaction). Security review required (executable hooks)."
+gates: {}
+history:
+  - "2026-08-02: planned from accepted design TASK-034."
