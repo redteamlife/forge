@@ -263,3 +263,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-033.yaml
+  - id: TASK-034
+    title: "Design: token discipline v2 (delivery, cadence, migration, Codex)"
+    status: complete
+    priority: high
+    phase: design
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-034.yaml
