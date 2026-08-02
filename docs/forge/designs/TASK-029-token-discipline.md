@@ -1,8 +1,8 @@
 # Design v2: Token Discipline — a Portable Checkpoint-Output Protocol
 
-Status: v1 critique = fail pending revision; all blocking findings verified and
-incorporated. review_state: changes-incorporated. D5 (file-size) removed to its
-own design. Awaiting acceptance before TASK-030/031.
+Status: v1 findings addressed; v2 direction approved with narrow corrections,
+applied here as v3. review_state: in-review — awaiting acceptance before
+TASK-030/031. D5 (file-size) removed to its own design.
 
 ## Problem (re-scoped)
 
@@ -23,19 +23,27 @@ Coverage already varies by harness: the always-applied Cursor rule and the
 of this; the gap is worst where no persistent rule surface reinforces the
 contract. What the inspection does NOT establish: how much burn came from visible
 narration vs. repeated reads, tool output, gate execution, compaction, or source
-rereads. Implementation should capture before/after measurements (output tokens
-per checkpoint, tokens per task, repeated reads, tool-output volume).
+rereads. Implementation should capture before/after measurements: native token counts and
+repeated-read telemetry **when the harness exposes them**; otherwise proxies —
+transcript/output bytes, tool-output volume, and observed file-read counts.
 
 ## Decisions
 
 ### D1. One canonical checkpoint-output protocol, loaded in the loop
 
-Define the output contract **once** in `references/checkpoint-output.md` (not
-scattered, slightly-different, across every lifecycle skill — the gate skills are
-already compact). `execute-task` loads it **once at the start of a run** (never
-re-read per checkpoint) and references it; other lifecycle skills point at the
-same file. Because `execute-task` is at 5225/5400 bytes, this is a compact
-pointer + protocol reference, achieved by consolidation, not a large insertion.
+Define the checkpoint output contract **once** in
+`references/checkpoint-output.md`, scoped to `execute-task` (the loop where the
+burn happens). Do NOT point plan/build/review/ship at a checkpoint-specific
+reference — their terminal outputs differ; a general cross-lifecycle protocol is
+a separate, larger effort and out of scope here.
+
+Loading and run boundaries: a run boundary is an initial `execute-task`
+activation or an explicit resume/new session. Load the reference at those
+boundaries, never between checkpoints. Because a pointer alone can disappear
+during compaction, keep a **minimal inline fallback** in `execute-task` — the
+one-line success/blocker schema below — so the contract survives even if the
+reference is not reloaded. Because `execute-task` is at 5225/5400 bytes, the
+inline fallback is achieved by consolidation, not a large insertion.
 
 ### D2. The protocol is a positive template, not a list of prohibitions
 
@@ -46,8 +54,14 @@ negatives ("do not narrate/recap/explain"). The protocol specifies what TO emit:
   when one exists).
 - **on a blocker**: always emit the failed gate/check, the relevant evidence, and
   the required action — blockers are never silenced.
-- **once at end of run**: exactly one compact terminal summary, e.g.
-  `Done: TASK-030..032. Gates: pass. Commits: abc123, def456. Remaining: none.`
+- **once at end of run**: exactly one compact, task-source-neutral terminal
+  summary, e.g.
+  `Done: TASK-030..031. Validation: pass. Refs: abc123, PR-42. Remaining: none.`
+  `Refs:` covers commits, PRs, issues, and external-tracker records — better than
+  a commit-specific field.
+- **single-checkpoint run**: when a run ends after one checkpoint, the terminal
+  summary REPLACES the checkpoint line (do not emit both — they would be nearly
+  identical).
 
 No-duplication principle (from v1 D3, corrected): do not restate task evidence or
 gate reasoning that is already recorded — but DO produce the single terminal
@@ -73,6 +87,12 @@ progress_policy: checkpoint | compact | detailed
 override** — a host that requires periodic progress or a self-contained final
 response gets it. Complete silence is not portable; compact structured updates
 are.
+
+Migration from `response_style` (resolve before TASK-030): `progress_policy` is
+optional. Defaults: `manual` → `checkpoint`, `batch`/`auto` → `compact`. Legacy
+`response_style: terse` maps to `compact`. New templates emit only
+`progress_policy`. If both fields are present, `progress_policy` takes precedence
+and the validator emits a migration warning.
 
 ### D4. Model selection is documentation only — no config field yet
 
@@ -104,15 +124,17 @@ classes.
    right canonical schema, or should it vary by task_source?
 2. D3 — new `progress_policy` field vs. clarifying/reusing the existing
    `response_style`? (New field is explicit; reuse avoids config growth.)
-3. D1 loading — "once at start of run" is clear for a fresh session; how should a
-   resumed/compacted session re-establish the protocol?
+3. D3 field choice — new `progress_policy` (explicit) vs. clarifying/reusing
+   `response_style` (avoids config growth). v3 leans to the new field with a
+   defined migration; confirm.
 
 ## Implementation plan (bounded, if accepted)
 
-1. TASK-030: `references/checkpoint-output.md` protocol (positive template) +
-   `progress_policy` field + validator + load-once wiring in `execute-task` (via
-   consolidation) + one-line pointers in plan/build/review/ship. Capture
-   before/after token measurements as evidence.
+1. TASK-030: `references/checkpoint-output.md` protocol (positive template,
+   scoped to `execute-task`) + `progress_policy` field with `response_style`
+   migration + validator (migration warning when both present) + inline fallback
+   schema and run-boundary loading in `execute-task` (via consolidation).
+   Capture before/after token measurements (native when exposed, else proxies).
 2. TASK-031: model-selection guidance in `references/token-efficiency.md` (or a
    short note) — documentation only, no config field.
 

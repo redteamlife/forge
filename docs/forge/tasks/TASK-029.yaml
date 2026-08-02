@@ -1,26 +1,23 @@
 id: TASK-029
 title: "Design: token discipline in the execution loop"
 status: complete
-review_state: changes-incorporated
+review_state: in-review
 priority: high
 phase: design
 owner_lane: single
 owner: taffy
-description: "Design response to real-world token burn in a multi-hour batch/auto run: output discipline exists (root skill + token-efficiency.md) but is absent from execute-task (the loop) and not scaled by autonomy. Relocate compact discipline into the loop, scale verbosity by execution_mode, stop restating task/commit content; ship model-tiering as recommendation-not-mechanism; add a ratcheting file-size quality gate. Implementation deferred to TASK-030..032."
+description: "Design (v3) for reducing token burn in long batch/auto runs. Confirmed contributing control gap (execute-task carries no output contract; token-efficiency.md unreferenced from the loop; coverage varies by harness). One canonical positive-template checkpoint-output protocol loaded once at run boundaries with an inline fallback; a dedicated progress_policy field (not execution_mode) with response_style migration; task-source-neutral terminal summary; model tiering as documentation only (no config field). File-size gate removed to its own security-reviewed design. Implementation: TASK-030 (protocol + progress_policy) and TASK-031 (model guidance doc)."
 file_scope:
   - docs/forge/designs/TASK-029-token-discipline.md
   - docs/forge/TASKS.index.yaml
 acceptance_criteria:
-  - "Design records the confirmed root cause (execute-task has no output discipline; token-efficiency.md unreferenced from the loop)."
-  - "Decisions cover in-loop discipline, autonomy-scaled verbosity, no-restatement, honest model-tiering scoping, and the file-size ratchet."
-  - "Open questions and bounded implementation tasks recorded for review."
+  - "Design records a contributing control gap (not a proven root cause) with by-harness variance and a measurement plan."
+  - "Output contract is a portable positive template with a dedicated progress_policy field, response_style migration, single-checkpoint and resume behavior, and a task-source-neutral terminal summary."
+  - "Model tiering is documentation-only (no unimplemented config field); file-size gate is deferred to its own design."
 evidence:
-  - "verified: grep -c terse|narrat|recap|status in execute-task/SKILL.md = 0"
-  - "verified: token-efficiency.md referenced only from root SKILL.md, not from execute-task"
-gates:
-  critique: changes-incorporated
-  security: n/a
-  evaluation: pending
+  - "verified: execute-task/SKILL.md has no output contract (grep terse|narrat|recap|status = 0)"
+  - "verified: token-efficiency.md referenced only from root SKILL.md; execution-modes.md defines execution_mode as pacing; size budgets are byte-based; Cursor/AGENTS surfaces already terse"
 history:
-  - "2026-08-02: v1 written from NES-project token-burn report."
-  - "2026-08-02: v1 critique = fail pending revision; all findings verified and incorporated as v2 (contributing-gap reframe with by-harness variance, single positive-template checkpoint protocol loaded once, separate progress_policy field, model guidance doc-only no field, file-size gate removed to its own security-reviewed design). Awaiting acceptance."
+  - "2026-08-02: v1 from NES-project token-burn report."
+  - "2026-08-02: v2 after external critique (positive-template protocol, progress_policy separate from execution_mode, model guidance doc-only, file-size gate removed)."
+  - "2026-08-02: v3 narrow corrections (response_style migration, single-checkpoint rule, task-source-neutral terminal schema, resume/run-boundary + inline fallback, qualified measurement, protocol scoped to execute-task). Direction approved; evaluation pending."
