@@ -1,0 +1,28 @@
+id: TASK-035
+title: "D1+D2: minimum-cadence output + required-read loading"
+status: in_progress
+priority: high
+phase: token-discipline-v2
+owner_lane: single
+owner: taffy
+description: "Freeze D5 protocol + capture 1.9.1 baseline (checkpoint 1, before edits); then minimum-cadence wording in checkpoint-output.md + independently-normative inline fallback + all six surfaces AND the surface generator (no per-tool announcements); required-read step in execute-task (consolidate within budget). Static fixtures + behavioral delta vs frozen baseline. Security review required (an output-policy change must not suppress security blockers)."
+file_scope:
+  - skills/forge/references/checkpoint-output.md
+  - skills/forge/execute-task/SKILL.md
+  - skills/forge/SKILL.md
+  - skills/forge/assets/agent-surfaces/
+  - skills/forge/assets/templates/AGENTS.narrative.md
+  - skills/forge/assets/scripts/forge_generate_agent_surfaces.py
+  - verify-repo.py
+acceptance_criteria:
+  - "Minimum-cadence wording (host cadence = heartbeat floor, not narration license) in checkpoint-output.md, the independently-normative inline fallback, and every output-guidance surface."
+  - "Generated surfaces (generator ROUTER output), not just static files, defer to progress_policy; fixture asserts it on generated output."
+  - "checkpoint-output.md is a required read at activation in execute-task (consolidated within the 5400-byte budget)."
+  - "Behavioral delta vs the frozen 1.9.1 baseline meets the D5 pass threshold."
+gates: {}
+evidence:
+  - "FINDING (verified during rig setup): forge_generate_agent_surfaces.py does NOT emit the progress_policy deferral, so GENERATED AGENTS.md/CLAUDE.md (every real bootstrap/refresh) lack it — only static shipped files defer. TASK-030's positive-invariant fixture checked static files, not generator output. Fix in the edit phase: generator ROUTER must emit the deferral AND the fixture must assert it on generated output. Material cause of 1.9.1 chattiness; captured in the baseline as-shipped."
+  - "checkpoint 1 (baseline): protocol frozen at docs/forge/evaluations/TASK-034-baseline-protocol.md; forge_narration_metrics.py scorer built and fixture-tested (chatty FAIL / compact PASS); eval rig repo forge-token-eval created. Codex baseline RUN is a harness-environment action, pending."
+history:
+  - "2026-08-02: planned from accepted design TASK-034."
+  - "2026-08-02: checkpoint 1 baseline apparatus frozen; generator-deferral gap found and recorded for the edit phase."
