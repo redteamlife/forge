@@ -144,6 +144,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "skill-anatomy.md",
         SKILL_ROOT / "references" / "execution-modes.md",
         SKILL_ROOT / "references" / "release-management.md",
+        SKILL_ROOT / "references" / "design-tasks.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",

@@ -1,0 +1,21 @@
+id: TASK-033
+title: "Design-task workflow doc and designs index"
+status: complete
+priority: normal
+phase: governance
+owner_lane: single
+owner: taffy
+description: "Make design rationale a discoverable, publishable first-class artifact. Add references/design-tasks.md (convention, review_state lifecycle, gate exemption, handbook-publishable index) and docs/forge/designs/README.md indexing the pack's design records."
+file_scope:
+  - skills/forge/references/design-tasks.md
+  - docs/forge/designs/README.md
+  - verify-repo.py
+acceptance_criteria:
+  - "design-tasks.md documents the convention, review_state lifecycle, and gate exemption."
+  - "docs/forge/designs/README.md is an ordered, current index publishable via the handbook export."
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-08-02: follow-up 2 from the TASK-029 review loop."
