@@ -60,7 +60,9 @@ negatives ("do not narrate/recap/explain"). The protocol specifies what TO emit:
   - `TASK-<id> handoff-required | need: independent reviewer | ref: PR-42`
   - `TASK-<id> escalated | reason: <fact> | need: <decision>`
   - `Stopped before task selection | reason: <missing prerequisite> | need: <action>`
-  A stop message is itself informative; blockers are never silenced.
+  A stop message is itself informative; blockers are never silenced. Do not
+  invent new outcome words: map `independent-review` → `handoff-required` and
+  `claim-conflict` → `blocked` so the protocol reuses the existing vocabulary.
 - **once at end of run**: exactly one compact, task-source-neutral terminal
   summary, e.g.
   `Done: TASK-030..031. Validation: pass. Refs: abc123, PR-42. Remaining: none.`
@@ -103,12 +105,20 @@ value maps to the mode-derived default with a validator warning. New templates
 emit only `progress_policy`. If both fields are present, `progress_policy` takes
 precedence and the validator warns.
 
-Durable-surface conflict (must be handled in TASK-030): the generated `AGENTS.md`,
-the Cursor rule, and the root skill each independently hardcode "be terse," which
-would contradict a configured `detailed`. TASK-030 updates those canonical
-surfaces to defer to config — "Follow `progress_policy` from `AI.md`; default to
-compact output when absent" — so the field is authoritative rather than
-overridden by more persistent instructions.
+Durable-surface conflict (must be handled in TASK-030): multiple generated
+surfaces independently hardcode "be terse," which would contradict a configured
+`detailed`. The set must be discovered MECHANICALLY, not hand-listed — a sweep
+(`grep -rln "terse|avoid.*recap|avoid.*narrat|implementation-focused"` over
+`assets/agent-surfaces/` and `assets/templates/`) currently finds seven:
+`AGENTS.md`, the Cursor rule, the Windsurf rule, the Copilot instructions,
+`AGENTS.narrative.md`, the root `SKILL.md`, and the `AI.md` template (which is
+the `response_style` source, not a surface to defer). TASK-030 updates every
+output-guidance surface to defer to config — "Follow `progress_policy` from
+`AI.md`; default to compact output when absent" — and ships a
+fixture/generated-output test that FAILS if any surface still asserts
+unconditional "always terse" language, so the set cannot silently grow out of
+sync. Root `SKILL.md` is 3191/3200 bytes: like `execute-task`, its update must
+consolidate existing text, not append.
 
 ### D4. Model selection is documentation only — no config field yet
 
@@ -137,10 +147,14 @@ classes.
 ## Implementation plan (bounded, if accepted)
 
 1. TASK-030: `references/checkpoint-output.md` protocol (positive template,
-   scoped to `execute-task`) + `progress_policy` field with `response_style`
-   migration + validator (migration warning when both present) + inline fallback
-   schema and run-boundary loading in `execute-task` (via consolidation).
-   Capture before/after token measurements (native when exposed, else proxies).
+   scoped to `execute-task`) covering success + all stop states + single/terminal
+   summary; `progress_policy` field with `response_style` migration + validator
+   (warn on both-present or non-terse legacy value); inline fallback schema and
+   run-boundary loading in `execute-task` (via consolidation); update ALL
+   output-guidance canonical surfaces — discovered mechanically, consolidating
+   not appending where budgeted — to defer to `progress_policy`, with a fixture
+   that fails on any retained unconditional "always terse" language. Capture
+   before/after token measurements (native when exposed, else proxies).
 2. TASK-031: model-selection guidance in `references/token-efficiency.md` (or a
    short note) — documentation only, no config field.
 
