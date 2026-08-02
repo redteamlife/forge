@@ -1,5 +1,6 @@
 id: TASK-021
 title: "Design: release-gated docs, CHANGELOG, portable publishing"
+task_type: design
 status: complete
 review_state: changes-incorporated
 priority: high

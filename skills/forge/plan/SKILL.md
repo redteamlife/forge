@@ -15,7 +15,11 @@ FORGE-governed work.
 3. Use `../references/lifecycle-map.md` only when lifecycle routing is ambiguous.
 4. Shape tasks with bounded scope, file scope, dependencies, contract files,
    and review requirements.
-5. Do not implement unless the user explicitly switches to build or
+5. For design/architecture work, record a `task_type: design` task whose
+   document lives under `docs/forge/designs/`. Design tasks are tracked by
+   `review_state` (draft|in-review|changes-requested|accepted) and are exempt
+   from execution gates — do not attach a `gates:` block to them.
+6. Do not implement unless the user explicitly switches to build or
    `forge-execute-task`.
 
 ## Hard Stops

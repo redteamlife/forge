@@ -1,0 +1,26 @@
+id: TASK-032
+title: "Design-task gate semantics"
+status: complete
+priority: normal
+phase: governance
+owner_lane: single
+owner: taffy
+description: "Design tasks conflated authored with accepted and carried invalid execution gates. Add task_type: design + review_state to the schema and task template; forge_next_gate.py exempts design tasks; plan skill records design work as task_type: design tracked by review_state, no gates. Retrofit TASK-006/011/021/029."
+file_scope:
+  - docs/forge/.schemas/task.schema.json
+  - skills/forge/assets/scripts/forge_next_gate.py
+  - skills/forge/assets/templates/tasks/TASK-001.yaml
+  - skills/forge/plan/SKILL.md
+  - verify-repo.py
+acceptance_criteria:
+  - "task_type: design tasks use review_state and are exempt from gates."
+  - "forge_next_gate.py returns a design-task exemption; fixture covers it."
+  - "Existing design tasks retrofitted."
+tests:
+  - "verify-repo.py forge_next_gate design-task branch"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
+history:
+  - "2026-08-02: follow-up 1 from the TASK-029 review loop."

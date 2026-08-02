@@ -1,5 +1,6 @@
 id: TASK-011
 title: "Design: workflow stickiness"
+task_type: design
 status: complete
 priority: high
 phase: design

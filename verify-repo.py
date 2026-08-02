@@ -837,6 +837,14 @@ def verify_gate_loop() -> None:
         ensure(result.stdout.strip() == "memory",
                f"next-gate ignored memory store: {result.stdout.strip()!r}")
 
+        design = repo / "design.yaml"
+        design.write_text("id: D1\ntask_type: design\nreview_state: accepted\n")
+        result = subprocess.run(
+            [sys.executable, str(helper), str(design), "--repo", str(repo)],
+            text=True, capture_output=True, check=False)
+        ensure("design-task" in result.stdout and result.returncode == 0,
+               f"next-gate did not exempt design task: {result.stdout.strip()!r}")
+
 
 def verify_commit_msg_hook() -> None:
     """Trailers optional (finding-1 fix): a bare Conventional Commit passes;

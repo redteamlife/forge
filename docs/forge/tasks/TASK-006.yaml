@@ -1,5 +1,6 @@
 id: TASK-006
 title: "Design: first-class clean-main model"
+task_type: design
 status: complete
 priority: high
 phase: design

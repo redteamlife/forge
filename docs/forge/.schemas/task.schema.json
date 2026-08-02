@@ -138,6 +138,14 @@
         }
       },
       "additionalProperties": false
+    },
+    "review_state": {
+      "enum": [
+        "draft",
+        "in-review",
+        "changes-requested",
+        "accepted"
+      ]
     }
   },
   "additionalProperties": true

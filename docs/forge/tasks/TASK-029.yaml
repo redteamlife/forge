@@ -1,5 +1,6 @@
 id: TASK-029
 title: "Design: token discipline in the execution loop"
+task_type: design
 status: complete
 review_state: accepted
 priority: high
@@ -18,10 +19,6 @@ acceptance_criteria:
 evidence:
   - "verified: execute-task/SKILL.md has no output contract (grep terse|narrat|recap|status = 0)"
   - "verified: token-efficiency.md referenced only from root SKILL.md; execution-modes.md defines execution_mode as pacing; size budgets are byte-based; Cursor/AGENTS surfaces already terse"
-gates:
-  critique: pass
-  security: n/a
-  evaluation: pass
 history:
   - "2026-08-02: v1 from NES-project token-burn report."
   - "2026-08-02: v2 after external critique (positive-template protocol, progress_policy separate from execution_mode, model guidance doc-only, file-size gate removed)."

@@ -68,6 +68,14 @@ def main() -> int:
         forge_dir / "MEMORY.md"
     ).is_file()
 
+    # Design tasks are tracked by review_state, not execution gates.
+    text = task_file.read_text(encoding="utf-8")
+    for line in text.splitlines():
+        st = line.strip()
+        if st.startswith("task_type:") and st.split(":", 1)[1].strip() == "design":
+            print("design-task: tracked by review_state, no execution gates")
+            return 0
+
     gates = parse_gates(task_file)
 
     for gate in GATE_ORDER:

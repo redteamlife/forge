@@ -247,3 +247,11 @@ tasks:
     owner_lane: single
     owner: taffy
     task_file: docs/forge/tasks/TASK-031.yaml
+  - id: TASK-032
+    title: "Design-task gate semantics"
+    status: complete
+    priority: normal
+    phase: governance
+    owner_lane: single
+    owner: taffy
+    task_file: docs/forge/tasks/TASK-032.yaml
