@@ -4,6 +4,23 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-08-02
+
+### Fixed
+
+- **Generated agent surfaces did not carry the output-discipline rule.** The surface generator omitted it (only the static template files had it), so every real bootstrapped or refreshed repo produced a `CLAUDE.md`/`AGENTS.md` that never mentioned `progress_policy` — and the agent defaulted to the harness's narrate-everything baseline. This was the material cause of continued chattiness under 1.9.1. The generator now emits the rule, and a verify-repo fixture asserts it on GENERATED output (not just static files — the hole that let 1.9.1 ship).
+
+### Changed
+
+- Output discipline is now a **minimum-cadence rule**: a host-required progress cadence is a heartbeat floor, not permission to narrate each tool call; do not announce routine reads, searches, edits, commands, or checks. `references/checkpoint-output.md` is a required read at each activation/resume, and the `execute-task` inline fallback is independently normative.
+- All output-guidance surfaces (generated and static) explicitly ban per-tool announcements and defer to `progress_policy`.
+- Bumped the default generated `forge_version` to `1.9.2`.
+
+### Measured
+
+- On a fixed 3-task Codex evaluation rig (batch mode, `progress_policy: compact`, median of 3 paired runs, fresh session each): **median assistant output fell ~91% (5742 → 529 bytes)** and routine per-tool narration was essentially eliminated (**~29 → ~1 announcements per run**, the residual being a permitted run-start acknowledgment). The compact checkpoint template and blocker reporting were preserved. This is the first FORGE change gated on measured behavior rather than static tests — 1.9.1's static fixtures were green while real Codex runs emitted ~29 narration lines per run.
+
+
 ## [1.9.1] - 2026-08-02
 
 ### Added
