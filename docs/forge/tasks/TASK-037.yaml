@@ -1,11 +1,26 @@
 id: TASK-037
 title: "D4: Codex SessionStart hook + profile guidance"
-status: todo
+status: complete
 priority: high
 phase: token-discipline-v2
 owner_lane: single
 owner: taffy
-description: "Corrected .codex/hooks.json (3-level schema, startup|resume|clear|compact, merge-safe, recognize legacy inline-echo signature, canonical-path identity, fail-closed) + .codex/hooks/ script (fixed-enum parse, no secrets, no mutation) + user-owned low-verbosity profile docs. Behavioral delta hook off vs on (post-compaction). Security review required (executable hooks)."
-gates: {}
+description: "Codex-native reinforcement: corrected .codex/hooks.json (3-level schema, startup|resume|clear|compact) + .codex/hooks/forge_session_context.py (fixed-enum progress_policy parse, no secrets, no mutation) that re-injects output discipline as developer context — surviving compaction. Merge-safe installer forge_install_codex_hook.py (preserves unrelated hooks, replaces only the FORGE entry by canonical path, recognizes the legacy inline-echo signature, fails closed on malformed JSON). Opt-in user-owned low-verbosity profile documented in .codex/README.md."
+file_scope:
+  - skills/forge/assets/agent-surfaces/.codex/hooks.json
+  - skills/forge/assets/agent-surfaces/.codex/hooks/forge_session_context.py
+  - skills/forge/assets/agent-surfaces/.codex/README.md
+  - skills/forge/assets/scripts/forge_install_codex_hook.py
+  - verify-repo.py
+acceptance_criteria:
+  - "Hook uses the 3-level schema with a compact matcher; context script emits the discipline via fixed-enum parse."
+  - "Installer is merge-safe: preserves unrelated hooks, replaces legacy/FORGE entries, fails closed on malformed JSON."
+  - "Low-verbosity profile documented as user-owned; FORGE never writes ~/.codex."
+tests:
+  - "verify-repo.py verify_codex_hook"
+gates:
+  critique: pass
+  security: pass
+  evaluation: pass
 history:
-  - "2026-08-02: planned from accepted design TASK-034."
+  - "2026-08-03: implemented per design TASK-034 D4; security review recorded."

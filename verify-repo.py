@@ -150,6 +150,9 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_narration_metrics.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_upgrade.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_install_codex_hook.py",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks" / "forge_session_context.py",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "README.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_adapters.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py",
@@ -889,6 +892,45 @@ def verify_upgrade() -> None:
         ensure(r.returncode == 1 and "STOP" in r.stdout, "upgrade did not stop on unknown legacy value")
 
 
+def verify_codex_hook() -> None:
+    installer = SKILL_ROOT / "assets" / "scripts" / "forge_install_codex_hook.py"
+    ctx = SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks" / "forge_session_context.py"
+    # shipped hooks.json is valid JSON with the 3-level schema
+    hooks_json = SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks.json"
+    data = json.loads(hooks_json.read_text())
+    ss = data["hooks"]["SessionStart"][0]
+    ensure("compact" in ss.get("matcher", ""), "Codex hook matcher missing compact")
+    ensure("hooks" in ss and ss["hooks"][0]["command"].endswith("forge_session_context.py"),
+           "Codex hook not 3-level schema")
+    # context script emits discipline
+    with tempfile.TemporaryDirectory(prefix="forge-ctx-") as td:
+        repo = Path(td); (repo / "docs" / "forge").mkdir(parents=True)
+        (repo / "docs" / "forge" / "AI.md").write_text("progress_policy: compact\n")
+        r = subprocess.run([sys.executable, str(ctx)], cwd=repo, capture_output=True, text=True)
+        ensure("do not announce routine" in r.stdout.lower(),
+               f"session-context did not emit output discipline:\n{r.stdout}")
+    # installer: replace legacy, preserve unrelated, fail closed on bad JSON
+    with tempfile.TemporaryDirectory(prefix="forge-hookinst-") as td:
+        repo = Path(td); (repo / ".codex").mkdir(parents=True)
+        (repo / ".codex" / "hooks.json").write_text(
+            '{"hooks":{"SessionStart":['
+            '{"type":"command","command":"echo \'This repo uses FORGE governance...\'"},'
+            '{"matcher":"startup","hooks":[{"type":"command","command":"echo mine"}]}]}}')
+        r = subprocess.run([sys.executable, str(installer), str(repo), "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 0, f"hook installer failed:\n{r.stderr}")
+        out = json.loads((repo / ".codex" / "hooks.json").read_text())
+        cmds = [h["command"] for g in out["hooks"]["SessionStart"] for h in g.get("hooks", [])] + \
+               [g.get("command","") for g in out["hooks"]["SessionStart"]]
+        ensure(any("forge_session_context.py" in c for c in cmds), "installer did not add FORGE hook")
+        ensure(any("echo mine" in c for c in cmds), "installer dropped an unrelated hook")
+        ensure(not any("FORGE governance" in c for c in cmds), "installer left the legacy hook")
+        (repo / ".codex" / "hooks.json").write_text("{bad")
+        r = subprocess.run([sys.executable, str(installer), str(repo), "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 1 and "STOP" in r.stderr, "installer did not fail closed on bad JSON")
+
+
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""
     execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
@@ -992,6 +1034,7 @@ def main() -> int:
         verify_docs_staleness()
         verify_narration_metrics()
         verify_upgrade()
+        verify_codex_hook()
         verify_docs_export()
         verify_release_check()
         verify_progress_policy_surfaces()
