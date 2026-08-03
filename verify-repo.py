@@ -149,6 +149,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_narration_metrics.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_upgrade.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_adapters.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py",
@@ -861,6 +862,33 @@ def verify_narration_metrics() -> None:
                f"scorer failed a compact transcript:\n{r.stdout}")
 
 
+def verify_upgrade() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_upgrade.py"
+    with tempfile.TemporaryDirectory(prefix="forge-upg-") as td:
+        repo = Path(td)
+        (repo / "docs" / "forge").mkdir(parents=True)
+        (repo / "docs" / "forge" / "AI.md").write_text(
+            "# AI\n\n```FORGE-config\nforge_version: 1.6.0\nresponse_style: terse\n```\n")
+        (repo / "AGENTS.md").write_text("# Repo Agent Guide\n\nRoute...\n")
+        (repo / "CLAUDE.md").write_text("# MyApp Agent Guide\n\nnarrative\n")
+        r = subprocess.run([sys.executable, str(script), str(repo), "--version", "9.9.9", "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 0, f"upgrade --apply failed:\n{r.stderr}{r.stdout}")
+        ai = (repo / "docs" / "forge" / "AI.md").read_text()
+        ensure("progress_policy: compact" in ai, "upgrade did not add progress_policy")
+        ensure("response_style" not in ai, "upgrade did not remove legacy response_style")
+        ensure("forge_version: 9.9.9" in ai, "upgrade did not bump forge_version")
+        ensure((repo / "docs" / "forge" / "AI.md.bak").is_file(), "upgrade made no AI.md backup")
+        ensure("customized/narrative — left untouched" in r.stdout, "upgrade did not protect narrative surface")
+        ensure(r.stdout.count("MyApp") == 0 or "left untouched" in r.stdout, "narrative check")
+        # STOP on unknown legacy value
+        (repo / "docs" / "forge" / "AI.md").write_text(
+            "```FORGE-config\nresponse_style: verbose\n```\n")
+        r = subprocess.run([sys.executable, str(script), str(repo), "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 1 and "STOP" in r.stdout, "upgrade did not stop on unknown legacy value")
+
+
 def verify_gate_loop() -> None:
     """Design TASK-011: execute-task must conduct the gates; helper must agree."""
     execute = (SKILL_ROOT / "execute-task" / "SKILL.md").read_text()
@@ -963,6 +991,7 @@ def main() -> int:
         verify_gate_loop()
         verify_docs_staleness()
         verify_narration_metrics()
+        verify_upgrade()
         verify_docs_export()
         verify_release_check()
         verify_progress_policy_surfaces()

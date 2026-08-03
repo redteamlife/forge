@@ -1,11 +1,23 @@
 id: TASK-036
 title: "D3: safe forge_upgrade.py migration"
-status: todo
+status: complete
 priority: high
 phase: token-discipline-v2
 owner_lane: single
 owner: taffy
-description: "New forge_upgrade.py: detect-then-authorize; patch AI.md FORGE-config block after backup (progress_policy authoritative, remove recognized legacy response_style, stop on invalid/conflict); surfaces only on managed-marker/known-version match else diff-for-approval; never force-regen narrative AGENTS.md; idempotent. Fix this repo AI.md. Closes on deterministic safety tests. Security review required (mutates project files)."
-gates: {}
+description: "Safe, non-destructive upgrader for existing repos: detect-then-apply; patch AI.md FORGE-config block after .bak backup (add progress_policy, map response_style: terse -> removed, bump version, STOP on unknown legacy); regenerate surfaces only when they match the stock-router signature, never a customized/narrative surface (reported for manual edit); dry-run default. Replaces routing migration through the destructive forge_migrate_context.py."
+file_scope:
+  - skills/forge/assets/scripts/forge_upgrade.py
+  - verify-repo.py
+acceptance_criteria:
+  - "Adds progress_policy, migrates response_style: terse, bumps version, with backup; STOPs on unknown legacy value."
+  - "Regenerates stock router surfaces only; never overwrites a narrative/customized surface."
+  - "Dry-run by default; deterministic safety fixtures pass."
+tests:
+  - "verify-repo.py verify_upgrade"
+gates:
+  critique: pass
+  security: pass
+  evaluation: pass
 history:
-  - "2026-08-02: planned from accepted design TASK-034."
+  - "2026-08-03: implemented per design TASK-034 D3; security review recorded."

@@ -281,7 +281,7 @@ tasks:
     task_file: docs/forge/tasks/TASK-035.yaml
   - id: TASK-036
     title: "D3: safe forge_upgrade.py migration"
-    status: todo
+    status: complete
     priority: high
     phase: token-discipline-v2
     owner_lane: single
