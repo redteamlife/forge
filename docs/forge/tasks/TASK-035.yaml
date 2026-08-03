@@ -30,4 +30,5 @@ evidence:
 history:
   - "2026-08-02: planned from accepted design TASK-034."
   - "2026-08-02: checkpoint 1 baseline apparatus frozen; generator-deferral gap found and recorded for the edit phase."
+  - "2026-08-02: DELTA RESULT (3 Codex runs, updated pack): output bytes 5742->529 median (0.09x, 5x under the 0.5 target); scorer disallowed 29->1 median; genuine routine-op narration ~29->~0. Residual is the rubric-permitted run-start acknowledgment (scorer over-counts) plus one tool-choice line. Compact template followed; blockers preserved. Results in ~/forge-eval-results/delta-results.md."
   - "2026-08-02: implemented — minimum-cadence rule in checkpoint-output.md; execute-task required-read step + independently-normative fallback (consolidated to 5399/5400); GENERATOR now emits the deferral + per-tool-announcement ban (the material gap); six static surfaces strengthened; fixture asserts on generated output; security review pass. Behavioral delta vs baseline pending Codex re-run."
