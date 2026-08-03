@@ -4,6 +4,27 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+## [1.9.3] - 2026-08-03
+
+Completes the token-discipline v2 set (design TASK-034): the migration, Codex, and evaluation follow-ups to 1.9.2.
+
+### Added
+
+- `forge_upgrade.py` — safe, non-destructive upgrader for existing repos: dry-run by default; patches the `AI.md` FORGE-config block after a `.bak` backup (adds `progress_policy`, migrates legacy `response_style: terse`, bumps version, stops on unknown legacy values); regenerates only stock-router surfaces and never a customized/narrative one (reported for manual edit).
+- Codex `SessionStart` hook (`.codex/hooks.json` + `.codex/hooks/forge_session_context.py`) that re-injects the output-discipline rule as developer context on `startup`/`resume`/`clear`/`compact` — surviving compaction, which a once-loaded reference cannot. Merge-safe installer `forge_install_codex_hook.py` (preserves unrelated hooks, replaces only the FORGE entry, recognizes the legacy inline-echo, fails closed on malformed JSON). Opt-in user-owned low-verbosity profile documented in `.codex/README.md`.
+- `references/output-eval.md` — the behavioral evaluation harness (transcript format, protocol, pass threshold) with `forge_narration_metrics.py`, so future output-discipline changes are gated on measured behavior, not static tests.
+
+### Changed
+
+- The output scorer recognizes the rubric-permitted run-start acknowledgment (first pre-tool message exempt; later routine announcements still flagged).
+- The announcement ban now explicitly covers tool/skill choices (the one genuine residual from the 1.9.2 measurement) across the protocol, generator, execute-task, and all static surfaces.
+- Bumped the default generated `forge_version` to `1.9.3`.
+
+### Security
+
+- `forge_upgrade.py` (mutates project files) and the Codex hook (executable) each carry a recorded security review; both are fail-safe and cannot suppress a blocker.
+
+
 ## [1.9.2] - 2026-08-02
 
 ### Fixed
