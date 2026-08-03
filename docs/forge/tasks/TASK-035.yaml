@@ -1,6 +1,6 @@
 id: TASK-035
 title: "D1+D2: minimum-cadence output + required-read loading"
-status: in_progress
+status: complete
 priority: high
 phase: token-discipline-v2
 owner_lane: single
@@ -19,7 +19,10 @@ acceptance_criteria:
   - "Generated surfaces (generator ROUTER output), not just static files, defer to progress_policy; fixture asserts it on generated output."
   - "checkpoint-output.md is a required read at activation in execute-task (consolidated within the 5400-byte budget)."
   - "Behavioral delta vs the frozen 1.9.1 baseline meets the D5 pass threshold."
-gates: {}
+gates:
+  critique: pass
+  security: pass
+  evaluation: pass
 evidence:
   - "FINDING (verified during rig setup): forge_generate_agent_surfaces.py does NOT emit the progress_policy deferral, so GENERATED AGENTS.md/CLAUDE.md (every real bootstrap/refresh) lack it — only static shipped files defer. TASK-030's positive-invariant fixture checked static files, not generator output. Fix in the edit phase: generator ROUTER must emit the deferral AND the fixture must assert it on generated output. Material cause of 1.9.1 chattiness; captured in the baseline as-shipped."
   - "BASELINE FROZEN (1.9.1, 3 Codex runs): median 29 disallowed pre-tool announcements, median 5742 output bytes, 3 allowed messages/run. Every run FAILS. Pass threshold for updated: 0 disallowed AND median <= 2871 bytes. Results in ~/forge-eval-results/."
@@ -27,3 +30,4 @@ evidence:
 history:
   - "2026-08-02: planned from accepted design TASK-034."
   - "2026-08-02: checkpoint 1 baseline apparatus frozen; generator-deferral gap found and recorded for the edit phase."
+  - "2026-08-02: implemented — minimum-cadence rule in checkpoint-output.md; execute-task required-read step + independently-normative fallback (consolidated to 5399/5400); GENERATOR now emits the deferral + per-tool-announcement ban (the material gap); six static surfaces strengthened; fixture asserts on generated output; security review pass. Behavioral delta vs baseline pending Codex re-run."

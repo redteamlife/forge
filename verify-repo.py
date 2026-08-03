@@ -825,6 +825,22 @@ def verify_progress_policy_surfaces() -> None:
     proto = SKILL_ROOT / "references" / "checkpoint-output.md"
     ensure(proto.is_file(), "checkpoint-output.md protocol is missing")
 
+    # The GENERATOR output must also defer (design TASK-035: static files alone
+    # were checked in TASK-030, so generated surfaces silently lacked it).
+    generator = SKILL_ROOT / "assets" / "scripts" / "forge_generate_agent_surfaces.py"
+    with tempfile.TemporaryDirectory(prefix="forge-genout-") as td:
+        repo = Path(td)
+        (repo / "docs" / "forge").mkdir(parents=True)
+        (repo / "docs" / "forge" / "AI.md").write_text(
+            "```FORGE-config\nprogress_policy: compact\n```\n")
+        run([sys.executable, str(generator), str(repo), "--force"], cwd=ROOT)
+        for name in ("AGENTS.md", "CLAUDE.md"):
+            text = (repo / name).read_text()
+            ensure("progress_policy" in text,
+                   f"generated {name} does not defer to progress_policy")
+            ensure("announce routine" in text,
+                   f"generated {name} does not ban per-tool announcements")
+
 
 def verify_narration_metrics() -> None:
     script = SKILL_ROOT / "assets" / "scripts" / "forge_narration_metrics.py"

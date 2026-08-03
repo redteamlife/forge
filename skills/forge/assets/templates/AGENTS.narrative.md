@@ -77,4 +77,4 @@ Highlights:
 - Do not auto-load all `docs/forge/*` files at session start.
 - Read `TEAM.md`, `ARCHITECTURE.md`, `MEMORY.md`, `SECURITY_CHECKLISTS.md`,
   `SETUP.md`, and `EVALUATION.md` only when the current task needs them.
-- Follow `progress_policy` in `docs/forge/AI.md` (default compact: concise checkpoint output, detailed blockers).
+- Follow `progress_policy` in `docs/forge/AI.md` (default compact); do not announce routine reads, searches, edits, commands, or checks — emit checkpoint lines, blockers, and one terminal summary.

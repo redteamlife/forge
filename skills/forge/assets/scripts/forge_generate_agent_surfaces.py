@@ -73,18 +73,26 @@ MOMENT_MAP = """Route work through installed FORGE skills by moment:
 - record or recall lessons -> `forge-memory`
 """
 
+# Output discipline MUST appear in every generated surface (design TASK-035):
+# a generated surface that omits it defaults to the harness's narrate-everything
+# baseline. Defers to progress_policy and explicitly bans per-tool announcements.
+OUTPUT_DISCIPLINE = """Output: follow `progress_policy` in `docs/forge/AI.md` (default compact). Do not announce routine reads, searches, edits, commands, or checks; emit only checkpoint lines, blockers, and one terminal summary. Full rule: `references/checkpoint-output.md`.
+"""
+
 ROUTER = """# Repo Agent Guide
 
 """ + MOMENT_MAP + """
 Reads: `docs/forge/AI.md`, `docs/forge/CONTEXT.md` if present, the task index, one selected task, task-relevant source only. Do not load all `docs/forge/*` files at session start.
-"""
+
+""" + OUTPUT_DISCIPLINE
 
 STANDARD = """# Repo Agent Guide
 
 @./docs/forge/AI.md
 
 Use installed FORGE skills for governed work. Read `docs/forge/CONTEXT.md`, the compact task index, and one selected task before inspecting task-relevant source files.
-"""
+
+""" + OUTPUT_DISCIPLINE
 
 FULL = """# Repo Agent Guide
 
@@ -93,7 +101,8 @@ High-context FORGE surface. Use only when explicitly selected for local/develope
 @./docs/forge/AI.md
 @./docs/forge/CONTEXT.md
 @./docs/forge/TASKS.index.yaml
-"""
+
+""" + OUTPUT_DISCIPLINE
 
 
 DEFAULTS = {
