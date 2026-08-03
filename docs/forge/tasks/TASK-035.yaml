@@ -22,6 +22,7 @@ acceptance_criteria:
 gates: {}
 evidence:
   - "FINDING (verified during rig setup): forge_generate_agent_surfaces.py does NOT emit the progress_policy deferral, so GENERATED AGENTS.md/CLAUDE.md (every real bootstrap/refresh) lack it — only static shipped files defer. TASK-030's positive-invariant fixture checked static files, not generator output. Fix in the edit phase: generator ROUTER must emit the deferral AND the fixture must assert it on generated output. Material cause of 1.9.1 chattiness; captured in the baseline as-shipped."
+  - "BASELINE FROZEN (1.9.1, 3 Codex runs): median 29 disallowed pre-tool announcements, median 5742 output bytes, 3 allowed messages/run. Every run FAILS. Pass threshold for updated: 0 disallowed AND median <= 2871 bytes. Results in ~/forge-eval-results/."
   - "checkpoint 1 (baseline): protocol frozen at docs/forge/evaluations/TASK-034-baseline-protocol.md; forge_narration_metrics.py scorer built and fixture-tested (chatty FAIL / compact PASS); eval rig repo forge-token-eval created. Codex baseline RUN is a harness-environment action, pending."
 history:
   - "2026-08-02: planned from accepted design TASK-034."
