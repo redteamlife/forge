@@ -16,10 +16,17 @@ compaction.
 - `compact` — one success line, detailed blockers (default for `batch`/`auto`).
 - `detailed` — operator-requested narration.
 
-Absent field: default to `compact`. User and harness requirements override
-(a host that needs periodic progress or a self-contained final response gets it —
-complete silence is not portable). `progress_policy` is a separate axis from
+Absent field: default to `compact`. `progress_policy` is a separate axis from
 `execution_mode` (which is pacing).
+
+**Minimum-cadence rule (read carefully).** Explicit higher-priority host
+requirements and explicit user requests still apply — otherwise `progress_policy`
+governs output. In `compact`, a host-required progress cadence is a **minimum
+heartbeat, not permission to narrate each tool call.** Do not announce routine
+reads, searches, edits, commands, or checks before doing them. A default
+conversational style, or your own tendency to explain each action, is **not** an
+override. After any initial acknowledgment the host requires, go quiet except for
+the outputs enumerated below.
 
 ## Per-checkpoint output
 

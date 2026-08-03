@@ -25,19 +25,19 @@ Execute one governed task with minimal context. A checkpoint is not complete unt
 1. Confirm branch safety, worktree state, and project-local prerequisites.
 2. Parse `AI.md` for `collaboration_mode`, `task_source`, `solo_branch_flow`, `execution_mode`, `repo_flavor`, `security_profile`, and context profile.
 3. Select or claim exactly one task; read only that task's details.
-4. When memory docs exist, read `MEMORY.index.yaml` plus the relevant topic file before the alignment check (`forge-memory` read pattern).
+4. When memory docs exist, read `MEMORY.index.yaml` + the relevant topic before the alignment check.
 5. Start with declared `file_scope`; note why before any expansion.
 6. Check branch, team, architecture, contract, and security constraints.
 7. Implement the smallest safe change; run relevant checks.
-8. Run the review gates via `forge-review` (critique always; security per change surface/`security_profile`; evaluation is a full gate when `EVALUATION.md` exists, else recorded in-task). Record in the `gates:` block: `critique: pass|fail` · `security: pass|n/a|escalated` · `evaluation: pass|handoff-required|fail`.
+8. Run the review gates via `forge-review` (critique always; security per surface/profile; evaluation full when `EVALUATION.md` exists, else recorded in-task). Record `gates:` `critique: pass|fail` · `security: pass|n/a|escalated` · `evaluation: pass|handoff-required|fail`.
 9. Record a memory entry only when a reusable lesson exists: `memory: entry|no-relevant-lesson|store-unavailable`.
 10. Update task state and evidence.
 11. Commit per project policy (Conventional Commit, no AI attribution).
-12. Stop or continue per `execution_mode`; `requires_independent_review` is an unconditional stop.
+12. Stop or continue per `execution_mode`; `requires_independent_review` always stops.
 
-`<skill-root>/assets/scripts/forge_next_gate.py <task-file>` prints the next required gate.
+`forge_next_gate.py <task-file>` (in `<skill-root>/assets/scripts/`) prints the next required gate.
 
-Output (fallback if `../references/checkpoint-output.md` is not loaded): follow `progress_policy` (default `compact`) — one line per checkpoint (`TASK-<id> complete|blocked|handoff-required | …`), blockers always state check + evidence + need, and one terminal `Done: … Refs: … Remaining: …` summary. No per-task recaps; the task file and commit are the record.
+Output — at each activation/resume read `../references/checkpoint-output.md` once; this rule holds even if that read is skipped. Follow `progress_policy` (default `compact`): do NOT announce routine reads, searches, edits, commands, or checks; a host progress cadence is a heartbeat floor, not narration license. Emit one line per checkpoint (`TASK-<id> complete|blocked|handoff-required | …`), blockers state check+evidence+need, one terminal `Done: … Refs: … Remaining: …`. No per-task recaps.
 
 Task sources — `local`: `TASKS.index.yaml` plus `docs/forge/tasks/<id>.yaml`, else `TASKS.yaml`. `github`/`gitlab`: issues are authoritative; local task files are planning snapshots. `external`: only the configured MCP, CLI, or human-provided reference.
 
@@ -75,9 +75,9 @@ Stop when:
 
 ## Evidence Required
 
-- selected task id/issue; changed files and scope-expansion notes; validation run or blocker
+- selected task id/issue; changed files + scope-expansion notes; validation run or blocker
 - `gates:` outcomes for the checkpoint (critique, security, evaluation, memory)
 - updated task source when state changes
 - required docs/contracts/ADRs/XPDs when triggered; Conventional Commit (solo) or PR/MR-ready state (team)
 
-On-demand references: `../references/checkpoint-output.md`, `../references/execution-modes.md`, `../references/team-mode.md`, `../references/repo-flavors.md`, `../references/application-docs.md`.
+On-demand references: `../references/execution-modes.md`, `../references/team-mode.md`, `../references/repo-flavors.md`, `../references/application-docs.md`.
