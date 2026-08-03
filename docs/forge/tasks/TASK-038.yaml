@@ -1,11 +1,28 @@
 id: TASK-038
-title: "D5: integrated behavioral regression evidence"
-status: todo
+title: "D5: eval harness formalized + scorer + wording"
+status: complete
 priority: normal
 phase: token-discipline-v2
 owner_lane: single
 owner: taffy
-description: "forge_narration_metrics.py eval harness formalized; final integrated baseline-vs-updated Codex regression across the shipped set. 1.9.2 ships only if zero disallowed narration and median ratio <= 0.5."
-gates: {}
+description: "Formalize the behavioral eval: references/output-eval.md documents the harness, transcript format, protocol, and pass threshold. forge_narration_metrics.py now recognizes the rubric-permitted run-start acknowledgment (first pre-tool message exempt; later routine announcements still flagged). Announcement ban extended to tool/skill choices (the one genuine delta residual) across protocol, generator, execute-task, and the four static surfaces."
+file_scope:
+  - skills/forge/references/output-eval.md
+  - skills/forge/assets/scripts/forge_narration_metrics.py
+  - skills/forge/references/checkpoint-output.md
+  - skills/forge/assets/scripts/forge_generate_agent_surfaces.py
+  - skills/forge/execute-task/SKILL.md
+  - skills/forge/assets/agent-surfaces/
+  - verify-repo.py
+acceptance_criteria:
+  - "Scorer exempts the single run-start acknowledgment and still flags later routine announcements; fixtures cover both."
+  - "Announcement ban includes tool/skill choices everywhere the rule appears."
+  - "output-eval.md documents the harness, format, protocol, and pass threshold."
+tests:
+  - "verify-repo.py verify_narration_metrics (run-start-ack + later-announcement cases)"
+gates:
+  critique: pass
+  security: n/a
+  evaluation: pass
 history:
-  - "2026-08-02: planned from accepted design TASK-034."
+  - "2026-08-03: implemented per design TASK-034 D5; re-scored delta with faithful rubric (updated-1/2 clean-zero, updated-3 residual was the tool-choice line now banned)."

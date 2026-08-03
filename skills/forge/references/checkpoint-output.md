@@ -23,7 +23,8 @@ Absent field: default to `compact`. `progress_policy` is a separate axis from
 requirements and explicit user requests still apply — otherwise `progress_policy`
 governs output. In `compact`, a host-required progress cadence is a **minimum
 heartbeat, not permission to narrate each tool call.** Do not announce routine
-reads, searches, edits, commands, or checks before doing them. A default
+reads, searches, edits, commands, checks, or which skill/tool you are about
+to use. A default
 conversational style, or your own tendency to explain each action, is **not** an
 override. After any initial acknowledgment the host requires, go quiet except for
 the outputs enumerated below.

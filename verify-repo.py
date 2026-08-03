@@ -146,6 +146,7 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "release-management.md",
         SKILL_ROOT / "references" / "design-tasks.md",
         SKILL_ROOT / "references" / "checkpoint-output.md",
+        SKILL_ROOT / "references" / "output-eval.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_narration_metrics.py",
@@ -851,6 +852,8 @@ def verify_narration_metrics() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-narr-") as td:
         chatty = Path(td) / "chatty.jsonl"
         chatty.write_text(
+            '{"role":"assistant","text":"Starting the task.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n'
             '{"role":"assistant","text":"Now let me read the file.","pre_tool":true}\n'
             '{"role":"tool","name":"read"}\n')
         compact = Path(td) / "compact.jsonl"
@@ -863,6 +866,26 @@ def verify_narration_metrics() -> None:
         r = subprocess.run([sys.executable, str(script), str(compact)], capture_output=True, text=True)
         ensure(r.returncode == 0 and "disallowed_check: PASS" in r.stdout,
                f"scorer failed a compact transcript:\n{r.stdout}")
+
+        # run-start acknowledgment is exempt; a LATER routine announcement is not
+        runstart = Path(td) / "runstart.jsonl"
+        runstart.write_text(
+            '{"role":"assistant","text":"FORGE batch started: TASK-001.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n'
+            '{"role":"assistant","text":"TASK-001 complete | validation pass | ref abc","pre_tool":true}\n'
+            '{"role":"tool","name":"exec"}\n')
+        r = subprocess.run([sys.executable, str(script), str(runstart)], capture_output=True, text=True)
+        ensure(r.returncode == 0 and "disallowed_check: PASS" in r.stdout and "run_start_ack:" in r.stdout,
+               f"scorer did not exempt the run-start ack:\n{r.stdout}")
+        later = Path(td) / "later.jsonl"
+        later.write_text(
+            '{"role":"assistant","text":"FORGE batch started.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n'
+            '{"role":"assistant","text":"Now let me edit the file.","pre_tool":true}\n'
+            '{"role":"tool","name":"edit"}\n')
+        r = subprocess.run([sys.executable, str(script), str(later)], capture_output=True, text=True)
+        ensure(r.returncode == 1 and "disallowed_check: FAIL" in r.stdout,
+               f"scorer did not flag a later routine announcement:\n{r.stdout}")
 
 
 def verify_upgrade() -> None:

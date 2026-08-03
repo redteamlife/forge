@@ -296,8 +296,8 @@ tasks:
     owner: taffy
     task_file: docs/forge/tasks/TASK-037.yaml
   - id: TASK-038
-    title: "D5: integrated behavioral regression evidence"
-    status: todo
+    title: "D5: eval harness formalized + scorer + wording"
+    status: complete
     priority: normal
     phase: token-discipline-v2
     owner_lane: single

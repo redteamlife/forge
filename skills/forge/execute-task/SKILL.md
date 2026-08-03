@@ -37,7 +37,7 @@ Execute one governed task with minimal context. A checkpoint is not complete unt
 
 `forge_next_gate.py <task-file>` (in `<skill-root>/assets/scripts/`) prints the next required gate.
 
-Output — at each activation/resume read `../references/checkpoint-output.md` once; this rule holds even if that read is skipped. Follow `progress_policy` (default `compact`): do NOT announce routine reads, searches, edits, commands, or checks; a host progress cadence is a heartbeat floor, not narration license. Emit one line per checkpoint (`TASK-<id> complete|blocked|handoff-required | …`), blockers state check+evidence+need, one terminal `Done: … Refs: … Remaining: …`. No per-task recaps.
+Output — at each activation/resume read `../references/checkpoint-output.md` once; this rule holds even if that read is skipped. Follow `progress_policy` (default `compact`): do NOT announce routine reads, edits, commands, checks, or tool/skill choices; host cadence is a heartbeat floor, not narration license. Emit one line per checkpoint (`TASK-<id> complete|blocked|handoff-required | …`), blockers state check+evidence+need, one terminal `Done: … Refs: … Remaining: …`. No per-task recaps.
 
 Task sources — `local`: `TASKS.index.yaml` plus `docs/forge/tasks/<id>.yaml`, else `TASKS.yaml`. `github`/`gitlab`: issues are authoritative; local task files are planning snapshots. `external`: only the configured MCP, CLI, or human-provided reference.
 
