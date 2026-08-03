@@ -1,9 +1,15 @@
 {
+  "_forge_managed": "SessionStart entry identified by the canonical command path below; forge_install_codex_hook.py replaces only that entry and preserves unrelated hooks.",
   "hooks": {
     "SessionStart": [
       {
-        "type": "command",
-        "command": "echo 'This repo uses FORGE governance. Use the forge skill explicitly. Read docs/forge/AI.md, docs/forge/CONTEXT.md if present, the compact task index, and one selected task. Do not load all docs/forge files at startup. If forge is unavailable, stop and tell the user FORGE must be installed before continuing.'"
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .codex/hooks/forge_session_context.py"
+          }
+        ]
       }
     ]
   }

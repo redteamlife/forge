@@ -76,7 +76,7 @@ MOMENT_MAP = """Route work through installed FORGE skills by moment:
 # Output discipline MUST appear in every generated surface (design TASK-035):
 # a generated surface that omits it defaults to the harness's narrate-everything
 # baseline. Defers to progress_policy and explicitly bans per-tool announcements.
-OUTPUT_DISCIPLINE = """Output: follow `progress_policy` in `docs/forge/AI.md` (default compact). Do not announce routine reads, searches, edits, commands, or checks; emit only checkpoint lines, blockers, and one terminal summary. Full rule: `references/checkpoint-output.md`.
+OUTPUT_DISCIPLINE = """Output: follow `progress_policy` in `docs/forge/AI.md` (default compact). Do not announce routine reads, searches, edits, commands, checks, or which skill/tool you are about to use; emit only checkpoint lines, blockers, and one terminal summary. Full rule: `references/checkpoint-output.md`.
 """
 
 ROUTER = """# Repo Agent Guide

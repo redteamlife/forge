@@ -146,9 +146,14 @@ def verify_required_files() -> None:
         SKILL_ROOT / "references" / "release-management.md",
         SKILL_ROOT / "references" / "design-tasks.md",
         SKILL_ROOT / "references" / "checkpoint-output.md",
+        SKILL_ROOT / "references" / "output-eval.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_next_gate.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_staleness.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_narration_metrics.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_upgrade.py",
+        SKILL_ROOT / "assets" / "scripts" / "forge_install_codex_hook.py",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks" / "forge_session_context.py",
+        SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "README.md",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_export.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_docs_adapters.py",
         SKILL_ROOT / "assets" / "scripts" / "forge_release_check.py",
@@ -847,6 +852,8 @@ def verify_narration_metrics() -> None:
     with tempfile.TemporaryDirectory(prefix="forge-narr-") as td:
         chatty = Path(td) / "chatty.jsonl"
         chatty.write_text(
+            '{"role":"assistant","text":"Starting the task.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n'
             '{"role":"assistant","text":"Now let me read the file.","pre_tool":true}\n'
             '{"role":"tool","name":"read"}\n')
         compact = Path(td) / "compact.jsonl"
@@ -859,6 +866,92 @@ def verify_narration_metrics() -> None:
         r = subprocess.run([sys.executable, str(script), str(compact)], capture_output=True, text=True)
         ensure(r.returncode == 0 and "disallowed_check: PASS" in r.stdout,
                f"scorer failed a compact transcript:\n{r.stdout}")
+
+        # run-start acknowledgment is exempt; a LATER routine announcement is not
+        runstart = Path(td) / "runstart.jsonl"
+        runstart.write_text(
+            '{"role":"assistant","text":"FORGE batch started: TASK-001.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n'
+            '{"role":"assistant","text":"TASK-001 complete | validation pass | ref abc","pre_tool":true}\n'
+            '{"role":"tool","name":"exec"}\n')
+        r = subprocess.run([sys.executable, str(script), str(runstart)], capture_output=True, text=True)
+        ensure(r.returncode == 0 and "disallowed_check: PASS" in r.stdout and "run_start_ack:" in r.stdout,
+               f"scorer did not exempt the run-start ack:\n{r.stdout}")
+        later = Path(td) / "later.jsonl"
+        later.write_text(
+            '{"role":"assistant","text":"FORGE batch started.","pre_tool":true}\n'
+            '{"role":"tool","name":"read"}\n'
+            '{"role":"assistant","text":"Now let me edit the file.","pre_tool":true}\n'
+            '{"role":"tool","name":"edit"}\n')
+        r = subprocess.run([sys.executable, str(script), str(later)], capture_output=True, text=True)
+        ensure(r.returncode == 1 and "disallowed_check: FAIL" in r.stdout,
+               f"scorer did not flag a later routine announcement:\n{r.stdout}")
+
+
+def verify_upgrade() -> None:
+    script = SKILL_ROOT / "assets" / "scripts" / "forge_upgrade.py"
+    with tempfile.TemporaryDirectory(prefix="forge-upg-") as td:
+        repo = Path(td)
+        (repo / "docs" / "forge").mkdir(parents=True)
+        (repo / "docs" / "forge" / "AI.md").write_text(
+            "# AI\n\n```FORGE-config\nforge_version: 1.6.0\nresponse_style: terse\n```\n")
+        (repo / "AGENTS.md").write_text("# Repo Agent Guide\n\nRoute...\n")
+        (repo / "CLAUDE.md").write_text("# MyApp Agent Guide\n\nnarrative\n")
+        r = subprocess.run([sys.executable, str(script), str(repo), "--version", "9.9.9", "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 0, f"upgrade --apply failed:\n{r.stderr}{r.stdout}")
+        ai = (repo / "docs" / "forge" / "AI.md").read_text()
+        ensure("progress_policy: compact" in ai, "upgrade did not add progress_policy")
+        ensure("response_style" not in ai, "upgrade did not remove legacy response_style")
+        ensure("forge_version: 9.9.9" in ai, "upgrade did not bump forge_version")
+        ensure((repo / "docs" / "forge" / "AI.md.bak").is_file(), "upgrade made no AI.md backup")
+        ensure("customized/narrative — left untouched" in r.stdout, "upgrade did not protect narrative surface")
+        ensure(r.stdout.count("MyApp") == 0 or "left untouched" in r.stdout, "narrative check")
+        # STOP on unknown legacy value
+        (repo / "docs" / "forge" / "AI.md").write_text(
+            "```FORGE-config\nresponse_style: verbose\n```\n")
+        r = subprocess.run([sys.executable, str(script), str(repo), "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 1 and "STOP" in r.stdout, "upgrade did not stop on unknown legacy value")
+
+
+def verify_codex_hook() -> None:
+    installer = SKILL_ROOT / "assets" / "scripts" / "forge_install_codex_hook.py"
+    ctx = SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks" / "forge_session_context.py"
+    # shipped hooks.json is valid JSON with the 3-level schema
+    hooks_json = SKILL_ROOT / "assets" / "agent-surfaces" / ".codex" / "hooks.json"
+    data = json.loads(hooks_json.read_text())
+    ss = data["hooks"]["SessionStart"][0]
+    ensure("compact" in ss.get("matcher", ""), "Codex hook matcher missing compact")
+    ensure("hooks" in ss and ss["hooks"][0]["command"].endswith("forge_session_context.py"),
+           "Codex hook not 3-level schema")
+    # context script emits discipline
+    with tempfile.TemporaryDirectory(prefix="forge-ctx-") as td:
+        repo = Path(td); (repo / "docs" / "forge").mkdir(parents=True)
+        (repo / "docs" / "forge" / "AI.md").write_text("progress_policy: compact\n")
+        r = subprocess.run([sys.executable, str(ctx)], cwd=repo, capture_output=True, text=True)
+        ensure("do not announce routine" in r.stdout.lower(),
+               f"session-context did not emit output discipline:\n{r.stdout}")
+    # installer: replace legacy, preserve unrelated, fail closed on bad JSON
+    with tempfile.TemporaryDirectory(prefix="forge-hookinst-") as td:
+        repo = Path(td); (repo / ".codex").mkdir(parents=True)
+        (repo / ".codex" / "hooks.json").write_text(
+            '{"hooks":{"SessionStart":['
+            '{"type":"command","command":"echo \'This repo uses FORGE governance...\'"},'
+            '{"matcher":"startup","hooks":[{"type":"command","command":"echo mine"}]}]}}')
+        r = subprocess.run([sys.executable, str(installer), str(repo), "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 0, f"hook installer failed:\n{r.stderr}")
+        out = json.loads((repo / ".codex" / "hooks.json").read_text())
+        cmds = [h["command"] for g in out["hooks"]["SessionStart"] for h in g.get("hooks", [])] + \
+               [g.get("command","") for g in out["hooks"]["SessionStart"]]
+        ensure(any("forge_session_context.py" in c for c in cmds), "installer did not add FORGE hook")
+        ensure(any("echo mine" in c for c in cmds), "installer dropped an unrelated hook")
+        ensure(not any("FORGE governance" in c for c in cmds), "installer left the legacy hook")
+        (repo / ".codex" / "hooks.json").write_text("{bad")
+        r = subprocess.run([sys.executable, str(installer), str(repo), "--apply"],
+                           capture_output=True, text=True)
+        ensure(r.returncode == 1 and "STOP" in r.stderr, "installer did not fail closed on bad JSON")
 
 
 def verify_gate_loop() -> None:
@@ -963,6 +1056,8 @@ def main() -> int:
         verify_gate_loop()
         verify_docs_staleness()
         verify_narration_metrics()
+        verify_upgrade()
+        verify_codex_hook()
         verify_docs_export()
         verify_release_check()
         verify_progress_policy_surfaces()

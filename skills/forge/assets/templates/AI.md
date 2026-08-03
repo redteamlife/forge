@@ -1,7 +1,7 @@
 # AI Execution Configuration
 
 ```FORGE-config
-forge_version: 1.9.2
+forge_version: 1.9.3
 FORGE_mode: Lightweight
 # execution_mode: manual (stop per checkpoint) | batch (needs batch_size) | auto
 # (org-policy gated). Pacing only — gates run per checkpoint in every mode.

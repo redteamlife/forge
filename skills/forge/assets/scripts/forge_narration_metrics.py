@@ -57,6 +57,8 @@ def main() -> int:
     out_bytes = 0
     disallowed: list[str] = []
     allowed_count = 0
+    run_start_ack = None  # the first pre-tool message is a permitted run-start ack
+    seen_pre_tool = False
     for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
@@ -70,16 +72,22 @@ def main() -> int:
         text = turn.get("text", "") or ""
         out_bytes += len(text.encode("utf-8"))
         if turn.get("pre_tool"):
+            head = text.strip().splitlines()[0][:80] if text.strip() else ""
             if is_allowed(text):
                 allowed_count += 1
+            elif not seen_pre_tool:
+                # rubric D5 permits a single run-start acknowledgment
+                run_start_ack = head
             else:
-                disallowed.append(text.strip().splitlines()[0][:80] if text.strip() else "")
+                disallowed.append(head)
+            seen_pre_tool = True
 
     label = args.label or path.name
     print(f"[{label}]")
     print(f"  assistant_output_bytes: {out_bytes}")
     print(f"  disallowed_pre_tool_announcements: {len(disallowed)}")
     print(f"  allowed_pre_tool_messages: {allowed_count}")
+    print(f"  run_start_ack: {run_start_ack if run_start_ack else 'none'} (permitted)")
     if disallowed:
         print("  disallowed samples:")
         for d in disallowed[:5]:

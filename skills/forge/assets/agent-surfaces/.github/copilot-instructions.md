@@ -13,4 +13,4 @@ When working here:
 - use the configured `task_source`; GitHub/GitLab/external trackers are authoritative when selected
 - honor declared `contract_files` and update shared API/schema/client contracts with the task that changes them
 - in team mode, follow `docs/forge/TEAM.md`, declared `file_scope`, and CI-backed PR workflow
-- Follow `progress_policy` in `docs/forge/AI.md` (default compact); do not announce routine reads, searches, edits, commands, or checks — emit checkpoint lines, blockers, and one terminal summary.
+- Follow `progress_policy` in `docs/forge/AI.md` (default compact); do not announce routine reads, searches, edits, commands, checks, or which skill/tool you are about to use — emit checkpoint lines, blockers, and one terminal summary.
